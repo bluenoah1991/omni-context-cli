@@ -1,5 +1,5 @@
 import { Box } from 'ink';
-import React, { useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { loadConfig } from '../../services/appConfig';
 import { runConversation } from '../../services/chatOrchestrator';
 import { addUserMessage } from '../../services/sessionManager';
@@ -10,45 +10,78 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { LoadingIndicator } from './LoadingIndicator';
 import { MessageList } from './MessageList';
 
+type StreamBuffer = {content: string; thinking: string; flushId: NodeJS.Immediate | null;};
+
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
 
-  const config = loadConfig();
+  const streamBufferRef = useRef<StreamBuffer>({content: '', thinking: '', flushId: null});
 
-  const handleInterrupt = () => {
+  const config = useMemo(() => loadConfig(), []);
+
+  const flushStreamBuffer = useCallback(() => {
+    const buffer = streamBufferRef.current;
+    if (!buffer.content && !buffer.thinking) return;
+
+    const contentToAdd = buffer.content;
+    const thinkingToAdd = buffer.thinking;
+    buffer.content = '';
+    buffer.thinking = '';
+    buffer.flushId = null;
+
+    if (contentToAdd) {
+      updateMessages(msgs => {
+        const last = msgs[msgs.length - 1];
+        if (last?.role === 'assistant') {
+          return [...msgs.slice(0, -1), {...last, content: last.content + contentToAdd}];
+        }
+        return [...msgs, {role: 'assistant', content: contentToAdd, timestamp: Date.now()}];
+      });
+    }
+
+    if (thinkingToAdd) {
+      updateMessages(msgs => {
+        const last = msgs[msgs.length - 1];
+        if (last?.role === 'thinking') {
+          return [...msgs.slice(0, -1), {...last, content: last.content + thinkingToAdd}];
+        }
+        return [...msgs, {role: 'thinking', content: thinkingToAdd, timestamp: Date.now()}];
+      });
+    }
+  }, [updateMessages]);
+
+  const scheduleFlush = useCallback(() => {
+    if (streamBufferRef.current.flushId === null) {
+      streamBufferRef.current.flushId = setImmediate(flushStreamBuffer);
+    }
+  }, [flushStreamBuffer]);
+
+  const handleInterrupt = useCallback(() => {
     abortControllerRef.current?.abort();
-  };
+  }, []);
 
-  const handleSubmit = async (text: string) => {
-    if (isLoading) return;
+  const handleSubmit = useCallback(async (text: string) => {
+    if (useChatStore.getState().isLoading) return;
 
     updateMessages(msgs => [...msgs, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(session, text, config.provider);
+    const updatedSession = addUserMessage(sessionRef.current, text, config.provider);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
       const finalSession = await runConversation(updatedSession, {
         onContent: (content: string) => {
-          updateMessages(msgs => {
-            const last = msgs[msgs.length - 1];
-            if (last?.role === 'assistant') {
-              return [...msgs.slice(0, -1), {...last, content: last.content + content}];
-            }
-            return [...msgs, {role: 'assistant', content, timestamp: Date.now()}];
-          });
+          streamBufferRef.current.content += content;
+          scheduleFlush();
         },
         onThinking: (thinking: string) => {
-          updateMessages(msgs => {
-            const last = msgs[msgs.length - 1];
-            if (last?.role === 'thinking') {
-              return [...msgs.slice(0, -1), {...last, content: last.content + thinking}];
-            }
-            return [...msgs, {role: 'thinking', content: thinking, timestamp: Date.now()}];
-          });
+          streamBufferRef.current.thinking += thinking;
+          scheduleFlush();
         },
         onToolCall: toolCall => {
           updateMessages(
@@ -76,7 +109,7 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  };
+  }, [config.provider, updateMessages, setLoading, setSession, scheduleFlush]);
 
   return (
     <Box flexDirection='column' padding={1}>
