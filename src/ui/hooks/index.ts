@@ -1,0 +1,1 @@
+export { useContentWidth } from './useContentWidth';
