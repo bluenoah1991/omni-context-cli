@@ -1,0 +1,100 @@
+import { AnthropicMessage } from '../types/anthropicMessage';
+import { AppConfig } from '../types/config';
+import { OpenAIMessage } from '../types/openaiMessage';
+import { ChatMessage, Session } from '../types/session';
+import { StreamCallbacks } from '../types/streamCallbacks';
+import { buildAnthropicRequest } from './anthropicRequestBuilder';
+import { AnthropicStreamHandler } from './anthropicStreamHandler';
+import { loadConfig } from './appConfig';
+import { buildOpenAIRequest } from './openaiRequestBuilder';
+import { OpenAIStreamHandler } from './openaiStreamHandler';
+import {
+  addAssistantMessage,
+  addToolResultMessages,
+  getLastAssistantToolCalls,
+} from './sessionManager';
+import { executeTool } from './toolExecutor';
+
+async function streamAIResponse(
+  config: AppConfig,
+  messages: ChatMessage[],
+  callbacks: StreamCallbacks,
+  signal?: AbortSignal,
+): Promise<ChatMessage> {
+  const {headers, body} = config.provider === 'openai'
+    ? await buildOpenAIRequest(config, messages as OpenAIMessage[])
+    : await buildAnthropicRequest(config, messages as AnthropicMessage[]);
+
+  const handler = config.provider === 'openai'
+    ? new OpenAIStreamHandler(callbacks)
+    : new AnthropicStreamHandler(callbacks);
+
+  return handler.stream(headers, body, config.apiUrl, signal);
+}
+
+async function processToolCalls(
+  session: Session,
+  provider: AppConfig['provider'],
+  callbacks: StreamCallbacks,
+  signal?: AbortSignal,
+): Promise<{session: Session; shouldContinue: boolean;}> {
+  const toolCalls = getLastAssistantToolCalls(session, provider);
+
+  if (toolCalls.length === 0 || signal?.aborted) {
+    return {session, shouldContinue: false};
+  }
+
+  const toolResults = await Promise.all(toolCalls.map(async toolCall => {
+    const result = await executeTool(toolCall.name, toolCall.input);
+    const content = JSON.stringify(result);
+    callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
+    return {toolCallId: toolCall.id, content};
+  }));
+
+  return {session: addToolResultMessages(session, toolResults, provider), shouldContinue: true};
+}
+
+export async function runConversation(
+  session: Session,
+  callbacks: StreamCallbacks,
+  signal?: AbortSignal,
+  maxToolCalls = 50,
+): Promise<Session> {
+  let currentSession = session;
+  const config = loadConfig();
+
+  for (let i = 0; i < maxToolCalls; i++) {
+    let message: ChatMessage;
+
+    try {
+      message = await streamAIResponse(config, currentSession.messages, callbacks, signal);
+    } catch (error) {
+      const errorText = `${error}`;
+
+      callbacks.onError(errorText);
+      return addAssistantMessage(currentSession, errorText, config.provider);
+    }
+
+    currentSession = {
+      ...currentSession,
+      messages: [...currentSession.messages, message],
+      updatedAt: Date.now(),
+    };
+
+    const {session: updatedSession, shouldContinue} = await processToolCalls(
+      currentSession,
+      config.provider,
+      callbacks,
+      signal,
+    );
+    currentSession = updatedSession;
+
+    if (!shouldContinue) {
+      return currentSession;
+    }
+  }
+
+  const maxText = 'Maximum tool calls reached';
+  callbacks.onError(maxText);
+  return addAssistantMessage(currentSession, maxText, config.provider);
+}
