@@ -4,10 +4,12 @@ import { loadConfig } from '../../services/appConfig';
 import { runConversation } from '../../services/chatOrchestrator';
 import { addUserMessage } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
+import { colors } from '../theme/colors';
+import { AssistantBlock } from './AssistantBlock';
+import { ExitPrompt } from './ExitPrompt';
 import { Header } from './Header';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
-import { MarkdownText } from './MarkdownText';
 import { MessageList } from './MessageList';
 import { ThinkingBlock } from './ThinkingBlock';
 
@@ -103,35 +105,31 @@ export function ChatView(): React.ReactElement {
       <Box flexDirection='column' flexGrow={1}>
         <MessageList messages={messages} />
 
-        {isLoading && currentThinking && <ThinkingBlock content={currentThinking} isStreaming />}
+        {isLoading && currentThinking && <ThinkingBlock content={currentThinking} />}
 
-        {isLoading && currentContent && (
-          <Box marginY={1} flexDirection='column'>
-            <Box marginBottom={1}>
-              <Text color='magenta' bold>{'◆'}</Text>
-              <Text color='gray'>Assistant</Text>
-            </Box>
-            <Box paddingLeft={2}>
-              <MarkdownText content={currentContent} />
-              <Text color='cyan'>{'▌'}</Text>
-            </Box>
-          </Box>
-        )}
-
-        {isLoading && !currentContent && !currentThinking && (
-          <Box marginY={1}>
-            <LoadingIndicator />
-          </Box>
-        )}
+        {isLoading && currentContent && <AssistantBlock content={currentContent} />}
 
         {error && (
           <Box marginY={1}>
-            <Text color='red'>{error}</Text>
+            <Text color={colors.text.error}>{error}</Text>
           </Box>
         )}
       </Box>
 
-      <Box marginTop={1}>
+      {isLoading && (
+        <Box marginTop={1} marginBottom={1}>
+          <LoadingIndicator />
+        </Box>
+      )}
+
+      <Box marginTop={1} justifyContent='space-between'>
+        <ExitPrompt />
+        <Text color={colors.text.dimmed}>
+          {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
+        </Text>
+      </Box>
+
+      <Box>
         <InputBox onSubmit={handleSubmit} disabled={isLoading} />
       </Box>
     </Box>

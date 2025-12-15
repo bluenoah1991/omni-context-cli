@@ -1,9 +1,10 @@
-import { Box, Text } from 'ink';
+import { Text } from 'ink';
 import React from 'react';
 import { UIMessage } from '../../types/uiMessage';
-import { MarkdownText } from './MarkdownText';
+import { AssistantBlock } from './AssistantBlock';
 import { ThinkingBlock } from './ThinkingBlock';
 import { ToolCallBlock } from './ToolCallBlock';
+import { UserBlock } from './UserBlock';
 
 interface MessageItemProps {
   message: UIMessage;
@@ -12,29 +13,10 @@ interface MessageItemProps {
 export function MessageItem({message}: MessageItemProps): React.ReactElement {
   switch (message.role) {
     case 'user':
-      return (
-        <Box marginY={1}>
-          <Box marginRight={1}>
-            <Text color='green' bold>{'❯'}</Text>
-          </Box>
-          <Box flexDirection='column' flexGrow={1}>
-            <Text color='white'>{message.content}</Text>
-          </Box>
-        </Box>
-      );
+      return <UserBlock content={message.content} />;
 
     case 'assistant':
-      return (
-        <Box marginY={1} flexDirection='column'>
-          <Box marginBottom={1}>
-            <Text color='magenta' bold>{'◆'}</Text>
-            <Text color='gray'>Assistant</Text>
-          </Box>
-          <Box paddingLeft={2}>
-            <MarkdownText content={message.content} />
-          </Box>
-        </Box>
-      );
+      return <AssistantBlock content={message.content} />;
 
     case 'thinking':
       return <ThinkingBlock content={message.content} />;

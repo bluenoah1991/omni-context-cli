@@ -1,18 +1,41 @@
 import { Box, Text } from 'ink';
-import Spinner from 'ink-spinner';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { colors } from '../theme/colors';
+import { Spinner } from './Spinner';
 
-interface LoadingIndicatorProps {
-  text?: string;
-}
+const verbs = [
+  'Conspiring',
+  'Conjuring',
+  'Meddling',
+  'Tinkering',
+  'Weaving',
+  'Brewing',
+  'Convoluting',
+  'Obfuscating',
+  'Transmuting',
+  'Manifesting',
+];
 
-export function LoadingIndicator({text = 'Thinking'}: LoadingIndicatorProps): React.ReactElement {
+const getRandomText = () => verbs[Math.floor(Math.random() * verbs.length)];
+
+export function LoadingIndicator(): React.ReactElement {
+  const [text, setText] = useState(getRandomText);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setText(getRandomText());
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Box>
-      <Text color='cyan'>
+      <Text color={colors.secondary}>
         <Spinner type='dots' />
+        {' '}
       </Text>
-      <Text color='gray'>{text}...</Text>
+      <Text color={colors.text.dimmed}>{text}...</Text>
     </Box>
   );
 }
