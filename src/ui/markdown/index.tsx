@@ -24,7 +24,7 @@ export function Markdown({markdown}: {markdown: string;}) {
 
 function TokenRenderer({token}: {token: Token;}): React.ReactElement {
   if (!isMarkedToken(token)) {
-    throw new Error(`Unknown markdown token type: ${token.type}`);
+    return <></>;
   }
 
   switch (token.type) {
