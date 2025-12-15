@@ -5,10 +5,11 @@ import { colors } from '../theme/colors';
 interface KeyboardShortcutsProps {
   isLoading: boolean;
   onInterrupt?: () => void;
+  onOpenMenu?: () => void;
 }
 
 export function KeyboardShortcuts(
-  {isLoading, onInterrupt}: KeyboardShortcutsProps,
+  {isLoading, onInterrupt, onOpenMenu}: KeyboardShortcutsProps,
 ): React.ReactElement {
   const [ctrlCPressed, setCtrlCPressed] = useState(false);
   const {exit} = useApp();
@@ -23,8 +24,12 @@ export function KeyboardShortcuts(
       }
     }
 
-    if (key.escape && isLoading && onInterrupt) {
-      onInterrupt();
+    if (key.escape) {
+      if (isLoading && onInterrupt) {
+        onInterrupt();
+      } else if (!isLoading && onOpenMenu) {
+        onOpenMenu();
+      }
     }
   });
 

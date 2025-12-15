@@ -1,5 +1,5 @@
 import { Box } from 'ink';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { loadConfig } from '../../services/appConfig';
 import { runConversation } from '../../services/chatOrchestrator';
 import { addUserMessage } from '../../services/sessionManager';
@@ -8,12 +8,14 @@ import { Header } from './Header';
 import { InputBox } from './InputBox';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { LoadingIndicator } from './LoadingIndicator';
+import { Menu } from './Menu';
 import { MessageList } from './MessageList';
 
 type StreamBuffer = {content: string; thinking: string; flushId: NodeJS.Immediate | null;};
 
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
+  const [showMenu, setShowMenu] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -61,6 +63,14 @@ export function ChatView(): React.ReactElement {
 
   const handleInterrupt = useCallback(() => {
     abortControllerRef.current?.abort();
+  }, []);
+
+  const handleOpenMenu = useCallback(() => {
+    setShowMenu(true);
+  }, []);
+
+  const handleCloseMenu = useCallback(() => {
+    setShowMenu(false);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
@@ -125,13 +135,23 @@ export function ChatView(): React.ReactElement {
         </Box>
       )}
 
-      <Box marginTop={1}>
-        <KeyboardShortcuts isLoading={isLoading} onInterrupt={handleInterrupt} />
-      </Box>
+      {showMenu && <Menu onClose={handleCloseMenu} />}
 
-      <Box>
-        <InputBox onSubmit={handleSubmit} disabled={isLoading} />
-      </Box>
+      {!showMenu && (
+        <Box marginTop={1}>
+          <KeyboardShortcuts
+            isLoading={isLoading}
+            onInterrupt={handleInterrupt}
+            onOpenMenu={handleOpenMenu}
+          />
+        </Box>
+      )}
+
+      {!showMenu && (
+        <Box>
+          <InputBox onSubmit={handleSubmit} disabled={isLoading} />
+        </Box>
+      )}
     </Box>
   );
 }
