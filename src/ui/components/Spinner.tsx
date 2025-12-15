@@ -15,9 +15,9 @@ interface SpinnerProps {
 
 export function Spinner({type = 'dots'}: SpinnerProps): React.ReactElement {
   const [frame, setFrame] = useState(0);
-  const spinner = spinners[type];
 
   useEffect(() => {
+    const spinner = spinners[type];
     const timer = setInterval(() => {
       setFrame(previousFrame => {
         const isLastFrame = previousFrame === spinner.frames.length - 1;
@@ -28,7 +28,8 @@ export function Spinner({type = 'dots'}: SpinnerProps): React.ReactElement {
     return () => {
       clearInterval(timer);
     };
-  }, [spinner]);
+  }, [type]);
 
+  const spinner = spinners[type];
   return <Text>{spinner.frames[frame]}</Text>;
 }
