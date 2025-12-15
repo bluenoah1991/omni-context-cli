@@ -71,7 +71,7 @@ export async function runConversation(
     } catch (error) {
       const errorText = `${error}`;
 
-      callbacks.onError(errorText);
+      callbacks.onError?.(errorText);
       return addAssistantMessage(currentSession, errorText, config.provider);
     }
 
@@ -95,6 +95,6 @@ export async function runConversation(
   }
 
   const maxText = 'Maximum tool calls reached';
-  callbacks.onError(maxText);
+  callbacks.onError?.(maxText);
   return addAssistantMessage(currentSession, maxText, config.provider);
 }
