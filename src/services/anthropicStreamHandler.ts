@@ -22,9 +22,18 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
         const errorMessage = data?.error?.message || data?.message || 'Unknown error';
         throw new Error(errorMessage);
 
+      case 'message_start':
+        if (data?.message?.usage?.input_tokens) {
+          this.inputTokens = data.message.usage.input_tokens;
+        }
+        break;
+
       case 'message_delta':
         if (data?.delta?.stop_reason === 'model_context_window_exceeded') {
           throw new Error('Context window exceeded');
+        }
+        if (data?.usage?.output_tokens) {
+          this.outputTokens = data.usage.output_tokens;
         }
         break;
 
@@ -128,6 +137,8 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       content.push({type: 'tool_use', id: toolCall.id, name: toolCall.name, input: toolCall.input});
     }
 
-    return {role: 'assistant' as const, content};
+    const tokenUsage = this.inputTokens + this.outputTokens;
+
+    return {role: 'assistant' as const, content, ...(tokenUsage > 0 && {tokenUsage})};
   }
 }

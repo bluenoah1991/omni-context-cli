@@ -117,6 +117,12 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {type: 'text', key: 'apiUrl', label: 'API URL', placeholder: 'Leave empty for default'},
       {
         type: 'text',
+        key: 'contextSize',
+        label: 'Context Size (K)',
+        placeholder: 'e.g. 200 for 200K',
+      },
+      {
+        type: 'text',
         key: 'nickname',
         label: 'Nickname',
         placeholder: 'Display name for this model',
@@ -133,7 +139,14 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <StepForm
           steps={steps}
-          initialValues={{provider: 'anthropic', model: '', apiKey: '', apiUrl: '', nickname: ''}}
+          initialValues={{
+            provider: 'anthropic',
+            model: '',
+            apiKey: '',
+            apiUrl: '',
+            contextSize: '',
+            nickname: '',
+          }}
           onSubmit={values => {
             addModel({
               name: values.model,
@@ -141,6 +154,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
               provider: values.provider as Provider,
               apiKey: values.apiKey,
               apiUrl: values.apiUrl,
+              contextSize: parseInt(values.contextSize, 10) || 200,
             });
             initializeAppConfig();
             onClose();

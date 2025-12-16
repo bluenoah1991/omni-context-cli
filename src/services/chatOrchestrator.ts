@@ -6,6 +6,7 @@ import { StreamCallbacks } from '../types/streamCallbacks';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getAppConfig } from './configManager';
+import { applyContextWindow } from './contextWindow';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
 import {
@@ -21,9 +22,12 @@ async function streamAIResponse(
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
 ): Promise<ChatMessage> {
+  const contextConfig = {maxTokens: (config.contextSize ?? 200) * 1024, usageRatio: 0.8};
+  const {messages: windowedMessages} = applyContextWindow(messages, contextConfig);
+
   const {headers, body} = config.provider === 'openai'
-    ? await buildOpenAIRequest(config, messages as OpenAIMessage[])
-    : await buildAnthropicRequest(config, messages as AnthropicMessage[]);
+    ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[])
+    : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[]);
 
   const handler = config.provider === 'openai'
     ? new OpenAIStreamHandler(callbacks)

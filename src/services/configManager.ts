@@ -93,6 +93,7 @@ export function modelConfigToAppConfig(model: ModelConfig, enableThinking: boole
     enableThinking,
     modelId: model.id,
     nickname: model.nickname,
+    contextSize: model.contextSize,
   };
 }
 

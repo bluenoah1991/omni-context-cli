@@ -31,6 +31,7 @@ export async function buildOpenAIRequest(
       }),
     ],
     stream: true,
+    stream_options: {include_usage: true},
   };
 
   if (config.enableThinking) {

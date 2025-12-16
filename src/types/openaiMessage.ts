@@ -17,4 +17,5 @@ export interface OpenAIMessage {
   tool_calls?: OpenAIToolCall[];
   tool_call_id?: string;
   reasoning_content?: string;
+  tokenUsage?: number;
 }

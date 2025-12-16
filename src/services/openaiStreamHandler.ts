@@ -23,6 +23,11 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       throw new Error(errorMessage);
     }
 
+    if (data.usage) {
+      this.inputTokens = data.usage.prompt_tokens || 0;
+      this.outputTokens = data.usage.completion_tokens || 0;
+    }
+
     const choice = data.choices?.[0];
     const delta = choice?.delta;
 
@@ -112,6 +117,8 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       }
     }
 
+    const tokenUsage = this.inputTokens + this.outputTokens;
+
     return {
       role: 'assistant' as const,
       content: this.accumulatedContent,
@@ -124,6 +131,7 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
             function: {name: tc.name, arguments: JSON.stringify(tc.input)},
           })),
         }),
+      ...(tokenUsage > 0 && {tokenUsage}),
     };
   }
 }

@@ -7,6 +7,8 @@ export abstract class BaseStreamHandler {
   protected accumulatedThinking = '';
   protected accumulatedThinkingSignature = '';
   protected completedToolCalls: ToolCall[] = [];
+  protected inputTokens = 0;
+  protected outputTokens = 0;
 
   constructor(callbacks: StreamCallbacks) {
     this.callbacks = callbacks;

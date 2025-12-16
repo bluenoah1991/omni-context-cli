@@ -7,6 +7,7 @@ export interface ModelConfig {
   provider: Provider;
   apiKey: string;
   apiUrl: string;
+  contextSize: number;
 }
 
 export interface OmxConfig {
@@ -23,6 +24,7 @@ export interface AppConfig {
   enableThinking?: boolean;
   modelId?: string;
   nickname?: string;
+  contextSize?: number;
 }
 
 export const DEFAULT_CONFIG: AppConfig = {
