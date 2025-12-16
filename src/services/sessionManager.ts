@@ -82,9 +82,12 @@ export function getLastAssistantToolCalls(
     }));
   } else {
     const anthropicMessage = lastMessage as AnthropicMessage;
-    const toolUseBlocks = anthropicMessage.content.filter(block => block.type === 'tool_use');
-
-    return toolUseBlocks.map(block => ({id: block.id, name: block.name, input: block.input}));
+    if (typeof anthropicMessage.content === 'string') {
+      return [];
+    }
+    return anthropicMessage.content.filter(block => block.type === 'tool_use').map((
+      block: any,
+    ) => ({id: block.id, name: block.name, input: block.input}));
   }
 }
 
