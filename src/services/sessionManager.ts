@@ -6,6 +6,7 @@ import { Provider } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
 import { ToolCall } from '../types/streamCallbacks';
+import { getAppConfig } from './configManager';
 
 const OMX_DIR = path.join(os.homedir(), '.omx');
 const PROJECTS_DIR = path.join(OMX_DIR, 'projects');
@@ -35,8 +36,14 @@ function generateSessionTitle(firstMessage: string): string {
 
 export function createSession(): Session {
   const now = Date.now();
-
-  return {id: generateId(), title: 'New Chat', messages: [], createdAt: now, updatedAt: now};
+  return {
+    id: generateId(),
+    title: 'New Chat',
+    messages: [],
+    createdAt: now,
+    updatedAt: now,
+    modelId: getAppConfig().modelId,
+  };
 }
 
 export function addUserMessage(session: Session, content: string, provider: Provider): Session {
@@ -52,7 +59,13 @@ export function addUserMessage(session: Session, content: string, provider: Prov
 
   const isFirstMessage = session.messages.length === 0;
   const title = isFirstMessage ? generateSessionTitle(content) : session.title;
-  return {...session, title, messages: [...session.messages, message], updatedAt: Date.now()};
+  return {
+    ...session,
+    title,
+    messages: [...session.messages, message],
+    updatedAt: Date.now(),
+    modelId: getAppConfig().modelId,
+  };
 }
 
 export function addAssistantMessage(
@@ -155,11 +168,20 @@ export function loadSession(filepath: string): Session {
     messages: content.messages,
     createdAt: content.createdAt,
     updatedAt: content.updatedAt,
+    modelId: content.modelId,
   };
 }
 
-export function loadLatestSession(provider: Provider): Session | null {
-  const sessions = listSessions(provider, 1);
-  if (sessions.length === 0) return null;
-  return loadSession(sessions[0].path);
+export function loadLatestSession(): Session | null {
+  const dir = getProjectDir();
+  if (!fs.existsSync(dir)) return null;
+
+  const allFiles = fs.readdirSync(dir).filter(f => f.endsWith('.json')).map(f => {
+    const filepath = path.join(dir, f);
+    const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+    return {path: filepath, createdAt: content.createdAt};
+  }).sort((a, b) => b.createdAt - a.createdAt);
+
+  if (allFiles.length === 0) return null;
+  return loadSession(allFiles[0].path);
 }

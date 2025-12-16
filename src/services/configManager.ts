@@ -126,3 +126,15 @@ export function updateAppConfig(model: ModelConfig, enableThinking: boolean): vo
 export function getAppConfig(): AppConfig {
   return currentConfig;
 }
+
+export function findModelById(modelId: string): ModelConfig | undefined {
+  const config = loadOmxConfig();
+  return config.models.find(m => m.id === modelId);
+}
+
+export function findFirstModelByProvider(
+  provider: 'anthropic' | 'openai',
+): ModelConfig | undefined {
+  const config = loadOmxConfig();
+  return config.models.find(m => m.provider === provider);
+}

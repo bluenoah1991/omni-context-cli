@@ -9,4 +9,5 @@ export interface Session {
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
+  modelId?: string;
 }

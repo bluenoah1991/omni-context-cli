@@ -2,7 +2,13 @@
 import { Command } from '@commander-js/extra-typings';
 import { render } from 'ink';
 import React from 'react';
-import { getAppConfig, initializeAppConfig } from './services/configManager.js';
+import {
+  findFirstModelByProvider,
+  findModelById,
+  getAppConfig,
+  initializeAppConfig,
+  updateAppConfig,
+} from './services/configManager.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { initializeTools } from './services/tools/index.js';
@@ -22,8 +28,19 @@ initializeTools();
 
 if (opts.continue) {
   const config = getAppConfig();
-  const session = loadLatestSession(config.provider);
+  const session = loadLatestSession();
   if (session) {
+    if (session.modelId) {
+      const savedModel = findModelById(session.modelId);
+      if (savedModel) {
+        updateAppConfig(savedModel, config.enableThinking ?? false);
+      } else {
+        const fallbackModel = findFirstModelByProvider(config.provider);
+        if (fallbackModel) {
+          updateAppConfig(fallbackModel, config.enableThinking ?? false);
+        }
+      }
+    }
     useChatStore.getState().setSession(session);
   }
 }
