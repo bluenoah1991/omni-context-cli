@@ -7,6 +7,7 @@ import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getAppConfig } from './configManager';
 import { applyContextWindow } from './contextWindow';
+import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
 import {
@@ -28,6 +29,8 @@ async function streamAIResponse(
   const {headers, body} = config.provider === 'openai'
     ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[])
     : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[]);
+
+  saveRequest(config.provider, headers, body);
 
   const handler = config.provider === 'openai'
     ? new OpenAIStreamHandler(callbacks)

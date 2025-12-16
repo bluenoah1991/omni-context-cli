@@ -9,6 +9,7 @@ import {
   initializeAppConfig,
   updateAppConfig,
 } from './services/configManager.js';
+import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { initializeTools } from './services/tools/index.js';
@@ -18,13 +19,17 @@ import { ChatView } from './ui/components/ChatView.js';
 const program = new Command().name('omx').description('Omni Context CLI').option(
   '-c, --continue',
   'Continue from last session',
-).parse();
+).option('-d, --diagnostic', 'Enable diagnostic mode to save request/response JSON').parse();
 
 const opts = program.opts();
 
 initializeAppConfig();
 initializeInterceptors();
 initializeTools();
+
+if (opts.diagnostic) {
+  enableDiagnostic();
+}
 
 if (opts.continue) {
   const config = getAppConfig();
