@@ -45,7 +45,7 @@ export function ChatView(): React.ReactElement {
   const handleSubmit = useCallback(async (text: string) => {
     if (useChatStore.getState().isLoading) return;
 
-    updateMessages(msgs => [...msgs, {role: 'user', content: text, timestamp: Date.now()}]);
+    updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
     const updatedSession = addUserMessage(sessionRef.current, text, config.provider);
@@ -62,42 +62,46 @@ export function ChatView(): React.ReactElement {
           );
         },
         onContent: (content: string) => {
-          updateMessages(msgs => {
-            const last = msgs[msgs.length - 1];
+          updateMessages(messages => {
+            const last = messages[messages.length - 1];
             if (last?.role === 'assistant') {
-              return [...msgs.slice(0, -1), {...last, content: last.content + content}];
+              return [...messages.slice(0, -1), {...last, content: last.content + content}];
             }
-            return [...msgs, {role: 'assistant', content, timestamp: Date.now()}];
+            return [...messages, {role: 'assistant', content, timestamp: Date.now()}];
           });
         },
         onThinking: (thinking: string) => {
-          updateMessages(msgs => {
-            const last = msgs[msgs.length - 1];
+          updateMessages(messages => {
+            const last = messages[messages.length - 1];
             if (last?.role === 'thinking') {
-              return [...msgs.slice(0, -1), {...last, content: last.content + thinking}];
+              return [...messages.slice(0, -1), {...last, content: last.content + thinking}];
             }
-            return [...msgs, {role: 'thinking', content: thinking, timestamp: Date.now()}];
+            return [...messages, {role: 'thinking', content: thinking, timestamp: Date.now()}];
           });
         },
         onToolCall: toolCall => {
           updateMessages(
-            msgs => [...msgs, {
-              role: 'tool_use',
+            messages => [...messages, {
+              role: 'tool_call',
               content: JSON.stringify(toolCall.input),
               timestamp: Date.now(),
               toolName: toolCall.name,
+              toolCallId: toolCall.id,
             }]
           );
         },
         onToolResult: toolResult => {
-          updateMessages(
-            msgs => [...msgs, {
-              role: 'tool_result',
-              content: toolResult.content,
-              timestamp: Date.now(),
-              toolName: toolResult.name,
-            }]
-          );
+          updateMessages(messages => {
+            const index = messages.findIndex(message =>
+              message.role === 'tool_call' && message.toolCallId === toolResult.id
+            );
+            if (index !== -1) {
+              const updated = [...messages];
+              updated[index] = {...updated[index], toolResult: toolResult.content};
+              return updated;
+            }
+            return messages;
+          });
         },
       }, abortController.signal);
 

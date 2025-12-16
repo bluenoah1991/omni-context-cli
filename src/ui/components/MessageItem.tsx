@@ -8,29 +8,27 @@ import { UserBlock } from './UserBlock';
 
 interface MessageItemProps {
   message: UIMessage;
+  showIcon?: boolean;
 }
 
 export const MessageItem = React.memo(
-  function MessageItem({message}: MessageItemProps): React.ReactElement {
+  function MessageItem({message, showIcon}: MessageItemProps): React.ReactElement {
     switch (message.role) {
       case 'user':
         return <UserBlock content={message.content} />;
 
       case 'assistant':
-        return <AssistantBlock content={message.content} />;
+        return <AssistantBlock content={message.content} showIcon={showIcon} />;
 
       case 'thinking':
         return <ThinkingBlock content={message.content} />;
 
-      case 'tool_use':
-        return <ToolCallBlock toolName={message.toolName || 'unknown'} content={message.content} />;
-
-      case 'tool_result':
+      case 'tool_call':
         return (
           <ToolCallBlock
             toolName={message.toolName || 'unknown'}
             content={message.content}
-            isResult
+            result={message.toolResult}
           />
         );
 

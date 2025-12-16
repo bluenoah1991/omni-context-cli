@@ -17,7 +17,11 @@ export function MessageList({messages}: MessageListProps): React.ReactElement {
             Omni Context CLI. Tell Omx <Text color={colors.primary}>what you want to do.</Text>
           </Text>
         )
-        : (messages.map((message, index) => <MessageItem key={index} message={message} />))}
+        : (messages.map((message, index) => {
+          const prevMessage = index > 0 ? messages[index - 1] : null;
+          const showIcon = message.role === 'assistant' && prevMessage?.role === 'user';
+          return <MessageItem key={index} message={message} showIcon={showIcon} />;
+        }))}
     </Box>
   );
 }

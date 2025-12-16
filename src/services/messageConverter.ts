@@ -53,10 +53,11 @@ export function openAIMessageToUI(
       if (message.tool_calls && message.tool_calls.length > 0) {
         message.tool_calls.forEach(toolCall => {
           uiMessages.push({
-            role: 'tool_use',
+            role: 'tool_call',
             content: toolCall.function.arguments,
             timestamp,
             toolName: toolCall.function.name,
+            toolCallId: toolCall.id,
           });
         });
       }
@@ -67,7 +68,13 @@ export function openAIMessageToUI(
       const toolName = toolNameMap?.get(message.tool_call_id ?? '') ?? message.tool_call_id;
       if (typeof message.content === 'string') {
         if (message.content.trim()) {
-          uiMessages.push({role: 'tool_result', content: message.content, timestamp, toolName});
+          uiMessages.push({
+            role: 'tool_result',
+            content: message.content,
+            timestamp,
+            toolName,
+            toolCallId: message.tool_call_id,
+          });
         }
       } else if (Array.isArray(message.content)) {
         const textParts = message.content.filter(part => part.type === 'text').map(part =>
@@ -76,7 +83,13 @@ export function openAIMessageToUI(
         if (textParts.length > 0) {
           const content = textParts.join('\n');
           if (content.trim()) {
-            uiMessages.push({role: 'tool_result', content, timestamp, toolName});
+            uiMessages.push({
+              role: 'tool_result',
+              content,
+              timestamp,
+              toolName,
+              toolCallId: message.tool_call_id,
+            });
           }
         }
       }
@@ -124,19 +137,32 @@ export function anthropicMessageToUI(
   message.content.forEach(block => {
     if (block.type === 'tool_use') {
       uiMessages.push({
-        role: 'tool_use',
+        role: 'tool_call',
         content: JSON.stringify(block.input),
         timestamp,
         toolName: block.name,
+        toolCallId: block.id,
       });
     } else if (block.type === 'tool_result') {
       const toolName = toolNameMap?.get(block.tool_use_id);
       if (typeof block.content === 'string') {
-        uiMessages.push({role: 'tool_result', content: block.content, timestamp, toolName});
+        uiMessages.push({
+          role: 'tool_result',
+          content: block.content,
+          timestamp,
+          toolName,
+          toolCallId: block.tool_use_id,
+        });
       } else {
         const content = block.content.filter(part => part.type === 'text').map(part => part.text)
           .join('\n');
-        uiMessages.push({role: 'tool_result', content, timestamp, toolName});
+        uiMessages.push({
+          role: 'tool_result',
+          content,
+          timestamp,
+          toolName,
+          toolCallId: block.tool_use_id,
+        });
       }
     }
   });
@@ -179,5 +205,20 @@ export function sessionMessagesToUI(
     }
   });
 
-  return uiMessages;
+  const finalMessages: UIMessage[] = [];
+  uiMessages.forEach(msg => {
+    if (msg.role === 'tool_result') {
+      const toolCallId = msg.toolCallId;
+      const toolCall = finalMessages.find(m =>
+        m.role === 'tool_call' && m.toolCallId === toolCallId
+      );
+      if (toolCall) {
+        toolCall.toolResult = msg.content;
+      }
+    } else {
+      finalMessages.push(msg);
+    }
+  });
+
+  return finalMessages;
 }

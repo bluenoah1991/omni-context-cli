@@ -6,7 +6,7 @@ import { colors } from '../theme/colors';
 interface ToolCallBlockProps {
   toolName: string;
   content: string;
-  isResult?: boolean;
+  result?: string;
 }
 
 function formatShellCall(args: Record<string, unknown>): string {
@@ -124,47 +124,54 @@ function formatToolResult(toolName: string, data: any): string {
   }
 }
 
-export function ToolCallBlock(
-  {toolName, content, isResult}: ToolCallBlockProps,
-): React.ReactElement {
+export function ToolCallBlock({toolName, content, result}: ToolCallBlockProps): React.ReactElement {
   const contentWidth = useContentWidth();
-  let text = '';
-  let textColor: string = colors.secondary;
+  let callText = '';
 
-  let data;
   try {
-    data = JSON.parse(content);
+    const data = JSON.parse(content);
+    callText = `${toolName}: ${formatToolCall(toolName, data)}`;
   } catch {
-    text = isResult ? content : `${toolName}: ${content}`;
-    return (
-      <Box marginBottom={isResult ? 1 : 0}>
+    callText = `${toolName}: ${content}`;
+  }
+
+  let resultText = '';
+  let resultColor: string = colors.secondary;
+
+  if (result) {
+    try {
+      const resultData = JSON.parse(result);
+      if (resultData.error) {
+        resultText = resultData.error;
+        resultColor = colors.error;
+      } else {
+        resultText = formatToolResult(toolName, resultData);
+      }
+    } catch {
+      resultText = result;
+    }
+  }
+
+  return (
+    <Box marginBottom={1} flexDirection='column'>
+      <Box>
         <Box marginRight={1}>
           <Text color={colors.secondary}>{' '}</Text>
         </Box>
         <Box marginRight={3} flexDirection='column' width={contentWidth}>
-          <Text color={textColor} wrap='wrap'>{text}</Text>
+          <Text color={colors.secondary} wrap='wrap'>{callText}</Text>
         </Box>
       </Box>
-    );
-  }
-
-  if (!isResult) {
-    text = `${toolName}: ${formatToolCall(toolName, data)}`;
-  } else if (data.error) {
-    text = data.error;
-    textColor = colors.error;
-  } else {
-    text = formatToolResult(toolName, data);
-  }
-
-  return (
-    <Box marginBottom={isResult ? 1 : 0}>
-      <Box marginRight={1}>
-        <Text color={colors.secondary}>{' '}</Text>
-      </Box>
-      <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Text color={textColor} wrap='wrap'>{text}</Text>
-      </Box>
+      {result && (
+        <Box>
+          <Box marginRight={1}>
+            <Text color={colors.secondary}>{' '}</Text>
+          </Box>
+          <Box marginRight={3} flexDirection='column' width={contentWidth}>
+            <Text color={resultColor} wrap='wrap'>{resultText}</Text>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

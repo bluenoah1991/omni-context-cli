@@ -6,9 +6,12 @@ import { colors } from '../theme/colors';
 
 interface AssistantBlockProps {
   content: string;
+  showIcon?: boolean;
 }
 
-export function AssistantBlock({content}: AssistantBlockProps): React.ReactElement | null {
+export function AssistantBlock(
+  {content, showIcon = true}: AssistantBlockProps,
+): React.ReactElement | null {
   const contentWidth = useContentWidth();
   const cleanedContent = useCleanedContent(content);
 
@@ -19,7 +22,8 @@ export function AssistantBlock({content}: AssistantBlockProps): React.ReactEleme
   return (
     <Box marginBottom={1}>
       <Box marginRight={1}>
-        <Text color={colors.accent} bold>{'*'}</Text>
+        {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
+        {!showIcon && <Text>{' '}</Text>}
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
         <Markdown markdown={cleanedContent} />
