@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { AppConfig, DEFAULT_CONFIG, ModelConfig, OmxConfig } from '../types/config';
 
-const CONFIG_DIR = path.join(os.homedir(), '.config', 'omx');
+const CONFIG_DIR = path.join(os.homedir(), '.omx');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'omx.json');
 
 let currentConfig: AppConfig = DEFAULT_CONFIG;
@@ -64,9 +64,14 @@ export function removeModel(modelId: string): void {
   saveOmxConfig(config);
 
   if (currentConfig.modelId === modelId) {
+    const previousProvider = currentConfig.provider;
     const defaultModel = getDefaultModel(config);
     if (defaultModel) {
       currentConfig = modelConfigToAppConfig(defaultModel, config.enableThinking);
+      if (previousProvider !== currentConfig.provider) {
+        const {useChatStore} = require('../store/chatStore');
+        useChatStore.getState().createNewSession();
+      }
     } else {
       currentConfig = {...DEFAULT_CONFIG, enableThinking: config.enableThinking};
     }
@@ -110,7 +115,12 @@ export function initializeAppConfig(): void {
 }
 
 export function updateAppConfig(model: ModelConfig, enableThinking: boolean): void {
+  const previousProvider = currentConfig.provider;
   currentConfig = modelConfigToAppConfig(model, enableThinking);
+  if (previousProvider !== currentConfig.provider) {
+    const {useChatStore} = require('../store/chatStore');
+    useChatStore.getState().createNewSession();
+  }
 }
 
 export function getAppConfig(): AppConfig {

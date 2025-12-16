@@ -2,6 +2,7 @@ import { Box } from 'ink';
 import React, { useState } from 'react';
 import {
   addModel,
+  getAppConfig,
   initializeAppConfig,
   loadOmxConfig,
   removeModel,
@@ -9,12 +10,14 @@ import {
   toggleThinking,
   updateAppConfig,
 } from '../../services/configManager';
+import { listSessions, loadSession } from '../../services/sessionManager';
+import { useChatStore } from '../../store/chatStore';
 import { Provider } from '../../types/config';
 import { colors } from '../theme/colors';
 import { SelectItem, SelectList } from './SelectList';
 import { FormStep, StepForm } from './StepForm';
 
-type View = 'main' | 'select' | 'add' | 'set-default' | 'delete' | 'thinking';
+type View = 'main' | 'select' | 'add' | 'set-default' | 'delete' | 'thinking' | 'sessions';
 
 interface MenuProps {
   onClose: () => void;
@@ -27,12 +30,14 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [setDefaultIndex, setSetDefaultIndex] = useState(0);
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
+  const [sessionsIndex, setSessionsIndex] = useState(0);
 
   const config = loadOmxConfig();
 
   if (view === 'main') {
     const items: SelectItem[] = [
       {id: 'select', label: 'Select Model'},
+      {id: 'sessions', label: 'Load Session'},
       {id: 'add', label: 'Add Model'},
       {id: 'default', label: 'Set Default Model'},
       {id: 'delete', label: 'Delete Model'},
@@ -55,11 +60,12 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onSelect={setMainIndex}
           onConfirm={i => {
             if (i === 0) setView('select');
-            else if (i === 1) setView('add');
-            else if (i === 2) setView('set-default');
-            else if (i === 3) setView('delete');
-            else if (i === 4) setView('thinking');
-            else if (i === 5) process.exit(0);
+            else if (i === 1) setView('sessions');
+            else if (i === 2) setView('add');
+            else if (i === 3) setView('set-default');
+            else if (i === 4) setView('delete');
+            else if (i === 5) setView('thinking');
+            else if (i === 6) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -237,6 +243,47 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             onClose();
           }}
           onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'sessions') {
+    const appConfig = getAppConfig();
+    const sessions = listSessions(appConfig.provider, 10);
+    const items: SelectItem[] = [
+      {id: 'new', label: 'New Session'},
+      ...sessions.map(s => ({
+        id: s.path,
+        label: `${s.title} (${new Date(s.createdAt).toLocaleString()})`,
+      })),
+    ];
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Load Session'
+          items={items}
+          selectedIndex={sessionsIndex}
+          onSelect={setSessionsIndex}
+          onConfirm={i => {
+            if (items[i].id === 'new') {
+              useChatStore.getState().createNewSession();
+              onClose();
+            } else {
+              const session = loadSession(items[i].id);
+              useChatStore.getState().setSession(session);
+              onClose();
+            }
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No sessions found'
         />
       </Box>
     );

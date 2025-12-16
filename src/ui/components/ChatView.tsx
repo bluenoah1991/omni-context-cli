@@ -2,7 +2,7 @@ import { Box } from 'ink';
 import React, { useCallback, useRef, useState } from 'react';
 import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
-import { addUserMessage } from '../../services/sessionManager';
+import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { useThrottledMessages } from '../hooks';
 import { Header } from './Header';
@@ -87,6 +87,7 @@ export function ChatView(): React.ReactElement {
       }, abortController.signal);
 
       setSession(finalSession);
+      saveSession(finalSession, config.provider);
     } finally {
       setLoading(false);
     }
