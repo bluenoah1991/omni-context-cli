@@ -13,18 +13,18 @@ export function Header({config}: HeaderProps): React.ReactElement {
   const line2 = figlet.textSync('Context CLI', {font: 'ANSI Shadow'});
 
   const masked = config.apiKey ? '****' + config.apiKey.slice(-4) : 'not set';
-  const nickname = config.nickname || config.model || 'not set';
+  const nickname = config.nickname || config.model || 'default';
   const thinking = config.enableThinking ? 'ON' : 'OFF';
-  const configDisplay = `${nickname} | API Type: ${config.provider} | Model: ${
-    config.model || 'not set'
-  } | API Key: ${masked} | Thinking: ${thinking}`;
 
   return (
     <Box flexDirection='column' marginBottom={1}>
       <Text color={colors.secondary}>{line1}</Text>
       <Text color='white'>{line2}</Text>
       <Box marginTop={1}>
-        <Text color={colors.text.dimmed}>{configDisplay}</Text>
+        <Text color={colors.text.dimmed}>
+          {nickname} | Thinking: {thinking} | API Type: {config.provider} | Model:{' '}
+          {config.model || 'not set'} | API Key: {masked}
+        </Text>
       </Box>
     </Box>
   );

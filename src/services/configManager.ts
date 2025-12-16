@@ -93,13 +93,20 @@ export function modelConfigToAppConfig(model: ModelConfig, enableThinking: boole
 
 export function initializeAppConfig(): void {
   const omxConfig = loadOmxConfig();
-  const defaultModel = getDefaultModel(omxConfig);
 
-  if (defaultModel) {
-    currentConfig = modelConfigToAppConfig(defaultModel, omxConfig.enableThinking);
-  } else {
-    currentConfig = {...DEFAULT_CONFIG, enableThinking: omxConfig.enableThinking};
+  const currentModel = currentConfig.modelId
+    ? omxConfig.models.find(m => m.id === currentConfig.modelId)
+    : undefined;
+
+  if (currentModel) {
+    currentConfig = {...currentConfig, enableThinking: omxConfig.enableThinking};
+    return;
   }
+
+  const defaultModel = getDefaultModel(omxConfig);
+  currentConfig = defaultModel
+    ? modelConfigToAppConfig(defaultModel, omxConfig.enableThinking)
+    : {...DEFAULT_CONFIG, enableThinking: omxConfig.enableThinking};
 }
 
 export function updateAppConfig(model: ModelConfig, enableThinking: boolean): void {
