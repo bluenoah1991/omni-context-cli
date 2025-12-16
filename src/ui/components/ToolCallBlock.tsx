@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
 import { useContentWidth } from '../hooks';
+import { colors } from '../theme/colors';
 
 interface ToolCallBlockProps {
   toolName: string;
@@ -45,7 +46,7 @@ export function ToolCallBlock(
 ): React.ReactElement {
   const contentWidth = useContentWidth();
   let text = '';
-  let color: 'cyan' | 'red' = 'cyan';
+  let textColor: string = colors.secondary;
 
   let data;
   try {
@@ -55,10 +56,10 @@ export function ToolCallBlock(
     return (
       <Box marginBottom={isResult ? 1 : 0}>
         <Box marginRight={1}>
-          <Text color='cyan'>{' '}</Text>
+          <Text color={colors.secondary}>{' '}</Text>
         </Box>
         <Box marginRight={3} flexDirection='column' width={contentWidth}>
-          <Text color={color} wrap='wrap'>{text}</Text>
+          <Text color={textColor} wrap='wrap'>{text}</Text>
         </Box>
       </Box>
     );
@@ -68,7 +69,7 @@ export function ToolCallBlock(
     text = `${toolName}: ${formatToolCall(toolName, data)}`;
   } else if (data.error) {
     text = data.error;
-    color = 'red';
+    textColor = colors.error;
   } else {
     text = formatToolResult(toolName, data);
   }
@@ -76,10 +77,10 @@ export function ToolCallBlock(
   return (
     <Box marginBottom={isResult ? 1 : 0}>
       <Box marginRight={1}>
-        <Text color='cyan'>{' '}</Text>
+        <Text color={colors.secondary}>{' '}</Text>
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Text color={color} wrap='wrap'>{text}</Text>
+        <Text color={textColor} wrap='wrap'>{text}</Text>
       </Box>
     </Box>
   );

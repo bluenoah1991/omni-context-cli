@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
 import { useContentWidth } from '../hooks';
+import { colors } from '../theme/colors';
 
 interface UserBlockProps {
   content: string;
@@ -12,10 +13,10 @@ export function UserBlock({content}: UserBlockProps): React.ReactElement {
   return (
     <Box marginBottom={1}>
       <Box marginRight={1}>
-        <Text color='green' bold>{'❯'}</Text>
+        <Text color={colors.primary} bold>{'❯'}</Text>
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Text color='white' wrap='wrap'>{content}</Text>
+        <Text color={colors.text} wrap='wrap'>{content}</Text>
       </Box>
     </Box>
   );

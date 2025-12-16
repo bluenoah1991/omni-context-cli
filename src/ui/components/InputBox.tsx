@@ -157,13 +157,13 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
   return (
     <Box
       borderStyle='round'
-      borderColor={disabled ? colors.text.dimmed : colors.primary}
+      borderColor={disabled ? colors.muted : colors.primary}
       paddingLeft={1}
       paddingRight={2}
       flexGrow={1}
     >
       <Box marginRight={1} alignSelf='flex-start'>
-        <Text color={disabled ? colors.text.dimmed : colors.primary} bold>{'❯'}</Text>
+        <Text color={disabled ? colors.muted : colors.primary} bold>{'❯'}</Text>
       </Box>
       <Box flexGrow={1} flexDirection='column' overflow='hidden'>
         {lines.map((line, i) => (
@@ -171,16 +171,16 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
             {cursorLine === i && !disabled
               ? (
                 <>
-                  <Text color={isPlaceholder ? colors.text.dimmed : undefined}>
+                  <Text color={isPlaceholder ? colors.muted : undefined}>
                     {line.slice(0, cursorCol)}
                   </Text>
                   <Text inverse>{line[cursorCol] || ' '}</Text>
-                  <Text color={isPlaceholder ? colors.text.dimmed : undefined}>
+                  <Text color={isPlaceholder ? colors.muted : undefined}>
                     {line.slice(cursorCol + 1)}
                   </Text>
                 </>
               )
-              : <Text color={isPlaceholder ? colors.text.dimmed : undefined}>{line || ' '}</Text>}
+              : <Text color={isPlaceholder ? colors.muted : undefined}>{line || ' '}</Text>}
           </Box>
         ))}
       </Box>

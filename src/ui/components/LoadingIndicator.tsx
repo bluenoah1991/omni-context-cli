@@ -31,11 +31,11 @@ export function LoadingIndicator(): React.ReactElement {
 
   return (
     <Box>
-      <Text color={colors.secondary}>
+      <Text color={colors.primary}>
         <Spinner type='dots' />
         {' '}
       </Text>
-      <Text color={colors.text.dimmed}>{text}...</Text>
+      <Text color={colors.muted}>{text}...</Text>
     </Box>
   );
 }

@@ -1,8 +1,12 @@
 export const colors = {
-  primary: 'green',
+  primary: 'blue',
   secondary: 'cyan',
-  tertiary: 'magenta',
-  text: {default: 'white', dimmed: 'gray', error: 'red'},
+  accent: 'magenta',
+  text: 'white',
+  muted: 'gray',
+  info: 'green',
+  warning: 'yellow',
+  error: 'red',
 } as const;
 
 export type ColorTheme = typeof colors;

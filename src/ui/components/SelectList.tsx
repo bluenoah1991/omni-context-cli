@@ -43,18 +43,18 @@ export function SelectList(
         <Text color={colors.primary} bold>{title}</Text>
       </Box>
       {items.length === 0
-        ? <Text color={colors.text.dimmed}>{emptyMessage}</Text>
+        ? <Text color={colors.muted}>{emptyMessage}</Text>
         : items.map((item, index) => (
           <Box key={item.id}>
-            <Text color={index === selectedIndex ? colors.primary : colors.text.dimmed}>
+            <Text color={index === selectedIndex ? colors.primary : colors.muted}>
               {index === selectedIndex ? '❯ ' : '  '}
               {item.label}
-              {item.hint && <Text color={colors.text.dimmed}>{item.hint}</Text>}
+              {item.hint && <Text color={colors.muted}>{item.hint}</Text>}
             </Text>
           </Box>
         ))}
       <Box marginTop={1}>
-        <Text color={colors.text.dimmed}>(Enter to confirm, ESC to go back)</Text>
+        <Text color={colors.muted}>(Enter to confirm, ESC to go back)</Text>
       </Box>
     </Box>
   );

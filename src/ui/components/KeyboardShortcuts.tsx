@@ -35,8 +35,8 @@ export function KeyboardShortcuts(
 
   return (
     <Box flexGrow={1} justifyContent='space-between'>
-      <Text color={colors.text.dimmed}>{ctrlCPressed ? '(Press Ctrl+C again to exit)' : ''}</Text>
-      <Text color={colors.text.dimmed}>
+      <Text color={colors.muted}>{ctrlCPressed ? '(Press Ctrl+C again to exit)' : ''}</Text>
+      <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
       </Text>
     </Box>

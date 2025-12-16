@@ -57,7 +57,7 @@ export function TextInput(
       </Box>
       <Box>
         <Text color={colors.primary}>{'❯ '}</Text>
-        {showPlaceholder ? <Text color={colors.text.dimmed}>{placeholder}</Text> : (
+        {showPlaceholder ? <Text color={colors.muted}>{placeholder}</Text> : (
           <>
             <Text>{displayValue.slice(0, cursorOffset)}</Text>
             <Text inverse>{displayValue[cursorOffset] || ' '}</Text>
@@ -66,7 +66,7 @@ export function TextInput(
         )}
       </Box>
       <Box marginTop={1}>
-        <Text color={colors.text.dimmed}>(Enter to continue, ESC to cancel)</Text>
+        <Text color={colors.muted}>(Enter to continue, ESC to cancel)</Text>
       </Box>
     </Box>
   );

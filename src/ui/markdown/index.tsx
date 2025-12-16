@@ -2,6 +2,7 @@ import { Box, Text } from 'ink';
 import { marked, MarkedToken, Token, Tokens } from 'marked';
 import React from 'react';
 import stringWidth from 'string-width';
+import { colors } from '../theme/colors';
 import { HighlightedCode } from './highlight-code';
 import {
   isCodespanToken,
@@ -76,7 +77,7 @@ function TokenRenderer({token}: {token: Token;}): React.ReactElement {
 function BlockquoteRenderer({token}: {token: Tokens.Blockquote;}) {
   return (
     <Box paddingLeft={2}>
-      <Text color='gray'>│</Text>
+      <Text color={colors.muted}>│</Text>
       <Text italic>{renderTokensAsPlaintext(token.tokens)}</Text>
     </Box>
   );
@@ -95,11 +96,11 @@ function CodeRenderer({token}: {token: Tokens.Code;}) {
 
     return (
       <Box flexDirection='column' marginBottom={1}>
-        <Text color='gray'>{langTag}</Text>
+        <Text color={colors.muted}>{langTag}</Text>
         <Box paddingLeft={2} flexDirection='column'>
           <HighlightedCode code={token.text} language={token.lang} />
         </Box>
-        <Text color='gray'>{footer}</Text>
+        <Text color={colors.muted}>{footer}</Text>
       </Box>
     );
   }
@@ -133,9 +134,15 @@ function EscapeRenderer({token}: {token: Tokens.Escape;}) {
 }
 
 function HeadingRenderer({token}: {token: Tokens.Heading;}) {
-  const colors = ['magenta', 'blue', 'cyan', 'green', 'yellow', 'red'] as const;
-
-  const color = colors[Math.min(token.depth - 1, colors.length - 1)];
+  const headingColors = [
+    colors.accent,
+    colors.primary,
+    colors.secondary,
+    colors.info,
+    colors.text,
+    colors.muted,
+  ] as const;
+  const color = headingColors[Math.min(token.depth - 1, headingColors.length - 1)];
   const marker = token.depth === 1 ? '█' : token.depth === 2 ? '▆' : '▉';
 
   return (
@@ -149,7 +156,7 @@ function HrRenderer() {
   const width = Math.min(process.stdout.columns || 80, 80);
   return (
     <Box marginBottom={1}>
-      <Text color='gray'>{'─'.repeat(width)}</Text>
+      <Text color={colors.muted}>{'─'.repeat(width)}</Text>
     </Box>
   );
 }
@@ -159,13 +166,12 @@ function HtmlRenderer({token}: {token: Tokens.HTML | Tokens.Tag;}) {
 }
 
 function ImageRenderer({token}: {token: Tokens.Image;}) {
-  return <Text color='yellow'>[Image: {token.text}]</Text>;
+  return <Text color={colors.warning}>[Image: {token.text}]</Text>;
 }
 
 function LinkRenderer({token}: {token: Tokens.Link;}) {
-  // For now, combine link text and URL in a single text element
   const linkText = renderTokensAsPlaintext(token.tokens);
-  return <Text color='blue'>{linkText} ({token.href})</Text>;
+  return <Text color={colors.primary}>{linkText} ({token.href})</Text>;
 }
 
 function ListRenderer({token}: {token: Tokens.List;}) {
@@ -173,7 +179,7 @@ function ListRenderer({token}: {token: Tokens.List;}) {
     <Box flexDirection='column' marginBottom={1} paddingLeft={0}>
       {token.items.map((item, index) => (
         <Box key={index} flexDirection='row'>
-          <Text color='cyan'>
+          <Text color={colors.secondary}>
             {token.ordered
               ? `${(typeof token.start === 'number' ? token.start : 1) + index}. `
               : '• '}
@@ -187,11 +193,10 @@ function ListRenderer({token}: {token: Tokens.List;}) {
 
 function ListItemRenderer({token}: {token: Tokens.ListItem;}) {
   if (token.task && typeof token.checked === 'boolean') {
-    // For task items, render checkbox and content inline
     return (
       <Box flexDirection='column' flexGrow={1}>
         <Box flexDirection='row'>
-          <Text color={token.checked ? 'green' : 'gray'}>
+          <Text color={token.checked ? colors.info : colors.muted}>
             {token.checked ? '[✓]' : '[ ]'}
             {' '}
           </Text>
@@ -213,7 +218,6 @@ function ListItemRenderer({token}: {token: Tokens.ListItem;}) {
     );
   }
 
-  // For regular list items
   return (
     <Box flexDirection='column' flexGrow={1}>
       <Box flexDirection='column'>
@@ -246,7 +250,6 @@ function StrongRenderer({token}: {token: Tokens.Strong;}) {
 }
 
 function TableRenderer({token}: {token: Tokens.Table;}) {
-  // Calculate column widths by measuring display width of all content
   const allRows = [token.header, ...token.rows];
   const columnWidths = token.header.map((_, colIndex) => {
     const maxWidth = Math.max(...allRows.map(row => {
@@ -257,7 +260,7 @@ function TableRenderer({token}: {token: Tokens.Table;}) {
       }
       return 0;
     }));
-    return Math.max(maxWidth, 3); // Minimum width of 3
+    return Math.max(maxWidth, 3);
   });
 
   const separator = '├' + columnWidths.map(w => '─'.repeat(w + 2)).join('┼') + '┤';
@@ -265,7 +268,7 @@ function TableRenderer({token}: {token: Tokens.Table;}) {
   return (
     <Box flexDirection='column' marginBottom={1}>
       <TableRowRenderer cells={token.header} columnWidths={columnWidths} isHeader={true} />
-      <Text color='gray'>{separator}</Text>
+      <Text color={colors.muted}>{separator}</Text>
       {token.rows.map((row, index) => (
         <TableRowRenderer key={index} cells={row} columnWidths={columnWidths} isHeader={false} />
       ))}
@@ -282,14 +285,14 @@ function TableRowRenderer(
 ) {
   return (
     <Box flexDirection='row'>
-      <Text color='gray'>│</Text>
+      <Text color={colors.muted}>│</Text>
       {cells.map((cell, index) => {
         const cellText = renderTokensAsPlaintext(cell.tokens);
         const paddedText = cellText.padEnd(columnWidths[index]);
         return (
           <React.Fragment key={index}>
-            <Text color={isHeader ? 'cyan' : 'white'} bold={isHeader}>{paddedText}</Text>
-            <Text color='gray'>│</Text>
+            <Text color={isHeader ? colors.info : colors.text} bold={isHeader}>{paddedText}</Text>
+            <Text color={colors.muted}>│</Text>
           </React.Fragment>
         );
       })}

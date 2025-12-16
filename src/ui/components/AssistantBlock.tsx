@@ -19,7 +19,7 @@ export function AssistantBlock({content}: AssistantBlockProps): React.ReactEleme
   return (
     <Box marginBottom={1}>
       <Box marginRight={1}>
-        <Text color={colors.tertiary} bold>{'*'}</Text>
+        <Text color={colors.accent} bold>{'*'}</Text>
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
         <Markdown markdown={cleanedContent} />

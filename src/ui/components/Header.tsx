@@ -18,10 +18,10 @@ export function Header({config}: HeaderProps): React.ReactElement {
 
   return (
     <Box flexDirection='column' marginBottom={1}>
-      <Text color={colors.secondary}>{line1}</Text>
-      <Text color='white'>{line2}</Text>
+      <Text color={colors.primary}>{line1}</Text>
+      <Text color={colors.text}>{line2}</Text>
       <Box marginTop={1}>
-        <Text color={colors.text.dimmed}>
+        <Text color={colors.muted}>
           {nickname} | Thinking: {thinking} | API Type: {config.provider} | Model:{' '}
           {config.model || 'not set'} | API Key: {masked}
         </Text>
