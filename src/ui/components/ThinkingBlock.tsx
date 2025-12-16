@@ -10,7 +10,7 @@ export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement
   const contentWidth = useContentWidth();
   const cleanContent = useCleanedContent(content);
 
-  if (!content) {
+  if (!cleanContent) {
     return null;
   }
 

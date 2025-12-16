@@ -8,9 +8,13 @@ interface AssistantBlockProps {
   content: string;
 }
 
-export function AssistantBlock({content}: AssistantBlockProps): React.ReactElement {
+export function AssistantBlock({content}: AssistantBlockProps): React.ReactElement | null {
   const contentWidth = useContentWidth();
   const cleanedContent = useCleanedContent(content);
+
+  if (!cleanedContent) {
+    return null;
+  }
 
   return (
     <Box marginBottom={1}>

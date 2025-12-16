@@ -18,10 +18,8 @@ export function TextInput(
   const [cursorOffset, setCursorOffset] = useState(0);
 
   useEffect(() => {
-    if (cursorOffset > value.length) {
-      setCursorOffset(value.length);
-    }
-  }, [value, cursorOffset]);
+    setCursorOffset(prev => prev > value.length ? value.length : prev);
+  }, [value]);
 
   useInput((input, key) => {
     if (key.escape) {
