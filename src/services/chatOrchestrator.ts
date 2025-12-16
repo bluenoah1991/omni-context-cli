@@ -78,10 +78,17 @@ export async function runConversation(
       return addAssistantMessage(currentSession, errorText, config.provider);
     }
 
+    const messageInputTokens = 'inputTokens' in message ? (message.inputTokens ?? 0) : 0;
+    const messageOutputTokens = 'outputTokens' in message ? (message.outputTokens ?? 0) : 0;
+    const messageCachedTokens = 'cachedTokens' in message ? (message.cachedTokens ?? 0) : 0;
+
     currentSession = {
       ...currentSession,
       messages: [...currentSession.messages, message],
       updatedAt: Date.now(),
+      inputTokens: messageInputTokens,
+      outputTokens: messageOutputTokens,
+      cachedTokens: messageCachedTokens,
     };
 
     const {session: updatedSession, shouldContinue} = await processToolCalls(

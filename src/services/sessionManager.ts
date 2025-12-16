@@ -43,6 +43,9 @@ export function createSession(): Session {
     createdAt: now,
     updatedAt: now,
     modelId: getAppConfig().modelId,
+    inputTokens: 0,
+    outputTokens: 0,
+    cachedTokens: 0,
   };
 }
 
@@ -169,6 +172,9 @@ export function loadSession(filepath: string): Session {
     createdAt: content.createdAt,
     updatedAt: content.updatedAt,
     modelId: content.modelId,
+    inputTokens: content.inputTokens ?? 0,
+    outputTokens: content.outputTokens ?? 0,
+    cachedTokens: content.cachedTokens ?? 0,
   };
 }
 

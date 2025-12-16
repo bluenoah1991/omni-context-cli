@@ -7,10 +7,10 @@ import { useChatStore } from '../../store/chatStore';
 import { useThrottledMessages } from '../hooks';
 import { Header } from './Header';
 import { InputBox } from './InputBox';
-import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
 import { MessageList } from './MessageList';
+import { StatusBar } from './StatusBar';
 
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
@@ -95,7 +95,7 @@ export function ChatView(): React.ReactElement {
 
   return (
     <Box flexDirection='column' padding={1}>
-      <Header config={config} />
+      <Header />
 
       <Box flexDirection='column' flexGrow={1}>
         <MessageList messages={throttledMessages} />
@@ -107,10 +107,12 @@ export function ChatView(): React.ReactElement {
 
       {!showMenu && (
         <Box marginTop={1}>
-          <KeyboardShortcuts
+          <StatusBar
             isLoading={isLoading}
             onInterrupt={handleInterrupt}
             onOpenMenu={handleOpenMenu}
+            config={config}
+            session={session}
           />
         </Box>
       )}

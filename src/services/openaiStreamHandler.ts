@@ -26,6 +26,9 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     if (data.usage) {
       this.inputTokens = data.usage.prompt_tokens || 0;
       this.outputTokens = data.usage.completion_tokens || 0;
+      if (data.usage.prompt_tokens_details?.cached_tokens) {
+        this.cachedTokens = data.usage.prompt_tokens_details.cached_tokens;
+      }
     }
 
     const choice = data.choices?.[0];
@@ -132,6 +135,9 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
           })),
         }),
       ...(tokenUsage > 0 && {tokenUsage}),
+      ...(this.inputTokens > 0 && {inputTokens: this.inputTokens}),
+      ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
+      ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),
     };
   }
 }

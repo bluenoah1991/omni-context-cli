@@ -1,15 +1,19 @@
 import { Box, Text, useApp, useInput } from 'ink';
 import React, { useState } from 'react';
+import { AppConfig } from '../../types/config';
+import { Session } from '../../types/session';
 import { colors } from '../theme/colors';
 
-interface KeyboardShortcutsProps {
+interface StatusBarProps {
   isLoading: boolean;
   onInterrupt?: () => void;
   onOpenMenu?: () => void;
+  config: AppConfig;
+  session?: Session;
 }
 
-export function KeyboardShortcuts(
-  {isLoading, onInterrupt, onOpenMenu}: KeyboardShortcutsProps,
+export function StatusBar(
+  {isLoading, onInterrupt, onOpenMenu, config, session}: StatusBarProps,
 ): React.ReactElement {
   const [ctrlCPressed, setCtrlCPressed] = useState(false);
   const {exit} = useApp();
@@ -33,9 +37,20 @@ export function KeyboardShortcuts(
     }
   });
 
+  const nickname = config.nickname || config.model || 'default';
+  const thinking = config.enableThinking ? 'ON' : 'OFF';
+  const contextLimit = (config.contextSize ?? 200) * 1024;
+  const inputTokens = session?.inputTokens ?? 0;
+  const outputTokens = session?.outputTokens ?? 0;
+  const totalTokens = inputTokens + outputTokens;
+
   return (
     <Box flexGrow={1} justifyContent='space-between'>
-      <Text color={colors.muted}>{ctrlCPressed ? '(Press Ctrl+C again to exit)' : ''}</Text>
+      <Text color={colors.muted}>
+        {ctrlCPressed
+          ? '(Press Ctrl+C again to exit)'
+          : `| ${nickname} | Thinking: ${thinking} | Tokens: ${totalTokens}/${contextLimit} |`}
+      </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
       </Text>

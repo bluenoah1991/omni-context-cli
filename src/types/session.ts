@@ -10,4 +10,7 @@ export interface Session {
   createdAt: number;
   updatedAt: number;
   modelId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedTokens?: number;
 }

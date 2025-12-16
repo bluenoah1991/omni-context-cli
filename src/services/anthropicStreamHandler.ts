@@ -35,6 +35,12 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
         if (data?.usage?.output_tokens) {
           this.outputTokens = data.usage.output_tokens;
         }
+        if (data?.usage?.input_tokens && data.usage.input_tokens > 0) {
+          this.inputTokens = data.usage.input_tokens;
+        }
+        if (data?.usage?.cache_read_input_tokens) {
+          this.cachedTokens = data.usage.cache_read_input_tokens;
+        }
         break;
 
       case 'content_block_start':
@@ -139,6 +145,13 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
 
     const tokenUsage = this.inputTokens + this.outputTokens;
 
-    return {role: 'assistant' as const, content, ...(tokenUsage > 0 && {tokenUsage})};
+    return {
+      role: 'assistant' as const,
+      content,
+      ...(tokenUsage > 0 && {tokenUsage}),
+      ...(this.inputTokens > 0 && {inputTokens: this.inputTokens}),
+      ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
+      ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),
+    };
   }
 }

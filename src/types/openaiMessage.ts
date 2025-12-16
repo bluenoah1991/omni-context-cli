@@ -18,4 +18,7 @@ export interface OpenAIMessage {
   tool_call_id?: string;
   reasoning_content?: string;
   tokenUsage?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedTokens?: number;
 }
