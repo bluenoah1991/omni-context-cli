@@ -58,12 +58,11 @@ export async function runConversation(
   session: Session,
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
-  maxToolCalls = 50,
 ): Promise<Session> {
   let currentSession = session;
   const config = getAppConfig();
 
-  for (let i = 0; i < maxToolCalls; i++) {
+  while (true) {
     let message: ChatMessage;
 
     try {
@@ -93,8 +92,4 @@ export async function runConversation(
       return currentSession;
     }
   }
-
-  const maxText = 'Maximum tool calls reached';
-  callbacks.onError?.(maxText);
-  return addAssistantMessage(currentSession, maxText, config.provider);
 }
