@@ -129,11 +129,7 @@ export function ChatView(): React.ReactElement {
         <MessageList messages={messages} />
       </Box>
 
-      {isLoading && (
-        <Box marginTop={1} marginBottom={1}>
-          <LoadingIndicator />
-        </Box>
-      )}
+      <Box height={1}>{isLoading && <LoadingIndicator />}</Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 
