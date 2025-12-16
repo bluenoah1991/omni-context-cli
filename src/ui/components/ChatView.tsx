@@ -4,6 +4,7 @@ import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
 import { addUserMessage } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
+import { useThrottledMessages } from '../hooks';
 import { Header } from './Header';
 import { InputBox } from './InputBox';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
@@ -11,54 +12,14 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
 import { MessageList } from './MessageList';
 
-type StreamBuffer = {content: string; thinking: string; flushId: NodeJS.Immediate | null;};
-
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
+  const throttledMessages = useThrottledMessages(messages, 200);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
-
-  const streamBufferRef = useRef<StreamBuffer>({content: '', thinking: '', flushId: null});
-
-  const flushStreamBuffer = useCallback(() => {
-    const buffer = streamBufferRef.current;
-    if (!buffer.content && !buffer.thinking) return;
-
-    const contentToAdd = buffer.content;
-    const thinkingToAdd = buffer.thinking;
-    buffer.content = '';
-    buffer.thinking = '';
-    buffer.flushId = null;
-
-    if (contentToAdd) {
-      updateMessages(msgs => {
-        const last = msgs[msgs.length - 1];
-        if (last?.role === 'assistant') {
-          return [...msgs.slice(0, -1), {...last, content: last.content + contentToAdd}];
-        }
-        return [...msgs, {role: 'assistant', content: contentToAdd, timestamp: Date.now()}];
-      });
-    }
-
-    if (thinkingToAdd) {
-      updateMessages(msgs => {
-        const last = msgs[msgs.length - 1];
-        if (last?.role === 'thinking') {
-          return [...msgs.slice(0, -1), {...last, content: last.content + thinkingToAdd}];
-        }
-        return [...msgs, {role: 'thinking', content: thinkingToAdd, timestamp: Date.now()}];
-      });
-    }
-  }, [updateMessages]);
-
-  const scheduleFlush = useCallback(() => {
-    if (streamBufferRef.current.flushId === null) {
-      streamBufferRef.current.flushId = setImmediate(flushStreamBuffer);
-    }
-  }, [flushStreamBuffer]);
 
   const handleInterrupt = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -86,12 +47,22 @@ export function ChatView(): React.ReactElement {
     try {
       const finalSession = await runConversation(updatedSession, {
         onContent: (content: string) => {
-          streamBufferRef.current.content += content;
-          scheduleFlush();
+          updateMessages(msgs => {
+            const last = msgs[msgs.length - 1];
+            if (last?.role === 'assistant') {
+              return [...msgs.slice(0, -1), {...last, content: last.content + content}];
+            }
+            return [...msgs, {role: 'assistant', content, timestamp: Date.now()}];
+          });
         },
         onThinking: (thinking: string) => {
-          streamBufferRef.current.thinking += thinking;
-          scheduleFlush();
+          updateMessages(msgs => {
+            const last = msgs[msgs.length - 1];
+            if (last?.role === 'thinking') {
+              return [...msgs.slice(0, -1), {...last, content: last.content + thinking}];
+            }
+            return [...msgs, {role: 'thinking', content: thinking, timestamp: Date.now()}];
+          });
         },
         onToolCall: toolCall => {
           updateMessages(
@@ -119,14 +90,14 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [config.provider, updateMessages, setLoading, setSession, scheduleFlush]);
+  }, [config.provider, updateMessages, setLoading, setSession]);
 
   return (
     <Box flexDirection='column' padding={1}>
       <Header config={config} />
 
       <Box flexDirection='column' flexGrow={1}>
-        <MessageList messages={messages} />
+        <MessageList messages={throttledMessages} />
       </Box>
 
       <Box height={1}>{isLoading && <LoadingIndicator />}</Box>
