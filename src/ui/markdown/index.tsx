@@ -16,7 +16,7 @@ import {
 export function Markdown({markdown}: {markdown: string;}) {
   const tokens = marked.lexer(markdown);
   return (
-    <Box flexDirection='column'>
+    <Box flexDirection='column' marginBottom={-1}>
       {tokens.map((token, index) => <TokenRenderer key={index} token={token} />)}
     </Box>
   );
