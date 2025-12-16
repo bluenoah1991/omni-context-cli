@@ -14,7 +14,7 @@ import { MessageList } from './MessageList';
 
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
-  const throttledMessages = useThrottledMessages(messages, 200);
+  const throttledMessages = useThrottledMessages(messages, 1000);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
