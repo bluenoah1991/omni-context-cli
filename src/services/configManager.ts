@@ -87,6 +87,7 @@ export function modelConfigToAppConfig(model: ModelConfig, enableThinking: boole
     apiKey: model.apiKey,
     enableThinking,
     modelId: model.id,
+    nickname: model.nickname,
   };
 }
 

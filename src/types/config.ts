@@ -22,6 +22,7 @@ export interface AppConfig {
   apiKey: string;
   enableThinking?: boolean;
   modelId?: string;
+  nickname?: string;
 }
 
 export const DEFAULT_CONFIG: AppConfig = {

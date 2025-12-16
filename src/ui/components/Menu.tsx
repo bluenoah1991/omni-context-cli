@@ -26,7 +26,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [selectIndex, setSelectIndex] = useState(0);
   const [setDefaultIndex, setSetDefaultIndex] = useState(0);
   const [deleteIndex, setDeleteIndex] = useState(0);
-  const [thinkingIndex, setThinkingIndex] = useState(0);
+  const [thinkingIndex, setThinkingIndex] = useState<number>();
 
   const config = loadOmxConfig();
 
@@ -101,7 +101,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {
         type: 'select',
         key: 'provider',
-        label: 'Provider',
+        label: 'API Type',
         options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}],
       },
       {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. gpt-4'},
@@ -234,7 +234,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
               toggleThinking();
               initializeAppConfig();
             }
-            setView('main');
+            onClose();
           }}
           onCancel={() => setView('main')}
         />
