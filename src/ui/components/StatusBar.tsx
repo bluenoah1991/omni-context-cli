@@ -42,6 +42,7 @@ export function StatusBar(
   const contextLimit = (config.contextSize ?? 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
+  const cachedTokens = session?.cachedTokens ?? 0;
   const totalTokens = inputTokens + outputTokens;
 
   return (
@@ -49,7 +50,7 @@ export function StatusBar(
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
-          : `| ${nickname} | Thinking: ${thinking} | Tokens: ${totalTokens}/${contextLimit} |`}
+          : `| ${nickname} | Thinking: ${thinking} | Tokens: ${totalTokens}/${contextLimit} (In: ${inputTokens}, Out: ${outputTokens}, Cache: ${cachedTokens}) |`}
       </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
