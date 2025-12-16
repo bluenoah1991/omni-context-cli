@@ -13,7 +13,15 @@ import { MessageList } from './MessageList';
 import { StatusBar } from './StatusBar';
 
 export function ChatView(): React.ReactElement {
-  const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
+  const {
+    session,
+    messages,
+    isLoading,
+    setSession,
+    updateSessionTokens,
+    updateMessages,
+    setLoading,
+  } = useChatStore();
   const throttledMessages = useThrottledMessages(messages, 1000);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
@@ -46,6 +54,13 @@ export function ChatView(): React.ReactElement {
 
     try {
       const finalSession = await runConversation(updatedSession, {
+        onSessionUpdate: session => {
+          updateSessionTokens(
+            session.inputTokens ?? 0,
+            session.outputTokens ?? 0,
+            session.cachedTokens ?? 0,
+          );
+        },
         onContent: (content: string) => {
           updateMessages(msgs => {
             const last = msgs[msgs.length - 1];

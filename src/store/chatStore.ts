@@ -11,6 +11,7 @@ interface ChatState {
   isLoading: boolean;
   error: string | null;
   setSession: (session: Session) => void;
+  updateSessionTokens: (inputTokens: number, outputTokens: number, cachedTokens: number) => void;
   createNewSession: () => void;
   updateMessages: (updater: (messages: UIMessage[]) => UIMessage[]) => void;
   setLoading: (loading: boolean) => void;
@@ -28,6 +29,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const config = getAppConfig();
     const messages = sessionMessagesToUI(session.messages, config.provider);
     set({session, messages});
+  },
+
+  updateSessionTokens: (inputTokens, outputTokens, cachedTokens) => {
+    const currentSession = get().session;
+    set({session: {...currentSession, inputTokens, outputTokens, cachedTokens}});
   },
 
   createNewSession: () =>

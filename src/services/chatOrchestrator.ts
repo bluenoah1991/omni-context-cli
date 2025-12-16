@@ -91,6 +91,8 @@ export async function runConversation(
       cachedTokens: messageCachedTokens,
     };
 
+    callbacks.onSessionUpdate?.(currentSession);
+
     const {session: updatedSession, shouldContinue} = await processToolCalls(
       currentSession,
       config.provider,
