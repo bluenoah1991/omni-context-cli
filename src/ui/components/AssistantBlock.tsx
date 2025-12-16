@@ -12,7 +12,7 @@ export function AssistantBlock({content}: AssistantBlockProps): React.ReactEleme
   const contentWidth = useContentWidth();
 
   return (
-    <Box marginY={1}>
+    <Box marginBottom={1}>
       <Box marginRight={1}>
         <Text color={colors.tertiary} bold>{'*'}</Text>
       </Box>

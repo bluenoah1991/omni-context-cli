@@ -14,7 +14,7 @@ export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement
   }
 
   return (
-    <Box marginY={1}>
+    <Box marginBottom={1}>
       <Box marginRight={1}>
         <Text color='gray'>{' '}</Text>
       </Box>

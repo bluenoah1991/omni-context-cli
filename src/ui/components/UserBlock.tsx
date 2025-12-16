@@ -10,7 +10,7 @@ export function UserBlock({content}: UserBlockProps): React.ReactElement {
   const contentWidth = useContentWidth();
 
   return (
-    <Box marginY={1}>
+    <Box marginBottom={1}>
       <Box marginRight={1}>
         <Text color='green' bold>{'❯'}</Text>
       </Box>
