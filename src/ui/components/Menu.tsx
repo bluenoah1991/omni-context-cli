@@ -27,7 +27,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [view, setView] = useState<View>('main');
   const [mainIndex, setMainIndex] = useState(0);
   const [selectIndex, setSelectIndex] = useState(0);
-  const [setDefaultIndex, setSetDefaultIndex] = useState(0);
+  const [setDefaultIndex, setSetDefaultIndex] = useState<number>();
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
