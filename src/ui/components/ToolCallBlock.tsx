@@ -45,7 +45,7 @@ export function ToolCallBlock(
 ): React.ReactElement {
   const contentWidth = useContentWidth();
   let text = '';
-  let color: 'gray' | 'red' = 'gray';
+  let color: 'cyan' | 'red' = 'cyan';
 
   let data;
   try {
@@ -55,7 +55,7 @@ export function ToolCallBlock(
     return (
       <Box marginBottom={isResult ? 1 : 0}>
         <Box marginRight={1}>
-          <Text color='gray'>{' '}</Text>
+          <Text color='cyan'>{' '}</Text>
         </Box>
         <Box marginRight={3} flexDirection='column' width={contentWidth}>
           <Text color={color} wrap='wrap'>{text}</Text>
@@ -76,7 +76,7 @@ export function ToolCallBlock(
   return (
     <Box marginBottom={isResult ? 1 : 0}>
       <Box marginRight={1}>
-        <Text color='gray'>{' '}</Text>
+        <Text color='cyan'>{' '}</Text>
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
         <Text color={color} wrap='wrap'>{text}</Text>
