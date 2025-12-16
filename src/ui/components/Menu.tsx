@@ -54,6 +54,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='main-menu'
           title='Menu'
           items={items}
           selectedIndex={mainIndex}
@@ -85,6 +86,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='select-model'
           title='Select Model'
           items={items}
           selectedIndex={selectIndex}
@@ -169,6 +171,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='set-default'
           title='Set Default Model'
           items={items}
           selectedIndex={setDefaultIndex ?? initialIndex}
@@ -199,6 +202,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='delete-model'
           title='Delete Model'
           items={items}
           selectedIndex={deleteIndex}
@@ -230,6 +234,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='thinking-mode'
           title='Thinking Mode'
           items={items}
           selectedIndex={thinkingIndex ?? initialIndex}
@@ -268,6 +273,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
+          key='load-session'
           title='Load Session'
           items={items}
           selectedIndex={sessionsIndex}
