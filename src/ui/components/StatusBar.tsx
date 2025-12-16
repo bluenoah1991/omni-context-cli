@@ -37,7 +37,7 @@ export function StatusBar(
     }
   });
 
-  const nickname = config.nickname || config.model || 'default';
+  const nickname = config.nickname || config.model || 'Not Set';
   const thinking = config.enableThinking ? 'ON' : 'OFF';
   const contextLimit = (config.contextSize ?? 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
