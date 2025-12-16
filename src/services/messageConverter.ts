@@ -15,6 +15,16 @@ export function openAIMessageToUI(
         if (message.content.trim()) {
           uiMessages.push({role: 'user', content: message.content, timestamp});
         }
+      } else if (Array.isArray(message.content)) {
+        const textParts = message.content.filter(part => part.type === 'text').map(part =>
+          part.text
+        );
+        if (textParts.length > 0) {
+          const content = textParts.join('\n');
+          if (content.trim()) {
+            uiMessages.push({role: 'user', content, timestamp});
+          }
+        }
       }
       break;
     }
@@ -27,6 +37,16 @@ export function openAIMessageToUI(
       if (typeof message.content === 'string') {
         if (message.content.trim()) {
           uiMessages.push({role: 'assistant', content: message.content, timestamp});
+        }
+      } else if (Array.isArray(message.content)) {
+        const textParts = message.content.filter(part => part.type === 'text').map(part =>
+          part.text
+        );
+        if (textParts.length > 0) {
+          const content = textParts.join('\n');
+          if (content.trim()) {
+            uiMessages.push({role: 'assistant', content, timestamp});
+          }
         }
       }
 
@@ -49,6 +69,16 @@ export function openAIMessageToUI(
         if (message.content.trim()) {
           uiMessages.push({role: 'tool_result', content: message.content, timestamp, toolName});
         }
+      } else if (Array.isArray(message.content)) {
+        const textParts = message.content.filter(part => part.type === 'text').map(part =>
+          part.text
+        );
+        if (textParts.length > 0) {
+          const content = textParts.join('\n');
+          if (content.trim()) {
+            uiMessages.push({role: 'tool_result', content, timestamp, toolName});
+          }
+        }
       }
       break;
     }
@@ -63,6 +93,17 @@ export function anthropicMessageToUI(
   toolNameMap?: Map<string, string>,
 ): UIMessage[] {
   const uiMessages: UIMessage[] = [];
+
+  if (typeof message.content === 'string') {
+    if (message.content.trim()) {
+      uiMessages.push({
+        role: message.role === 'user' ? 'user' : 'assistant',
+        content: message.content,
+        timestamp,
+      });
+    }
+    return uiMessages;
+  }
 
   const thinkingBlocks = message.content.filter(block => block.type === 'thinking');
   if (thinkingBlocks.length > 0) {
@@ -126,7 +167,7 @@ export function sessionMessagesToUI(
     } else {
       const anthropicMsg = message as AnthropicMessage;
 
-      if (anthropicMsg.role === 'assistant') {
+      if (anthropicMsg.role === 'assistant' && Array.isArray(anthropicMsg.content)) {
         anthropicMsg.content.forEach(block => {
           if (block.type === 'tool_use') {
             toolNameMap.set(block.id, block.name);

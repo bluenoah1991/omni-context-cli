@@ -8,5 +8,5 @@ export type AnthropicContentBlock =
 
 export interface AnthropicMessage {
   role: AnthropicMessageRole;
-  content: AnthropicContentBlock[];
+  content: string | AnthropicContentBlock[];
 }

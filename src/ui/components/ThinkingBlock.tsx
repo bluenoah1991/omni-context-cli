@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { useContentWidth } from '../hooks';
+import { useCleanedContent, useContentWidth } from '../hooks';
 
 interface ThinkingBlockProps {
   content: string;
@@ -8,6 +8,7 @@ interface ThinkingBlockProps {
 
 export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement | null {
   const contentWidth = useContentWidth();
+  const cleanContent = useCleanedContent(content);
 
   if (!content) {
     return null;
@@ -19,7 +20,7 @@ export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement
         <Text color='gray'>{' '}</Text>
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Text color='gray' wrap='wrap'>{content}</Text>
+        <Text color='gray' wrap='wrap'>{cleanContent}</Text>
       </Box>
     </Box>
   );

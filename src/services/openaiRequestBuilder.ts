@@ -15,7 +15,11 @@ export async function buildOpenAIRequest(
     messages: [
       ...systemMessages,
       ...messages.filter(message => {
-        return message.role !== 'assistant' || message.content || message.tool_calls;
+        if (message.role !== 'assistant') return true;
+        if (message.tool_calls) return true;
+        return Array.isArray(message.content)
+          ? message.content.length > 0
+          : Boolean(message.content);
       }).map(message => {
         return {
           role: message.role,

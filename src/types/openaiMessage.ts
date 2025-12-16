@@ -1,5 +1,10 @@
 export type OpenAIMessageRole = 'user' | 'assistant' | 'tool';
 
+export interface OpenAIContentPart {
+  type: 'text';
+  text: string;
+}
+
 export interface OpenAIToolCall {
   id: string;
   type: 'function';
@@ -8,7 +13,7 @@ export interface OpenAIToolCall {
 
 export interface OpenAIMessage {
   role: OpenAIMessageRole;
-  content: string;
+  content: string | OpenAIContentPart[];
   tool_calls?: OpenAIToolCall[];
   tool_call_id?: string;
   reasoning_content?: string;

@@ -13,7 +13,8 @@ export async function buildAnthropicRequest(
   const request: Record<string, unknown> = {
     model: config.model,
     messages: messages.filter(message => {
-      return message.role !== 'assistant' || message.content.length > 0;
+      if (message.role !== 'assistant') return true;
+      return Array.isArray(message.content) ? message.content.length > 0 : Boolean(message.content);
     }).map(message => ({role: message.role, content: message.content})),
     stream: true,
     max_tokens: config.enableThinking ? 16000 : 4096,

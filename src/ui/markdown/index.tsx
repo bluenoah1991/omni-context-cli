@@ -94,7 +94,7 @@ function CodeRenderer({token}: {token: Tokens.Code;}) {
     const footer = '└' + '─'.repeat(42);
 
     return (
-      <Box flexDirection='column'>
+      <Box flexDirection='column' marginBottom={1}>
         <Text color='gray'>{langTag}</Text>
         <Box paddingLeft={2} flexDirection='column'>
           <HighlightedCode code={token.text} language={token.lang} />
@@ -105,7 +105,7 @@ function CodeRenderer({token}: {token: Tokens.Code;}) {
   }
 
   return (
-    <Box flexDirection='column' paddingLeft={2}>
+    <Box flexDirection='column' marginBottom={1} paddingLeft={2}>
       <HighlightedCode code={token.text} language={token.lang} />
     </Box>
   );
@@ -139,7 +139,7 @@ function HeadingRenderer({token}: {token: Tokens.Heading;}) {
   const marker = token.depth === 1 ? '█' : token.depth === 2 ? '▆' : '▉';
 
   return (
-    <Box marginTop={1}>
+    <Box marginBottom={1}>
       <Text color={color} bold>{marker} {renderTokensAsPlaintext(token.tokens)}</Text>
     </Box>
   );
@@ -148,7 +148,7 @@ function HeadingRenderer({token}: {token: Tokens.Heading;}) {
 function HrRenderer() {
   const width = Math.min(process.stdout.columns || 80, 80);
   return (
-    <Box marginTop={1}>
+    <Box marginBottom={1}>
       <Text color='gray'>{'─'.repeat(width)}</Text>
     </Box>
   );
@@ -170,7 +170,7 @@ function LinkRenderer({token}: {token: Tokens.Link;}) {
 
 function ListRenderer({token}: {token: Tokens.List;}) {
   return (
-    <Box flexDirection='column' paddingLeft={0}>
+    <Box flexDirection='column' marginBottom={1} paddingLeft={0}>
       {token.items.map((item, index) => (
         <Box key={index} flexDirection='row'>
           <Text color='cyan'>
@@ -235,7 +235,7 @@ function ListItemRenderer({token}: {token: Tokens.ListItem;}) {
 
 function ParagraphRenderer({token}: {token: Tokens.Paragraph;}) {
   return (
-    <Box>
+    <Box marginBottom={1}>
       <Text>{renderTokensAsPlaintext(token.tokens)}</Text>
     </Box>
   );
@@ -263,7 +263,7 @@ function TableRenderer({token}: {token: Tokens.Table;}) {
   const separator = '├' + columnWidths.map(w => '─'.repeat(w + 2)).join('┼') + '┤';
 
   return (
-    <Box flexDirection='column' marginTop={1}>
+    <Box flexDirection='column' marginBottom={1}>
       <TableRowRenderer cells={token.header} columnWidths={columnWidths} isHeader={true} />
       <Text color='gray'>{separator}</Text>
       {token.rows.map((row, index) => (
