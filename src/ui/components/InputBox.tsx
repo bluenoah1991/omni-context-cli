@@ -167,17 +167,21 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
       </Box>
       <Box flexGrow={1} flexDirection='column' overflow='hidden'>
         {lines.map((line, i) => (
-          <Text key={i} color={isPlaceholder ? colors.text.dimmed : undefined}>
+          <Box key={i}>
             {cursorLine === i && !disabled
               ? (
                 <>
-                  {line.slice(0, cursorCol)}
+                  <Text color={isPlaceholder ? colors.text.dimmed : undefined}>
+                    {line.slice(0, cursorCol)}
+                  </Text>
                   <Text inverse>{line[cursorCol] || ' '}</Text>
-                  {line.slice(cursorCol + 1)}
+                  <Text color={isPlaceholder ? colors.text.dimmed : undefined}>
+                    {line.slice(cursorCol + 1)}
+                  </Text>
                 </>
               )
-              : line || ' '}
-          </Text>
+              : <Text color={isPlaceholder ? colors.text.dimmed : undefined}>{line || ' '}</Text>}
+          </Box>
         ))}
       </Box>
     </Box>

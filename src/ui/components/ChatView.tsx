@@ -1,7 +1,7 @@
 import { Box } from 'ink';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { loadConfig } from '../../services/appConfig';
+import React, { useCallback, useRef, useState } from 'react';
 import { runConversation } from '../../services/chatOrchestrator';
+import { getAppConfig } from '../../services/configManager';
 import { addUserMessage } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { Header } from './Header';
@@ -16,13 +16,12 @@ type StreamBuffer = {content: string; thinking: string; flushId: NodeJS.Immediat
 export function ChatView(): React.ReactElement {
   const {session, messages, isLoading, setSession, updateMessages, setLoading} = useChatStore();
   const [showMenu, setShowMenu] = useState(false);
+  const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
 
   const streamBufferRef = useRef<StreamBuffer>({content: '', thinking: '', flushId: null});
-
-  const config = useMemo(() => loadConfig(), []);
 
   const flushStreamBuffer = useCallback(() => {
     const buffer = streamBufferRef.current;
@@ -71,6 +70,7 @@ export function ChatView(): React.ReactElement {
 
   const handleCloseMenu = useCallback(() => {
     setShowMenu(false);
+    setConfig(getAppConfig());
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {

@@ -5,7 +5,7 @@ import { ChatMessage, Session } from '../types/session';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
-import { loadConfig } from './appConfig';
+import { getAppConfig } from './configManager';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
 import {
@@ -61,7 +61,7 @@ export async function runConversation(
   maxToolCalls = 50,
 ): Promise<Session> {
   let currentSession = session;
-  const config = loadConfig();
+  const config = getAppConfig();
 
   for (let i = 0; i < maxToolCalls; i++) {
     let message: ChatMessage;

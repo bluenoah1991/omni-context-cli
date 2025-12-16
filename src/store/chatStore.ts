@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { loadConfig } from '../services/appConfig';
+import { getAppConfig } from '../services/configManager';
 import { sessionMessagesToUI } from '../services/messageConverter';
 import { createSession } from '../services/sessionManager';
 import { Session } from '../types/session';
@@ -24,7 +24,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   error: null,
 
   setSession: (session: Session) => {
-    const config = loadConfig();
+    const config = getAppConfig();
     const messages = sessionMessagesToUI(session.messages, config.provider);
     set({session, messages});
   },

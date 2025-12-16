@@ -1,59 +1,246 @@
-import { Box, Text, useApp, useInput } from 'ink';
+import { Box } from 'ink';
 import React, { useState } from 'react';
+import {
+  addModel,
+  initializeAppConfig,
+  loadOmxConfig,
+  removeModel,
+  setDefaultModel,
+  toggleThinking,
+  updateAppConfig,
+} from '../../services/configManager';
+import { Provider } from '../../types/config';
 import { colors } from '../theme/colors';
+import { SelectItem, SelectList } from './SelectList';
+import { FormStep, StepForm } from './StepForm';
+
+type View = 'main' | 'select' | 'add' | 'set-default' | 'delete' | 'thinking';
 
 interface MenuProps {
   onClose: () => void;
 }
 
-const menuItems = [{id: 'resume', label: 'Resume'}, {id: 'exit', label: 'Exit'}];
-
 export function Menu({onClose}: MenuProps): React.ReactElement {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const {exit} = useApp();
+  const [view, setView] = useState<View>('main');
+  const [mainIndex, setMainIndex] = useState(0);
+  const [selectIndex, setSelectIndex] = useState(0);
+  const [setDefaultIndex, setSetDefaultIndex] = useState(0);
+  const [deleteIndex, setDeleteIndex] = useState(0);
+  const [thinkingIndex, setThinkingIndex] = useState(0);
 
-  useInput((input, key) => {
-    if (key.escape) {
-      onClose();
-      return;
-    }
+  const config = loadOmxConfig();
 
-    if (key.upArrow) {
-      setSelectedIndex(i => (i > 0 ? i - 1 : menuItems.length - 1));
-    } else if (key.downArrow) {
-      setSelectedIndex(i => (i < menuItems.length - 1 ? i + 1 : 0));
-    } else if (key.return) {
-      const item = menuItems[selectedIndex];
-      if (item.id === 'exit') {
-        exit();
-      } else if (item.id === 'resume') {
-        onClose();
-      }
-    }
-  });
+  if (view === 'main') {
+    const items: SelectItem[] = [
+      {id: 'select', label: 'Select Model'},
+      {id: 'add', label: 'Add Model'},
+      {id: 'default', label: 'Set Default Model'},
+      {id: 'delete', label: 'Delete Model'},
+      {id: 'thinking', label: 'Thinking Mode'},
+      {id: 'exit', label: 'Exit'},
+    ];
 
-  return (
-    <Box
-      flexDirection='column'
-      borderStyle='round'
-      borderColor={colors.primary}
-      paddingX={2}
-      paddingY={1}
-    >
-      <Box marginBottom={1}>
-        <Text color={colors.primary} bold>Menu</Text>
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Menu'
+          items={items}
+          selectedIndex={mainIndex}
+          onSelect={setMainIndex}
+          onConfirm={i => {
+            if (i === 0) setView('select');
+            else if (i === 1) setView('add');
+            else if (i === 2) setView('set-default');
+            else if (i === 3) setView('delete');
+            else if (i === 4) setView('thinking');
+            else if (i === 5) process.exit(0);
+          }}
+          onCancel={onClose}
+        />
       </Box>
-      {menuItems.map((item, index) => (
-        <Box key={item.id}>
-          <Text color={index === selectedIndex ? colors.primary : colors.text.dimmed}>
-            {index === selectedIndex ? '❯ ' : '  '}
-            {item.label}
-          </Text>
-        </Box>
-      ))}
-      <Box marginTop={1}>
-        <Text color={colors.text.dimmed}>(ESC to close)</Text>
+    );
+  }
+
+  if (view === 'select') {
+    const items: SelectItem[] = config.models.map(m => ({id: m.id, label: m.nickname}));
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Select Model'
+          items={items}
+          selectedIndex={selectIndex}
+          onSelect={setSelectIndex}
+          onConfirm={i => {
+            if (config.models[i]) {
+              updateAppConfig(config.models[i], config.enableThinking);
+              onClose();
+            }
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No models configured'
+        />
       </Box>
-    </Box>
-  );
+    );
+  }
+
+  if (view === 'add') {
+    const steps: FormStep[] = [
+      {
+        type: 'select',
+        key: 'provider',
+        label: 'Provider',
+        options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}],
+      },
+      {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. gpt-4'},
+      {type: 'text', key: 'apiKey', label: 'API Key', mask: true},
+      {type: 'text', key: 'apiUrl', label: 'API URL', placeholder: 'Leave empty for default'},
+      {
+        type: 'text',
+        key: 'nickname',
+        label: 'Nickname',
+        placeholder: 'Display name for this model',
+      },
+    ];
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <StepForm
+          steps={steps}
+          initialValues={{provider: 'anthropic', model: '', apiKey: '', apiUrl: '', nickname: ''}}
+          onSubmit={values => {
+            addModel({
+              name: values.model,
+              nickname: values.nickname,
+              provider: values.provider as Provider,
+              apiKey: values.apiKey,
+              apiUrl: values.apiUrl,
+            });
+            initializeAppConfig();
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'set-default') {
+    const items: SelectItem[] = config.models.map(m => ({
+      id: m.id,
+      label: m.nickname,
+      hint: m.id === config.defaultModelId ? ' [default]' : undefined,
+    }));
+    const defaultIndex = config.defaultModelId
+      ? config.models.findIndex(m => m.id === config.defaultModelId)
+      : 0;
+    const initialIndex = defaultIndex >= 0 ? defaultIndex : 0;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Set Default Model'
+          items={items}
+          selectedIndex={setDefaultIndex ?? initialIndex}
+          onSelect={setSetDefaultIndex}
+          onConfirm={i => {
+            if (config.models[i]) {
+              setDefaultModel(config.models[i].id);
+              initializeAppConfig();
+              onClose();
+            }
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No models configured'
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'delete') {
+    const items: SelectItem[] = config.models.map(m => ({id: m.id, label: m.nickname}));
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Delete Model'
+          items={items}
+          selectedIndex={deleteIndex}
+          onSelect={setDeleteIndex}
+          onConfirm={i => {
+            if (config.models[i]) {
+              removeModel(config.models[i].id);
+              initializeAppConfig();
+              onClose();
+            }
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No models configured'
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'thinking') {
+    const items: SelectItem[] = [{id: 'on', label: 'ON'}, {id: 'off', label: 'OFF'}];
+    const initialIndex = config.enableThinking ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          title='Thinking Mode'
+          items={items}
+          selectedIndex={thinkingIndex ?? initialIndex}
+          onSelect={setThinkingIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            if (shouldEnable !== config.enableThinking) {
+              toggleThinking();
+              initializeAppConfig();
+            }
+            setView('main');
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  return <Box />;
 }
