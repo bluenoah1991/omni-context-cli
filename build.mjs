@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
+import JavaScriptObfuscator from 'javascript-obfuscator';
 
 const isWatch = process.argv.includes('--watch');
 
@@ -48,5 +49,24 @@ if (isWatch) {
   console.log('Watching for changes...');
 } else {
   await esbuild.build(buildOptions);
-  console.log('Build complete!');
+
+  const code = readFileSync('dist/cli.js', 'utf8');
+  const obfuscated = JavaScriptObfuscator.obfuscate(code, {
+    compact: true,
+    controlFlowFlattening: false,
+    deadCodeInjection: false,
+    debugProtection: false,
+    disableConsoleOutput: false,
+    identifierNamesGenerator: 'hexadecimal',
+    renameGlobals: false,
+    selfDefending: false,
+    stringArray: true,
+    stringArrayEncoding: ['base64'],
+    stringArrayThreshold: 0.5,
+    transformObjectKeys: false,
+    unicodeEscapeSequence: false
+  });
+
+  writeFileSync('dist/cli.js', obfuscated.getObfuscatedCode(), 'utf8');
+  console.log('Build complete with obfuscation!');
 }

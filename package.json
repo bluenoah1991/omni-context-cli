@@ -41,6 +41,7 @@
     "@types/react": "^19.2.7",
     "dprint": "^0.50.2",
     "esbuild": "^0.27.2",
+    "javascript-obfuscator": "^5.1.0",
     "typescript": "^5.9.3"
   }
 }
