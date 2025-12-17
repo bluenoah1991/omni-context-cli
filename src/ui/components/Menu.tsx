@@ -19,6 +19,25 @@ import { FormStep, StepForm } from './StepForm';
 
 type View = 'main' | 'select' | 'add' | 'set-default' | 'delete' | 'thinking' | 'sessions';
 
+function normalizeApiUrl(url: string, provider: Provider): string {
+  let apiUrl = url.trim();
+  if (!apiUrl) return '';
+
+  apiUrl = apiUrl.replace(/\/+$/, '');
+
+  if (provider === 'anthropic') {
+    if (!apiUrl.endsWith('/v1/messages')) {
+      apiUrl = `${apiUrl}/v1/messages`;
+    }
+  } else if (provider === 'openai') {
+    if (!apiUrl.endsWith('/chat/completions')) {
+      apiUrl = `${apiUrl}/chat/completions`;
+    }
+  }
+
+  return apiUrl;
+}
+
 interface MenuProps {
   onClose: () => void;
 }
@@ -148,12 +167,13 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             nickname: '',
           }}
           onSubmit={values => {
+            const provider = values.provider as Provider;
             addModel({
               name: values.model,
               nickname: values.nickname,
-              provider: values.provider as Provider,
+              provider,
               apiKey: values.apiKey,
-              apiUrl: values.apiUrl,
+              apiUrl: normalizeApiUrl(values.apiUrl, provider),
               contextSize: parseInt(values.contextSize, 10) || 200,
             });
             initializeAppConfig();
