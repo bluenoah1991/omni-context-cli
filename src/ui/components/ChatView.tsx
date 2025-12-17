@@ -5,7 +5,7 @@ import { getAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { PendingToolCall } from '../../types/tool';
-import { useThrottledMessages } from '../hooks';
+import { useThrottledMessages } from '../hooks/useThrottledMessages';
 import { Header } from './Header';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';

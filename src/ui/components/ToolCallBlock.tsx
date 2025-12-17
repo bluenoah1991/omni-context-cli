@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { useContentWidth } from '../hooks';
+import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
 interface ToolCallBlockProps {

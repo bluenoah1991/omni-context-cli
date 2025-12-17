@@ -1,13 +1,17 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { useCleanedContent, useContentWidth } from '../hooks';
+import { useCleanedContent } from '../hooks/useCleanedContent';
+import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
 interface ThinkingBlockProps {
   content: string;
+  showIcon?: boolean;
 }
 
-export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement | null {
+export function ThinkingBlock(
+  {content, showIcon = false}: ThinkingBlockProps,
+): React.ReactElement | null {
   const contentWidth = useContentWidth();
   const cleanContent = useCleanedContent(content);
 
@@ -18,7 +22,8 @@ export function ThinkingBlock({content}: ThinkingBlockProps): React.ReactElement
   return (
     <Box marginBottom={1}>
       <Box marginRight={1}>
-        <Text color={colors.muted}>{' '}</Text>
+        {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
+        {!showIcon && <Text color={colors.muted}>{' '}</Text>}
       </Box>
       <Box marginRight={3} flexDirection='column' width={contentWidth}>
         <Text color={colors.muted} wrap='wrap'>{cleanContent}</Text>

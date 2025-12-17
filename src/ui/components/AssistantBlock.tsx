@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { useCleanedContent, useContentWidth } from '../hooks';
+import { useCleanedContent } from '../hooks/useCleanedContent';
+import { useContentWidth } from '../hooks/useContentWidth';
 import { Markdown } from '../markdown';
 import { colors } from '../theme/colors';
 
@@ -10,7 +11,7 @@ interface AssistantBlockProps {
 }
 
 export function AssistantBlock(
-  {content, showIcon = true}: AssistantBlockProps,
+  {content, showIcon = false}: AssistantBlockProps,
 ): React.ReactElement | null {
   const contentWidth = useContentWidth();
   const cleanedContent = useCleanedContent(content);

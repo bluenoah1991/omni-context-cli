@@ -21,7 +21,7 @@ export const MessageItem = React.memo(
         return <AssistantBlock content={message.content} showIcon={showIcon} />;
 
       case 'thinking':
-        return <ThinkingBlock content={message.content} />;
+        return <ThinkingBlock content={message.content} showIcon={showIcon} />;
 
       case 'tool_call':
         return (

@@ -22,8 +22,9 @@ export function MessageList({messages, sessionId}: MessageListProps): React.Reac
   const last = messages[messages.length - 1];
 
   const getShowIcon = (index: number): boolean => {
-    const prev = index > 0 ? messages[index - 1] : null;
-    return messages[index].role === 'assistant' && prev?.role === 'user';
+    if (index === 0) return false;
+    const prev = messages[index - 1];
+    return prev.role === 'user' && !prev.toolResult;
   };
 
   return (
