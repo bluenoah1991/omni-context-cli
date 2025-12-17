@@ -2,24 +2,27 @@ import hljs from 'highlight.js';
 import { Text } from 'ink';
 import React from 'react';
 
-export function HighlightedCode({code, language}: {code: string; language?: string;}) {
-  try {
-    let result;
-    if (language && hljs.getLanguage(language)) {
-      result = hljs.highlight(code, {language});
-    } else {
-      result = hljs.highlightAuto(code);
-    }
+export const HighlightedCode = React.memo(
+  function HighlightedCode({code, language}: {code: string; language?: string;}) {
+    try {
+      let result;
+      if (language && hljs.getLanguage(language)) {
+        result = hljs.highlight(code, {language});
+      } else {
+        result = hljs.highlightAuto(code);
+      }
 
-    const segments = parseHighlightedHTML(result.value);
-    return <CodeSegments segments={segments} />;
-  } catch (error) {
-    // If highlighting fails, return plain text lines
-    return (
-      <>{code.split('\n').map((line, index) => <Text key={`code-failed-${index}`}>{line}</Text>)}</>
-    );
-  }
-}
+      const segments = parseHighlightedHTML(result.value);
+      return <CodeSegments segments={segments} />;
+    } catch (error) {
+      return (
+        <>
+          {code.split('\n').map((line, index) => <Text key={`code-failed-${index}`}>{line}</Text>)}
+        </>
+      );
+    }
+  },
+);
 
 type CodeSegment = {text: string; className?: string;};
 
