@@ -129,12 +129,12 @@ export function ChatView(): React.ReactElement {
     <Box flexDirection='column' padding={1}>
       <MessageList messages={throttledMessages} sessionId={session.id} isLoading={isLoading} />
 
-      <Box marginBottom={1} height={1}>{isLoading && <LoadingIndicator />}</Box>
+      <LoadingIndicator isLoading={isLoading} />
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 
       {!showMenu && (
-        <Box marginTop={1}>
+        <>
           <StatusBar
             isLoading={isLoading}
             onInterrupt={handleInterrupt}
@@ -142,13 +142,8 @@ export function ChatView(): React.ReactElement {
             config={config}
             session={session}
           />
-        </Box>
-      )}
-
-      {!showMenu && (
-        <Box>
           <InputBox onSubmit={handleSubmit} disabled={isLoading} />
-        </Box>
+        </>
       )}
     </Box>
   );

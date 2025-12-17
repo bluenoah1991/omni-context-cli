@@ -18,7 +18,11 @@ const verbs = [
 
 const getRandomText = () => verbs[Math.floor(Math.random() * verbs.length)];
 
-export function LoadingIndicator(): React.ReactElement {
+interface LoadingIndicatorProps {
+  isLoading: boolean;
+}
+
+export function LoadingIndicator({isLoading}: LoadingIndicatorProps): React.ReactElement {
   const [text, setText] = useState(getRandomText);
 
   useEffect(() => {
@@ -30,12 +34,16 @@ export function LoadingIndicator(): React.ReactElement {
   }, []);
 
   return (
-    <Box>
-      <Text color={colors.primary}>
-        <Spinner type='dots' />
-        {' '}
-      </Text>
-      <Text color={colors.muted}>{text}...</Text>
+    <Box height={1} marginBottom={1}>
+      {isLoading && (
+        <>
+          <Text color={colors.primary}>
+            <Spinner type='dots' />
+            {' '}
+          </Text>
+          <Text color={colors.muted}>{text}...</Text>
+        </>
+      )}
     </Box>
   );
 }

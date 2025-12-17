@@ -47,7 +47,7 @@ export function StatusBar(
   const contextPercent = ((totalTokens / contextLimit) * 100).toFixed(1);
 
   return (
-    <Box flexGrow={1} justifyContent='space-between'>
+    <Box flexGrow={1} justifyContent='space-between' marginTop={1}>
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
