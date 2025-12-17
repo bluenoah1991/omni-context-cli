@@ -193,7 +193,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
       dispatch({type: 'move-to-line-start'});
     } else if (key.ctrl && input === 'e') {
       dispatch({type: 'move-to-line-end'});
-    } else if (key.backspace) {
+    } else if (key.backspace || (key.delete && process.platform !== 'win32')) {
       dispatch({type: 'backspace'});
     } else if (key.delete) {
       dispatch({type: 'delete'});

@@ -34,7 +34,7 @@ export function TextInput(
       setCursorOffset(Math.max(0, cursorOffset - 1));
     } else if (key.rightArrow) {
       setCursorOffset(Math.min(value.length, cursorOffset + 1));
-    } else if (key.backspace) {
+    } else if (key.backspace || (key.delete && process.platform !== 'win32')) {
       if (cursorOffset > 0) {
         onChange(value.slice(0, cursorOffset - 1) + value.slice(cursorOffset));
         setCursorOffset(cursorOffset - 1);
