@@ -7,7 +7,15 @@ interface InputBoxProps {
   disabled?: boolean;
 }
 
-type State = {previousValue: string; value: string; cursorOffset: number;};
+const inputHistory: string[] = [];
+
+type State = {
+  previousValue: string;
+  value: string;
+  cursorOffset: number;
+  historyIndex: number;
+  savedInput: string;
+};
 
 type Action =
   | {type: 'move-cursor-left';}
@@ -42,7 +50,31 @@ const reducer = (state: State, action: Action): State => {
       }
 
       const targetLine = action.type === 'move-cursor-up' ? line - 1 : line + 1;
-      if (targetLine < 0 || targetLine >= lines.length) return state;
+
+      if (targetLine < 0) {
+        if (inputHistory.length === 0) return state;
+        const newIndex = Math.min(state.historyIndex + 1, inputHistory.length - 1);
+        if (newIndex === state.historyIndex) return state;
+        const savedInput = state.historyIndex === -1 ? state.value : state.savedInput;
+        const historyValue = inputHistory[inputHistory.length - 1 - newIndex];
+        return {
+          ...state,
+          savedInput,
+          historyIndex: newIndex,
+          value: historyValue,
+          cursorOffset: historyValue.length,
+        };
+      }
+
+      if (targetLine >= lines.length) {
+        if (state.historyIndex < 0) return state;
+        const newIndex = state.historyIndex - 1;
+        if (newIndex < -1) return state;
+        const newValue = newIndex === -1
+          ? state.savedInput
+          : inputHistory[inputHistory.length - 1 - newIndex];
+        return {...state, historyIndex: newIndex, value: newValue, cursorOffset: newValue.length};
+      }
 
       const targetCol = Math.min(col, lines[targetLine].length);
       let offset = 0;
@@ -87,12 +119,24 @@ const reducer = (state: State, action: Action): State => {
         value: state.value.slice(0, state.cursorOffset) + state.value.slice(state.cursorOffset + 1),
       };
     case 'clear':
-      return {previousValue: state.value, value: '', cursorOffset: 0};
+      return {
+        previousValue: state.value,
+        value: '',
+        cursorOffset: 0,
+        historyIndex: -1,
+        savedInput: '',
+      };
   }
 };
 
 export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElement {
-  const [state, dispatch] = useReducer(reducer, {previousValue: '', value: '', cursorOffset: 0});
+  const [state, dispatch] = useReducer(reducer, {
+    previousValue: '',
+    value: '',
+    cursorOffset: 0,
+    historyIndex: -1,
+    savedInput: '',
+  });
 
   const {lines, cursorLine, cursorCol, isPlaceholder} = useMemo(() => {
     const isPlaceholder = !state.value;
@@ -124,7 +168,11 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     if (key.ctrl && input === 'c') return;
     if (key.return && !key.shift && !key.meta) {
       if (state.value.trim()) {
-        onSubmit(state.value.trim());
+        const trimmedValue = state.value.trim();
+        if (inputHistory.length === 0 || inputHistory[inputHistory.length - 1] !== trimmedValue) {
+          inputHistory.push(trimmedValue);
+        }
+        onSubmit(trimmedValue);
         dispatch({type: 'clear'});
       }
       return;
