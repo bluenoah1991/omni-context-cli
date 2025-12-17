@@ -11,6 +11,7 @@ import {
 } from './services/configManager.js';
 import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
+import { mcpManager } from './services/mcpManager.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { initializeTools } from './services/tools/index.js';
 import { useChatStore } from './store/chatStore.js';
@@ -26,6 +27,7 @@ const opts = program.opts();
 initializeAppConfig();
 initializeInterceptors();
 initializeTools();
+mcpManager.initialize();
 
 if (opts.diagnostic) {
   enableDiagnostic();
@@ -51,3 +53,7 @@ if (opts.continue) {
 }
 
 render(<ChatView />, {exitOnCtrlC: false});
+
+process.on('exit', () => {
+  mcpManager.shutdown();
+});
