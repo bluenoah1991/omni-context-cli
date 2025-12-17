@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink';
 import { marked, MarkedToken, Token, Tokens } from 'marked';
-import React from 'react';
+import React, { useMemo } from 'react';
 import stringWidth from 'string-width';
 import { colors } from '../theme/colors';
 import { HighlightedCode } from './highlight-code';
@@ -14,14 +14,14 @@ import {
   isTextToken,
 } from './types';
 
-export function Markdown({markdown}: {markdown: string;}) {
-  const tokens = marked.lexer(markdown);
+export const Markdown = React.memo(function Markdown({markdown}: {markdown: string;}) {
+  const tokens = useMemo(() => marked.lexer(markdown), [markdown]);
   return (
     <Box flexDirection='column' marginBottom={-1}>
       {tokens.map((token, index) => <TokenRenderer key={index} token={token} />)}
     </Box>
   );
-}
+});
 
 function TokenRenderer({token}: {token: Token;}): React.ReactElement {
   if (!isMarkedToken(token)) {

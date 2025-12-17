@@ -11,3 +11,9 @@ export interface ToolExecutionResult {
   result?: any;
   error?: string;
 }
+
+export interface PendingToolCall {
+  content: string;
+  timestamp: number;
+  toolName: string;
+}

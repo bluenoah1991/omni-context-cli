@@ -1,4 +1,4 @@
-export type MessageRole = 'user' | 'assistant' | 'thinking' | 'tool_call' | 'tool_result';
+export type MessageRole = 'user' | 'assistant' | 'thinking' | 'tool_call';
 
 export interface UIMessage {
   role: MessageRole;

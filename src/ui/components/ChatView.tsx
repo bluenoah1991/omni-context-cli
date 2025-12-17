@@ -4,6 +4,7 @@ import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
+import { PendingToolCall } from '../../types/tool';
 import { useThrottledMessages } from '../hooks';
 import { Header } from './Header';
 import { InputBox } from './InputBox';
@@ -28,6 +29,8 @@ export function ChatView(): React.ReactElement {
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
+
+  const pendingToolCallsRef = useRef<Map<string, PendingToolCall>>(new Map());
 
   const handleInterrupt = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -80,34 +83,34 @@ export function ChatView(): React.ReactElement {
           });
         },
         onToolCall: toolCall => {
-          updateMessages(
-            messages => [...messages, {
-              role: 'tool_call',
-              content: JSON.stringify(toolCall.input),
-              timestamp: Date.now(),
-              toolName: toolCall.name,
-              toolCallId: toolCall.id,
-            }]
-          );
+          pendingToolCallsRef.current.set(toolCall.id, {
+            content: JSON.stringify(toolCall.input),
+            timestamp: Date.now(),
+            toolName: toolCall.name,
+          });
         },
         onToolResult: toolResult => {
-          updateMessages(messages => {
-            const index = messages.findIndex(message =>
-              message.role === 'tool_call' && message.toolCallId === toolResult.id
+          const pendingCall = pendingToolCallsRef.current.get(toolResult.id);
+          if (pendingCall) {
+            pendingToolCallsRef.current.delete(toolResult.id);
+            updateMessages(
+              messages => [...messages, {
+                role: 'tool_call',
+                content: pendingCall.content,
+                timestamp: pendingCall.timestamp,
+                toolName: pendingCall.toolName,
+                toolCallId: toolResult.id,
+                toolResult: toolResult.content,
+              }]
             );
-            if (index !== -1) {
-              const updated = [...messages];
-              updated[index] = {...updated[index], toolResult: toolResult.content};
-              return updated;
-            }
-            return messages;
-          });
+          }
         },
       }, abortController.signal);
 
       setSession(finalSession);
       saveSession(finalSession, config.provider);
     } finally {
+      pendingToolCallsRef.current.clear();
       setLoading(false);
     }
   }, [config.provider, updateMessages, setLoading, setSession]);
@@ -117,10 +120,10 @@ export function ChatView(): React.ReactElement {
       <Header />
 
       <Box flexDirection='column' flexGrow={1}>
-        <MessageList messages={throttledMessages} />
+        <MessageList messages={throttledMessages} sessionId={session.id} />
       </Box>
 
-      <Box height={1}>{isLoading && <LoadingIndicator />}</Box>
+      <Box marginY={1} height={1}>{isLoading && <LoadingIndicator />}</Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 

@@ -1,11 +1,12 @@
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
+import { PendingToolCall } from '../types/tool';
 import { UIMessage } from '../types/uiMessage';
 
-export function openAIMessageToUI(
+function openAIMessageToUI(
   message: OpenAIMessage,
   timestamp: number,
-  toolNameMap?: Map<string, string>,
+  pendingToolCalls: Map<string, PendingToolCall>,
 ): UIMessage[] {
   const uiMessages: UIMessage[] = [];
 
@@ -52,12 +53,10 @@ export function openAIMessageToUI(
 
       if (message.tool_calls && message.tool_calls.length > 0) {
         message.tool_calls.forEach(toolCall => {
-          uiMessages.push({
-            role: 'tool_call',
+          pendingToolCalls.set(toolCall.id, {
             content: toolCall.function.arguments,
             timestamp,
             toolName: toolCall.function.name,
-            toolCallId: toolCall.id,
           });
         });
       }
@@ -65,33 +64,26 @@ export function openAIMessageToUI(
     }
 
     case 'tool': {
-      const toolName = toolNameMap?.get(message.tool_call_id ?? '') ?? message.tool_call_id;
-      if (typeof message.content === 'string') {
-        if (message.content.trim()) {
-          uiMessages.push({
-            role: 'tool_result',
-            content: message.content,
-            timestamp,
-            toolName,
-            toolCallId: message.tool_call_id,
-          });
+      const toolCallId = message.tool_call_id ?? '';
+      const pending = pendingToolCalls.get(toolCallId);
+      if (pending) {
+        pendingToolCalls.delete(toolCallId);
+        let resultContent = '';
+        if (typeof message.content === 'string') {
+          resultContent = message.content;
+        } else if (Array.isArray(message.content)) {
+          resultContent = message.content.filter(part => part.type === 'text').map(part =>
+            part.text
+          ).join('\n');
         }
-      } else if (Array.isArray(message.content)) {
-        const textParts = message.content.filter(part => part.type === 'text').map(part =>
-          part.text
-        );
-        if (textParts.length > 0) {
-          const content = textParts.join('\n');
-          if (content.trim()) {
-            uiMessages.push({
-              role: 'tool_result',
-              content,
-              timestamp,
-              toolName,
-              toolCallId: message.tool_call_id,
-            });
-          }
-        }
+        uiMessages.push({
+          role: 'tool_call',
+          content: pending.content,
+          timestamp: pending.timestamp,
+          toolName: pending.toolName,
+          toolCallId,
+          toolResult: resultContent,
+        });
       }
       break;
     }
@@ -100,10 +92,10 @@ export function openAIMessageToUI(
   return uiMessages;
 }
 
-export function anthropicMessageToUI(
+function anthropicMessageToUI(
   message: AnthropicMessage,
   timestamp: number,
-  toolNameMap?: Map<string, string>,
+  pendingToolCalls: Map<string, PendingToolCall>,
 ): UIMessage[] {
   const uiMessages: UIMessage[] = [];
 
@@ -136,32 +128,29 @@ export function anthropicMessageToUI(
 
   message.content.forEach(block => {
     if (block.type === 'tool_use') {
-      uiMessages.push({
-        role: 'tool_call',
+      pendingToolCalls.set(block.id, {
         content: JSON.stringify(block.input),
         timestamp,
         toolName: block.name,
-        toolCallId: block.id,
       });
     } else if (block.type === 'tool_result') {
-      const toolName = toolNameMap?.get(block.tool_use_id);
-      if (typeof block.content === 'string') {
+      const pending = pendingToolCalls.get(block.tool_use_id);
+      if (pending) {
+        pendingToolCalls.delete(block.tool_use_id);
+        let resultContent = '';
+        if (typeof block.content === 'string') {
+          resultContent = block.content;
+        } else {
+          resultContent = block.content.filter(part => part.type === 'text').map(part => part.text)
+            .join('\n');
+        }
         uiMessages.push({
-          role: 'tool_result',
-          content: block.content,
-          timestamp,
-          toolName,
+          role: 'tool_call',
+          content: pending.content,
+          timestamp: pending.timestamp,
+          toolName: pending.toolName,
           toolCallId: block.tool_use_id,
-        });
-      } else {
-        const content = block.content.filter(part => part.type === 'text').map(part => part.text)
-          .join('\n');
-        uiMessages.push({
-          role: 'tool_result',
-          content,
-          timestamp,
-          toolName,
-          toolCallId: block.tool_use_id,
+          toolResult: resultContent,
         });
       }
     }
@@ -175,50 +164,19 @@ export function sessionMessagesToUI(
   provider: 'openai' | 'anthropic',
 ): UIMessage[] {
   const uiMessages: UIMessage[] = [];
-  const toolNameMap = new Map<string, string>();
+  const pendingToolCalls = new Map<string, PendingToolCall>();
 
   messages.forEach((message, index) => {
     const timestamp = Date.now() - (messages.length - index) * 1000;
 
     if (provider === 'openai') {
-      const openaiMsg = message as OpenAIMessage;
-
-      if (openaiMsg.role === 'assistant' && openaiMsg.tool_calls) {
-        openaiMsg.tool_calls.forEach(tc => {
-          toolNameMap.set(tc.id, tc.function.name);
-        });
-      }
-
-      uiMessages.push(...openAIMessageToUI(openaiMsg, timestamp, toolNameMap));
+      uiMessages.push(...openAIMessageToUI(message as OpenAIMessage, timestamp, pendingToolCalls));
     } else {
-      const anthropicMsg = message as AnthropicMessage;
-
-      if (anthropicMsg.role === 'assistant' && Array.isArray(anthropicMsg.content)) {
-        anthropicMsg.content.forEach(block => {
-          if (block.type === 'tool_use') {
-            toolNameMap.set(block.id, block.name);
-          }
-        });
-      }
-
-      uiMessages.push(...anthropicMessageToUI(anthropicMsg, timestamp, toolNameMap));
-    }
-  });
-
-  const finalMessages: UIMessage[] = [];
-  uiMessages.forEach(msg => {
-    if (msg.role === 'tool_result') {
-      const toolCallId = msg.toolCallId;
-      const toolCall = finalMessages.find(m =>
-        m.role === 'tool_call' && m.toolCallId === toolCallId
+      uiMessages.push(
+        ...anthropicMessageToUI(message as AnthropicMessage, timestamp, pendingToolCalls),
       );
-      if (toolCall) {
-        toolCall.toolResult = msg.content;
-      }
-    } else {
-      finalMessages.push(msg);
     }
   });
 
-  return finalMessages;
+  return uiMessages;
 }
