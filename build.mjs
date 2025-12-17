@@ -17,6 +17,20 @@ const textLoader = {
   },
 };
 
+const optionalDepsPlugin = {
+  name: 'optional-deps',
+  setup(build) {
+    build.onResolve({ filter: /^react-devtools-core$/ }, () => ({
+      path: 'react-devtools-core',
+      namespace: 'optional-deps',
+    }));
+    build.onLoad({ filter: /.*/, namespace: 'optional-deps' }, () => ({
+      contents: 'export default {};',
+      loader: 'js',
+    }));
+  },
+};
+
 const buildOptions = {
   entryPoints: ['src/cli.tsx'],
   bundle: true,
@@ -24,23 +38,13 @@ const buildOptions = {
   target: 'node18',
   format: 'esm',
   outfile: 'dist/cli.js',
-  external: [
-    'ink',
-    'react',
-    'figlet',
-    'zustand',
-    'ink-spinner',
-    'commander',
-    'highlight.js',
-    'marked',
-    'string-width',
-  ],
+  external: ['figlet'],
   banner: {
     js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },
   minify: !isWatch,
   sourcemap: isWatch ? 'inline' : false,
-  plugins: [textLoader],
+  plugins: [textLoader, optionalDepsPlugin],
 };
 
 if (isWatch) {

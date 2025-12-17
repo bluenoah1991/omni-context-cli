@@ -1,0 +1,8 @@
+src/
+build.mjs
+tsconfig.json
+dprint.json
+*.ts
+*.tsx
+node_modules/
+.git/
