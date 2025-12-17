@@ -36,13 +36,13 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
 
   if (view === 'main') {
     const items: SelectItem[] = [
-      {id: 'select', label: 'Select Model'},
-      {id: 'sessions', label: 'Load Session'},
-      {id: 'add', label: 'Add Model'},
-      {id: 'default', label: 'Set Default Model'},
-      {id: 'delete', label: 'Delete Model'},
-      {id: 'thinking', label: 'Thinking Mode'},
-      {id: 'exit', label: 'Exit'},
+      {id: 'select', label: '⤭ Switch to a different model'},
+      {id: 'sessions', label: '↻ Load a previous session'},
+      {id: 'add', label: '+ Add a new model'},
+      {id: 'default', label: '★ Change the default model'},
+      {id: 'delete', label: '− Remove a model'},
+      {id: 'thinking', label: '◉ Toggle thinking mode'},
+      {id: 'exit', label: '× Quit Omx'},
     ];
 
     return (
@@ -55,7 +55,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='main-menu'
-          title='Menu'
+          title='What would you like to do?'
           items={items}
           selectedIndex={mainIndex}
           onSelect={setMainIndex}
@@ -87,7 +87,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='select-model'
-          title='Select Model'
+          title='Which model should Omx use now?'
           items={items}
           selectedIndex={selectIndex}
           onSelect={setSelectIndex}
@@ -98,7 +98,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             }
           }}
           onCancel={() => setView('main')}
-          emptyMessage='No models configured'
+          emptyMessage='No models configured yet. Add one first!'
         />
       </Box>
     );
@@ -112,9 +112,9 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         label: 'API Type',
         options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}],
       },
-      {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. gpt-4'},
+      {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. deepseek-chat'},
       {type: 'text', key: 'apiKey', label: 'API Key', mask: true},
-      {type: 'text', key: 'apiUrl', label: 'API URL', placeholder: 'Leave empty for default'},
+      {type: 'text', key: 'apiUrl', label: 'API URL', placeholder: 'e.g. https://api.deepseek.com'},
       {
         type: 'text',
         key: 'contextSize',
@@ -186,7 +186,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='set-default'
-          title='Set Default Model'
+          title='Which model should be the default?'
           items={items}
           selectedIndex={setDefaultIndex ?? initialIndex}
           onSelect={setSetDefaultIndex}
@@ -198,7 +198,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             }
           }}
           onCancel={() => setView('main')}
-          emptyMessage='No models configured'
+          emptyMessage='No models configured yet. Add one first!'
         />
       </Box>
     );
@@ -217,7 +217,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='delete-model'
-          title='Delete Model'
+          title='Which model do you want to remove?'
           items={items}
           selectedIndex={deleteIndex}
           onSelect={setDeleteIndex}
@@ -229,14 +229,17 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             }
           }}
           onCancel={() => setView('main')}
-          emptyMessage='No models configured'
+          emptyMessage='No models to remove'
         />
       </Box>
     );
   }
 
   if (view === 'thinking') {
-    const items: SelectItem[] = [{id: 'on', label: 'ON'}, {id: 'off', label: 'OFF'}];
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable thinking mode'}, {
+      id: 'off',
+      label: '✗ Disable thinking mode',
+    }];
     const initialIndex = config.enableThinking ? 0 : 1;
 
     return (
@@ -249,7 +252,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='thinking-mode'
-          title='Thinking Mode'
+          title='Enable extended thinking for complex tasks?'
           items={items}
           selectedIndex={thinkingIndex ?? initialIndex}
           onSelect={setThinkingIndex}
@@ -271,7 +274,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
     const appConfig = getAppConfig();
     const sessions = listSessions(appConfig.provider, 10);
     const items: SelectItem[] = [
-      {id: 'new', label: 'New Session'},
+      {id: 'new', label: '+ Start a fresh new session'},
       ...sessions.map(s => ({
         id: s.path,
         label: `${s.title} (${new Date(s.createdAt).toLocaleString()})`,
@@ -288,7 +291,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       >
         <SelectList
           key='load-session'
-          title='Load Session'
+          title='Pick a session to continue'
           items={items}
           selectedIndex={sessionsIndex}
           onSelect={setSessionsIndex}
@@ -303,7 +306,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             }
           }}
           onCancel={() => setView('main')}
-          emptyMessage='No sessions found'
+          emptyMessage='No previous sessions found'
         />
       </Box>
     );
