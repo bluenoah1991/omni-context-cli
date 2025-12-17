@@ -50,4 +50,4 @@ if (opts.continue) {
   }
 }
 
-render(<ChatView />, {exitOnCtrlC: false, incrementalRendering: true});
+render(<ChatView />, {exitOnCtrlC: false});

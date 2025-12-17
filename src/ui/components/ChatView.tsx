@@ -7,7 +7,6 @@ import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { PendingToolCall } from '../../types/tool';
 import { useThrottledMessages } from '../hooks/useThrottledMessages';
-import { Header } from './Header';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
@@ -34,7 +33,7 @@ export function ChatView(): React.ReactElement {
       setLoading: state.setLoading,
     })),
   );
-  const throttledMessages = useThrottledMessages(messages, 1000);
+  const throttledMessages = useThrottledMessages(messages, 1000, session.id);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -128,11 +127,7 @@ export function ChatView(): React.ReactElement {
 
   return (
     <Box flexDirection='column' padding={1}>
-      <Header />
-
-      <Box flexDirection='column' flexGrow={1}>
-        <MessageList messages={throttledMessages} sessionId={session.id} />
-      </Box>
+      <MessageList messages={throttledMessages} sessionId={session.id} isLoading={isLoading} />
 
       <Box marginBottom={1} height={1}>{isLoading && <LoadingIndicator />}</Box>
 

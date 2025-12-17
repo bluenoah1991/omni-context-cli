@@ -1,25 +1,39 @@
 import { useEffect, useRef, useState } from 'react';
 import { UIMessage } from '../../types/uiMessage';
 
-export function useThrottledMessages(messages: UIMessage[], delay: number): UIMessage[] {
-  const [throttledMessages, setThrottledMessages] = useState(messages);
+export function useThrottledMessages(
+  messages: UIMessage[],
+  delay: number,
+  sessionId: string,
+): UIMessage[] {
+  const [throttled, setThrottled] = useState({sessionId, messages});
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingMessagesRef = useRef<UIMessage[] | null>(null);
+  const pendingRef = useRef<UIMessage[] | null>(null);
+
+  const sessionChanged = sessionId !== throttled.sessionId;
 
   useEffect(() => {
+    if (sessionChanged) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+      pendingRef.current = null;
+      setThrottled({sessionId, messages});
+      return;
+    }
+
     if (!timeoutRef.current) {
-      setThrottledMessages(messages);
+      setThrottled({sessionId, messages});
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null;
-        if (pendingMessagesRef.current) {
-          setThrottledMessages(pendingMessagesRef.current);
-          pendingMessagesRef.current = null;
+        if (pendingRef.current) {
+          setThrottled(prev => ({...prev, messages: pendingRef.current!}));
+          pendingRef.current = null;
         }
       }, delay);
     } else {
-      pendingMessagesRef.current = messages;
+      pendingRef.current = messages;
     }
-  }, [messages, delay]);
+  }, [messages, delay, sessionId, sessionChanged]);
 
-  return throttledMessages;
+  return (sessionChanged ? messages : throttled.messages) ?? [];
 }
