@@ -124,54 +124,56 @@ function formatToolResult(toolName: string, data: any): string {
   }
 }
 
-export function ToolCallBlock({toolName, content, result}: ToolCallBlockProps): React.ReactElement {
-  const contentWidth = useContentWidth();
-  let callText = '';
+export const ToolCallBlock = React.memo(
+  function ToolCallBlock({toolName, content, result}: ToolCallBlockProps): React.ReactElement {
+    const contentWidth = useContentWidth();
+    let callText = '';
 
-  try {
-    const data = JSON.parse(content);
-    callText = `${toolName}: ${formatToolCall(toolName, data)}`;
-  } catch {
-    callText = `${toolName}: ${content}`;
-  }
-
-  let resultText = '';
-  let resultColor: string = colors.secondary;
-
-  if (result) {
     try {
-      const resultData = JSON.parse(result);
-      if (resultData.error) {
-        resultText = resultData.error;
-        resultColor = colors.error;
-      } else {
-        resultText = formatToolResult(toolName, resultData);
-      }
+      const data = JSON.parse(content);
+      callText = `${toolName}: ${formatToolCall(toolName, data)}`;
     } catch {
-      resultText = result;
+      callText = `${toolName}: ${content}`;
     }
-  }
 
-  return (
-    <Box marginBottom={1} flexDirection='column'>
-      <Box>
-        <Box marginRight={1}>
-          <Text color={colors.secondary}>{' '}</Text>
-        </Box>
-        <Box marginRight={3} flexDirection='column' width={contentWidth}>
-          <Text color={colors.secondary} wrap='wrap'>{callText}</Text>
-        </Box>
-      </Box>
-      {result && (
+    let resultText = '';
+    let resultColor: string = colors.secondary;
+
+    if (result) {
+      try {
+        const resultData = JSON.parse(result);
+        if (resultData.error) {
+          resultText = resultData.error;
+          resultColor = colors.error;
+        } else {
+          resultText = formatToolResult(toolName, resultData);
+        }
+      } catch {
+        resultText = result;
+      }
+    }
+
+    return (
+      <Box marginBottom={1} flexDirection='column'>
         <Box>
           <Box marginRight={1}>
             <Text color={colors.secondary}>{' '}</Text>
           </Box>
           <Box marginRight={3} flexDirection='column' width={contentWidth}>
-            <Text color={resultColor} wrap='wrap'>{resultText}</Text>
+            <Text color={colors.secondary} wrap='wrap'>{callText}</Text>
           </Box>
         </Box>
-      )}
-    </Box>
-  );
-}
+        {result && (
+          <Box>
+            <Box marginRight={1}>
+              <Text color={colors.secondary}>{' '}</Text>
+            </Box>
+            <Box marginRight={3} flexDirection='column' width={contentWidth}>
+              <Text color={resultColor} wrap='wrap'>{resultText}</Text>
+            </Box>
+          </Box>
+        )}
+      </Box>
+    );
+  },
+);

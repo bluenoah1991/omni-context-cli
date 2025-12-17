@@ -1,5 +1,6 @@
 import { Box } from 'ink';
 import React, { useCallback, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
@@ -22,7 +23,17 @@ export function ChatView(): React.ReactElement {
     updateSessionTokens,
     updateMessages,
     setLoading,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow(state => ({
+      session: state.session,
+      messages: state.messages,
+      isLoading: state.isLoading,
+      setSession: state.setSession,
+      updateSessionTokens: state.updateSessionTokens,
+      updateMessages: state.updateMessages,
+      setLoading: state.setLoading,
+    })),
+  );
   const throttledMessages = useThrottledMessages(messages, 1000);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());

@@ -9,25 +9,27 @@ interface ThinkingBlockProps {
   showIcon?: boolean;
 }
 
-export function ThinkingBlock(
-  {content, showIcon = false}: ThinkingBlockProps,
-): React.ReactElement | null {
-  const contentWidth = useContentWidth();
-  const cleanContent = useCleanedContent(content);
+export const ThinkingBlock = React.memo(
+  function ThinkingBlock(
+    {content, showIcon = false}: ThinkingBlockProps,
+  ): React.ReactElement | null {
+    const contentWidth = useContentWidth();
+    const cleanContent = useCleanedContent(content);
 
-  if (!cleanContent) {
-    return null;
-  }
+    if (!cleanContent) {
+      return null;
+    }
 
-  return (
-    <Box marginBottom={1}>
-      <Box marginRight={1}>
-        {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
-        {!showIcon && <Text color={colors.muted}>{' '}</Text>}
+    return (
+      <Box marginBottom={1}>
+        <Box marginRight={1}>
+          {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
+          {!showIcon && <Text color={colors.muted}>{' '}</Text>}
+        </Box>
+        <Box marginRight={3} flexDirection='column' width={contentWidth}>
+          <Text color={colors.muted} wrap='wrap'>{cleanContent}</Text>
+        </Box>
       </Box>
-      <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Text color={colors.muted} wrap='wrap'>{cleanContent}</Text>
-      </Box>
-    </Box>
-  );
-}
+    );
+  },
+);

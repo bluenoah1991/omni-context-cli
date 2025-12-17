@@ -10,25 +10,27 @@ interface AssistantBlockProps {
   showIcon?: boolean;
 }
 
-export function AssistantBlock(
-  {content, showIcon = false}: AssistantBlockProps,
-): React.ReactElement | null {
-  const contentWidth = useContentWidth();
-  const cleanedContent = useCleanedContent(content);
+export const AssistantBlock = React.memo(
+  function AssistantBlock(
+    {content, showIcon = false}: AssistantBlockProps,
+  ): React.ReactElement | null {
+    const contentWidth = useContentWidth();
+    const cleanedContent = useCleanedContent(content);
 
-  if (!cleanedContent) {
-    return null;
-  }
+    if (!cleanedContent) {
+      return null;
+    }
 
-  return (
-    <Box marginBottom={1}>
-      <Box marginRight={1}>
-        {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
-        {!showIcon && <Text>{' '}</Text>}
+    return (
+      <Box marginBottom={1}>
+        <Box marginRight={1}>
+          {showIcon && <Text color={colors.accent} bold>{'*'}</Text>}
+          {!showIcon && <Text>{' '}</Text>}
+        </Box>
+        <Box marginRight={3} flexDirection='column' width={contentWidth}>
+          <Markdown markdown={cleanedContent} />
+        </Box>
       </Box>
-      <Box marginRight={3} flexDirection='column' width={contentWidth}>
-        <Markdown markdown={cleanedContent} />
-      </Box>
-    </Box>
-  );
-}
+    );
+  },
+);
