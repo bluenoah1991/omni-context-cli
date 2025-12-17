@@ -4,36 +4,28 @@ import { UIMessage } from '../../types/uiMessage';
 export function useThrottledMessages(
   messages: UIMessage[],
   delay: number,
-  sessionId: string,
+  isLoading: boolean,
 ): UIMessage[] {
-  const [throttled, setThrottled] = useState({sessionId, messages});
+  const [throttled, setThrottled] = useState(messages);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingRef = useRef<UIMessage[] | null>(null);
-
-  const sessionChanged = sessionId !== throttled.sessionId;
 
   useEffect(() => {
-    if (sessionChanged) {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-      pendingRef.current = null;
-      setThrottled({sessionId, messages});
+    if (!isLoading) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setThrottled(messages);
       return;
     }
 
     if (!timeoutRef.current) {
-      setThrottled({sessionId, messages});
+      setThrottled(messages);
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null;
-        if (pendingRef.current) {
-          setThrottled(prev => ({...prev, messages: pendingRef.current!}));
-          pendingRef.current = null;
-        }
       }, delay);
-    } else {
-      pendingRef.current = messages;
     }
-  }, [messages, delay, sessionId, sessionChanged]);
+  }, [messages, delay, isLoading]);
 
-  return (sessionChanged ? messages : throttled.messages) ?? [];
+  return (isLoading ? throttled : messages) ?? [];
 }

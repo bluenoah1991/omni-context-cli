@@ -33,7 +33,7 @@ export function ChatView(): React.ReactElement {
       setLoading: state.setLoading,
     })),
   );
-  const throttledMessages = useThrottledMessages(messages, 1000, session.id);
+  const throttledMessages = useThrottledMessages(messages, 1000, isLoading);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -127,7 +127,7 @@ export function ChatView(): React.ReactElement {
 
   return (
     <Box flexDirection='column' padding={1}>
-      <MessageList messages={throttledMessages} sessionId={session.id} isLoading={isLoading} />
+      <MessageList messages={throttledMessages} sessionId={session.id} />
 
       <LoadingIndicator isLoading={isLoading} />
 
