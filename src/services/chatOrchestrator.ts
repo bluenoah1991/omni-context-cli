@@ -6,7 +6,7 @@ import { StreamCallbacks } from '../types/streamCallbacks';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getAppConfig } from './configManager';
-import { applyContextWindow } from './contextWindow';
+import { applyContextWindow, countTotalTokens } from './contextWindow';
 import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
@@ -32,9 +32,10 @@ async function streamAIResponse(
 
   saveRequest(config.provider, headers, body);
 
+  const previousTokens = countTotalTokens(messages);
   const handler = config.provider === 'openai'
-    ? new OpenAIStreamHandler(callbacks)
-    : new AnthropicStreamHandler(callbacks);
+    ? new OpenAIStreamHandler(callbacks, previousTokens)
+    : new AnthropicStreamHandler(callbacks, previousTokens);
 
   return handler.stream(headers, body, config.apiUrl, signal);
 }

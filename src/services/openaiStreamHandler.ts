@@ -120,7 +120,8 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       }
     }
 
-    const tokenUsage = this.inputTokens + this.outputTokens;
+    const totalTokens = this.inputTokens + this.outputTokens;
+    const tokenUsage = totalTokens - this.previousTokens;
 
     return {
       role: 'assistant' as const,
