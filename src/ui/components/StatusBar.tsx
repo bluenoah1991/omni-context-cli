@@ -38,19 +38,20 @@ export function StatusBar(
   });
 
   const nickname = config.nickname || config.model || 'Not Set';
-  const thinking = config.enableThinking ? 'ON' : 'OFF';
+  const thinkingText = config.enableThinking ? ' (Thinking)' : '';
   const contextLimit = (config.contextSize ?? 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
   const cachedTokens = session?.cachedTokens ?? 0;
   const totalTokens = inputTokens + outputTokens;
+  const contextPercent = ((totalTokens / contextLimit) * 100).toFixed(1);
 
   return (
     <Box flexGrow={1} justifyContent='space-between'>
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
-          : `| ${nickname} | Thinking: ${thinking} | Tokens: ${totalTokens}/${contextLimit} (In: ${inputTokens}, Out: ${outputTokens}, Cache: ${cachedTokens}) |`}
+          : `| ${nickname}${thinkingText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
       </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
