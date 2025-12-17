@@ -123,7 +123,7 @@ export function ChatView(): React.ReactElement {
         <MessageList messages={throttledMessages} sessionId={session.id} />
       </Box>
 
-      <Box marginY={1} height={1}>{isLoading && <LoadingIndicator />}</Box>
+      <Box marginBottom={1} height={1}>{isLoading && <LoadingIndicator />}</Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 
