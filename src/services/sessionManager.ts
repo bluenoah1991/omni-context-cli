@@ -185,8 +185,8 @@ export function loadLatestSession(): Session | null {
   const allFiles = fs.readdirSync(dir).filter(f => f.endsWith('.json')).map(f => {
     const filepath = path.join(dir, f);
     const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-    return {path: filepath, createdAt: content.createdAt};
-  }).sort((a, b) => b.createdAt - a.createdAt);
+    return {path: filepath, updatedAt: content.updatedAt};
+  }).sort((a, b) => b.updatedAt - a.updatedAt);
 
   if (allFiles.length === 0) return null;
   return loadSession(allFiles[0].path);
