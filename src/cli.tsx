@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { Command } from '@commander-js/extra-typings';
 import { render } from 'ink';
+import dns from 'node:dns';
 import React from 'react';
+import { Agent, setGlobalDispatcher } from 'undici';
 import {
   findFirstModelByProvider,
   findModelById,
@@ -23,6 +25,18 @@ const program = new Command().name('omx').description('Omni Context CLI').option
 ).option('-d, --diagnostic', 'Enable diagnostic mode to save request/response JSON').parse();
 
 const opts = program.opts();
+
+dns.setDefaultResultOrder('ipv4first');
+
+const agent = new Agent({
+  connections: 100,
+  pipelining: 10,
+  keepAliveTimeout: 60000,
+  keepAliveMaxTimeout: 600000,
+  allowH2: true,
+  maxConcurrentStreams: 100,
+});
+setGlobalDispatcher(agent);
 
 initializeAppConfig();
 initializeInterceptors();

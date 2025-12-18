@@ -25,7 +25,7 @@ export abstract class BaseStreamHandler {
   ): Promise<ChatMessage> {
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers,
+      headers: {...headers, 'Accept-Encoding': 'gzip, deflate, br'},
       body: JSON.stringify(body),
       signal,
     });
