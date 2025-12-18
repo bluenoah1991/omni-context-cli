@@ -40,11 +40,19 @@ if (opts.continue) {
     if (session.modelId) {
       const savedModel = findModelById(session.modelId);
       if (savedModel) {
-        updateAppConfig(savedModel, config.enableThinking ?? false);
+        updateAppConfig(
+          savedModel,
+          config.enableThinking ?? false,
+          config.streamingOutput ?? false,
+        );
       } else {
         const fallbackModel = findFirstModelByProvider(config.provider);
         if (fallbackModel) {
-          updateAppConfig(fallbackModel, config.enableThinking ?? false);
+          updateAppConfig(
+            fallbackModel,
+            config.enableThinking ?? false,
+            config.streamingOutput ?? false,
+          );
         }
       }
     }

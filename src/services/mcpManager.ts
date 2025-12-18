@@ -108,6 +108,7 @@ class MCPManager {
           command: config.command,
           args: config.args || [],
           env: {...process.env, ...config.env} as Record<string, string>,
+          stderr: 'ignore',
         });
         await client.connect(transport);
       } else {
