@@ -6,7 +6,6 @@ import { getAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { PendingToolCall } from '../../types/tool';
-import { useThrottledMessages } from '../hooks/useThrottledMessages';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
@@ -33,7 +32,6 @@ export function ChatView(): React.ReactElement {
       setLoading: state.setLoading,
     })),
   );
-  const throttledMessages = useThrottledMessages(messages, 50, isLoading);
   const [showMenu, setShowMenu] = useState(false);
   const [config, setConfig] = useState(() => getAppConfig());
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -128,7 +126,7 @@ export function ChatView(): React.ReactElement {
   return (
     <Box flexDirection='column' padding={1}>
       <MessageList
-        messages={throttledMessages}
+        messages={messages}
         sessionId={session.id}
         isLoading={isLoading}
         streamingOutput={config.streamingOutput ?? false}
