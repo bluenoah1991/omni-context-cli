@@ -14,6 +14,7 @@ export interface OmxConfig {
   models: ModelConfig[];
   defaultModelId?: string;
   enableThinking: boolean;
+  streamingOutput: boolean;
 }
 
 export interface AppConfig {
@@ -22,6 +23,7 @@ export interface AppConfig {
   model: string;
   apiKey: string;
   enableThinking?: boolean;
+  streamingOutput?: boolean;
   modelId?: string;
   nickname?: string;
   contextSize?: number;
@@ -33,4 +35,5 @@ export const DEFAULT_CONFIG: AppConfig = {
   model: '',
   apiKey: '',
   enableThinking: false,
+  streamingOutput: false,
 };

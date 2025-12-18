@@ -14,10 +14,14 @@ type StaticItem = {type: 'header'; sessionId: string;} | {
 interface MessageListProps {
   messages: UIMessage[];
   sessionId: string;
+  isLoading: boolean;
+  streamingOutput: boolean;
 }
 
 export const MessageList = React.memo(
-  function MessageList({messages, sessionId}: MessageListProps): React.ReactElement {
+  function MessageList(
+    {messages, sessionId, isLoading, streamingOutput}: MessageListProps,
+  ): React.ReactElement {
     const staticItems = useMemo(() => {
       const items: StaticItem[] = [{type: 'header', sessionId: sessionId}];
       const msgs = messages.length > 0 ? messages.slice(0, -1) : [];
@@ -34,6 +38,7 @@ export const MessageList = React.memo(
     };
 
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const shouldShowLastMessage = streamingOutput || !isLoading;
 
     return (
       <>
@@ -56,7 +61,7 @@ export const MessageList = React.memo(
             Omni Context CLI. Tell Omx <Text color={colors.primary}>what you want to do.</Text>
           </Text>
         )}
-        {lastMessage && (
+        {lastMessage && shouldShowLastMessage && (
           <MessageItem message={lastMessage} showIcon={getShowIcon(messages.length - 1)} />
         )}
       </>

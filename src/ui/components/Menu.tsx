@@ -7,6 +7,7 @@ import {
   loadOmxConfig,
   removeModel,
   setDefaultModel,
+  toggleStreamingOutput,
   toggleThinking,
   updateAppConfig,
 } from '../../services/configManager';
@@ -17,7 +18,15 @@ import { colors } from '../theme/colors';
 import { SelectItem, SelectList } from './SelectList';
 import { FormStep, StepForm } from './StepForm';
 
-type View = 'main' | 'select' | 'add' | 'set-default' | 'delete' | 'thinking' | 'sessions';
+type View =
+  | 'main'
+  | 'select'
+  | 'add'
+  | 'set-default'
+  | 'delete'
+  | 'thinking'
+  | 'streaming'
+  | 'sessions';
 
 function normalizeApiUrl(url: string, provider: Provider): string {
   let apiUrl = url.trim();
@@ -49,6 +58,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [setDefaultIndex, setSetDefaultIndex] = useState<number>();
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
+  const [streamingIndex, setStreamingIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
 
   const config = loadOmxConfig();
@@ -61,6 +71,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'default', label: '★ Change the default model'},
       {id: 'delete', label: '− Remove a model'},
       {id: 'thinking', label: '◉ Toggle thinking mode'},
+      {id: 'streaming', label: '⚡ Toggle streaming output'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
@@ -85,7 +96,8 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             else if (i === 3) setView('set-default');
             else if (i === 4) setView('delete');
             else if (i === 5) setView('thinking');
-            else if (i === 6) process.exit(0);
+            else if (i === 6) setView('streaming');
+            else if (i === 7) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -112,7 +124,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onSelect={setSelectIndex}
           onConfirm={i => {
             if (config.models[i]) {
-              updateAppConfig(config.models[i], config.enableThinking);
+              updateAppConfig(config.models[i], config.enableThinking, config.streamingOutput);
               onClose();
             }
           }}
@@ -280,6 +292,41 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.enableThinking) {
               toggleThinking();
+              initializeAppConfig();
+            }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'streaming') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable streaming output'}, {
+      id: 'off',
+      label: '✗ Disable streaming output',
+    }];
+    const initialIndex = config.streamingOutput ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='streaming-mode'
+          title='Enable streaming output for responses?'
+          items={items}
+          selectedIndex={streamingIndex ?? initialIndex}
+          onSelect={setStreamingIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            if (shouldEnable !== config.streamingOutput) {
+              toggleStreamingOutput();
               initializeAppConfig();
             }
             onClose();

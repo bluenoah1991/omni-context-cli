@@ -127,7 +127,12 @@ export function ChatView(): React.ReactElement {
 
   return (
     <Box flexDirection='column' padding={1}>
-      <MessageList messages={throttledMessages} sessionId={session.id} />
+      <MessageList
+        messages={throttledMessages}
+        sessionId={session.id}
+        isLoading={isLoading}
+        streamingOutput={config.streamingOutput ?? false}
+      />
 
       <Box height={1} marginBottom={1}>{isLoading && <LoadingIndicator />}</Box>
 
