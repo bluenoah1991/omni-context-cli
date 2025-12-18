@@ -1,61 +1,133 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
+import * as path from 'path';
 import { registerTool } from '../toolExecutor';
 
-const execAsync = promisify(exec);
+const MAX_OUTPUT_LENGTH = 30000;
+const DEFAULT_TIMEOUT = 120000;
 
 export function registerBashTool(): void {
   registerTool({
-    name: 'shell',
+    name: 'bash',
     description: `
-      Runs a shell command in the cwd. This tool uses /bin/sh. Do NOT use bash-isms; they won't work.
-      Only use POSIX-compliant shell.
+Executes a given bash command in a persistent shell session with optional timeout.
 
-      The shell command is run as a subshell, not connected to a PTY, so don't run interactive commands:
-      only run commands that will work headless.
+All commands run in the current working directory by default. Use the workdir parameter if you need to run a command in a different directory.
 
-      Do NOT attempt to pipe echo, printf, etc commands to work around this. If it's interactive, either
-      figure out a non-interactive variant to run instead, or if that's impossible, as a last resort you
-      can ask the user to run the command, explaining that it's interactive.
+Before executing the command:
+1. Directory Verification: If the command will create new directories or files, verify the parent directory exists
+2. Command Execution: Always quote file paths that contain spaces with double quotes
 
-      Often interactive commands provide flags to run them non-interactively. Prefer those flags.
+Usage notes:
+- The command argument is required
+- Optional timeout in milliseconds (up to 600000ms / 10 minutes), default is 120000ms (2 minutes)
+- The description argument is required: write a clear, concise description of what this command does in 5-10 words
+- If output exceeds 30000 characters, it will be truncated
+- Avoid using Bash with find, grep, cat, head, tail, sed, awk, or echo commands unless truly necessary. Use dedicated tools instead:
+  * File search: Use glob (NOT find or ls)
+  * Content search: Use grep (NOT grep/rg in bash)
+  * Read files: Use read (NOT cat/head/tail)
+  * Edit files: Use edit (NOT sed/awk)
+  * Write files: Use write (NOT echo >/cat <<EOF)
+- When issuing multiple commands:
+  * If commands are independent: make multiple bash tool calls in parallel
+  * If commands depend on each other: use && to chain them (e.g., git add . && git commit -m "message" && git push)
+  * Use ; only when you need sequential commands but don't care if earlier ones fail
+  * DO NOT use newlines to separate commands
+- Try to maintain current working directory by using absolute paths and avoiding cd
+- Prefer workdir parameter over cd commands
+
+Working Directory:
+The workdir parameter sets the working directory for command execution. Prefer using workdir over "cd <dir> &&" command chains.
+
+Example: workdir="path/to/dir", command="pytest tests" is better than command="cd path/to/dir && pytest tests"
     `,
     parameters: {
       properties: {
-        cmd: {type: 'string', description: 'The command to run'},
-        timeout: {
-          type: 'number',
+        command: {type: 'string', description: 'The command to execute'},
+        timeout: {type: 'number', description: 'Optional timeout in milliseconds'},
+        workdir: {
+          type: 'string',
           description:
-            'A timeout for the command, in milliseconds. Be generous. You MUST specify this.',
+            'The working directory to run the command in. Defaults to current directory.',
+        },
+        description: {
+          type: 'string',
+          description:
+            'Clear, concise description of what this command does in 5-10 words. Examples: "Lists files in current directory" for ls, "Shows working tree status" for git status',
         },
       },
-      required: ['cmd', 'timeout'],
+      required: ['command', 'description'],
     },
-  }, async (args: {cmd: string; timeout: number;}) => {
-    const {cmd, timeout} = args;
+  }, async (args: {command: string; timeout?: number; workdir?: string; description: string;}) => {
+    const {command, timeout = DEFAULT_TIMEOUT, workdir, description} = args;
 
-    if (!cmd) {
-      throw new Error('cmd is required');
+    if (!command) {
+      throw new Error('command is required');
     }
-    if (!timeout) {
-      throw new Error('timeout is required');
+    if (!description) {
+      throw new Error('description is required');
+    }
+    if (timeout !== undefined && timeout < 0) {
+      throw new Error(`Invalid timeout value: ${timeout}. Timeout must be a positive number.`);
     }
 
-    try {
-      const {stdout, stderr} = await execAsync(cmd, {
-        cwd: process.cwd(),
-        timeout,
-        maxBuffer: 10 * 1024 * 1024,
+    const cwd = workdir ? path.resolve(process.cwd(), workdir) : process.cwd();
+
+    const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
+    const shellArgs = process.platform === 'win32' ? ['-Command', command] : ['-c', command];
+
+    return new Promise((resolve, reject) => {
+      const child = spawn(shell, shellArgs, {
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
       });
 
-      const output = stdout + (stderr ? `\nSTDERR:\n${stderr}` : '');
-      return {content: output.trim()};
-    } catch (error: any) {
-      if (error.killed) {
-        throw new Error(`Command timed out after ${timeout}ms`);
-      }
-      const output = (error.stdout || '') + (error.stderr ? `\nSTDERR:\n${error.stderr}` : '');
-      throw new Error(`Command failed with exit code ${error.code}:\n${output || error.message}`);
-    }
+      let stdout = '';
+      let stderr = '';
+      let killed = false;
+
+      const timeoutId = setTimeout(() => {
+        killed = true;
+        child.kill();
+        reject(new Error(`Command timed out after ${timeout}ms`));
+      }, timeout);
+
+      child.stdout.on('data', data => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+
+      child.on('error', error => {
+        clearTimeout(timeoutId);
+        if (!killed) {
+          reject(new Error(`Failed to execute command: ${error.message}`));
+        }
+      });
+
+      child.on('close', code => {
+        clearTimeout(timeoutId);
+        if (killed) return;
+
+        let output = stdout;
+        if (stderr) {
+          output += (output ? '\n\n' : '') + `STDERR:\n${stderr}`;
+        }
+
+        if (output.length > MAX_OUTPUT_LENGTH) {
+          output = output.substring(0, MAX_OUTPUT_LENGTH)
+            + `\n\n[Output truncated. Total length: ${output.length} characters]`;
+        }
+
+        if (code !== 0) {
+          reject(new Error(`Command failed with exit code ${code}:\n${output || 'No output'}`));
+        } else {
+          resolve({content: output.trim() || 'Command executed successfully'});
+        }
+      });
+    });
   });
 }

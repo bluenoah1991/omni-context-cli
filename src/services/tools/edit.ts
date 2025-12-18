@@ -2,65 +2,107 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { registerTool } from '../toolExecutor';
 
+function normalizeLineEndings(text: string): string {
+  return text.replaceAll('\r\n', '\n');
+}
+
+function replace(
+  content: string,
+  oldString: string,
+  newString: string,
+  replaceAll?: boolean,
+): string {
+  const normalizedContent = normalizeLineEndings(content);
+  const normalizedOld = normalizeLineEndings(oldString);
+  const normalizedNew = normalizeLineEndings(newString);
+
+  if (!normalizedContent.includes(normalizedOld)) {
+    throw new Error(
+      `oldString not found in content. The search string must EXACTLY match, including all whitespace and indentation.`,
+    );
+  }
+
+  const occurrences = normalizedContent.split(normalizedOld).length - 1;
+
+  if (occurrences > 1 && !replaceAll) {
+    throw new Error(
+      `oldString found ${occurrences} times in the file and requires more code context to uniquely identify the intended match. Either provide a larger string with more surrounding context to make it unique or use replaceAll to change every instance of oldString.`,
+    );
+  }
+
+  if (replaceAll) {
+    return normalizedContent.split(normalizedOld).join(normalizedNew);
+  }
+
+  return normalizedContent.replace(normalizedOld, normalizedNew);
+}
+
 export function registerEditTool(): void {
-  registerTool({
-    name: 'edit',
-    description:
-      'Applies a search/replace edit to a file. This should be your default tool to edit existing files.',
-    parameters: {
-      properties: {
-        filePath: {type: 'string', description: 'The path to the file'},
-        search: {
-          type: 'string',
-          description: `
-            The search string to replace. Must EXACTLY match the text you intend to replace, including
-            whitespace, punctuation, etc. Make sure to give a few lines of context above and below so you
-            don't accidentally replace a different matching substring in the same file.
-          `,
+  registerTool(
+    {
+      name: 'edit',
+      description: `Performs exact string replacements in files.
+
+Usage:
+- You must use your Read tool at least once in the conversation before editing
+- When editing text from Read tool output, preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix
+- The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match
+- Never include any part of the line number prefix in the oldString or newString
+- ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required
+- The edit will FAIL if oldString is not found in the file with an error "oldString not found in content"
+- The edit will FAIL if oldString is found multiple times in the file with an error about requiring more code context
+- Either provide a larger string with more surrounding context to make it unique or use replaceAll to change every instance
+- Use replaceAll for replacing and renaming strings across the file (useful for renaming variables)`,
+      parameters: {
+        properties: {
+          filePath: {type: 'string', description: 'The absolute path to the file to modify'},
+          oldString: {type: 'string', description: 'The text to replace'},
+          newString: {
+            type: 'string',
+            description: 'The text to replace it with (must be different from oldString)',
+          },
+          replaceAll: {
+            type: 'boolean',
+            description: 'Replace all occurrences of oldString (default false)',
+          },
         },
-        replace: {type: 'string', description: 'The string you want to insert into the file'},
+        required: ['filePath', 'oldString', 'newString'],
       },
-      required: ['filePath', 'search', 'replace'],
     },
-  }, async (args: {filePath: string; search: string; replace: string;}) => {
-    const {filePath, search, replace} = args;
+    async (
+      args: {filePath: string; oldString: string; newString: string; replaceAll?: boolean;},
+    ) => {
+      const {filePath, oldString, newString, replaceAll} = args;
 
-    if (!filePath) {
-      throw new Error('filePath is required');
-    }
-    if (search === undefined) {
-      throw new Error('search is required');
-    }
-    if (replace === undefined) {
-      throw new Error('replace is required');
-    }
-
-    const absolutePath = path.isAbsolute(filePath)
-      ? filePath
-      : path.resolve(process.cwd(), filePath);
-
-    let content: string;
-    try {
-      content = await fs.readFile(absolutePath, 'utf-8');
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        throw new Error(`File not found: ${absolutePath}`);
+      if (!filePath) {
+        throw new Error('filePath is required');
       }
-      throw error;
-    }
+      if (oldString === newString) {
+        throw new Error('oldString and newString must be different');
+      }
 
-    if (!content.includes(search)) {
-      throw new Error(`
-Could not find search string in file ${absolutePath}: ${search}
-This is likely an error in your formatting. The search string must EXACTLY match, including
-whitespace and punctuation.
-      `.trim());
-    }
+      const absolutePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.resolve(process.cwd(), filePath);
 
-    const newContent = content.replace(search, replace);
+      let content: string;
+      try {
+        const stats = await fs.stat(absolutePath);
+        if (stats.isDirectory()) {
+          throw new Error(`Path is a directory, not a file: ${absolutePath}`);
+        }
+        content = await fs.readFile(absolutePath, 'utf-8');
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          throw new Error(`File not found: ${absolutePath}`);
+        }
+        throw error;
+      }
 
-    await fs.writeFile(absolutePath, newContent, 'utf-8');
+      const newContent = replace(content, oldString, newString, replaceAll);
+      await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-    return {content: ''};
-  });
+      return {content: 'Edit applied successfully'};
+    },
+  );
 }
