@@ -31,14 +31,18 @@ export const MessageList = React.memo(
       return items;
     }, [messages, sessionId]);
 
+    const isHumanMessage = (message: UIMessage | null | undefined): boolean => {
+      return message?.role === 'user' && !message?.toolResult;
+    };
+
     const getShowIcon = (index: number): boolean => {
       if (index === 0) return false;
       const prev = messages[index - 1];
-      return prev.role === 'user' && !prev.toolResult;
+      return isHumanMessage(prev);
     };
 
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-    const shouldShowLastMessage = streamingOutput || !isLoading;
+    const shouldShowLastMessage = streamingOutput || !isLoading || isHumanMessage(lastMessage);
 
     return (
       <>
