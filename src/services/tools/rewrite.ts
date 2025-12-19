@@ -5,19 +5,15 @@ import { registerTool } from '../toolExecutor';
 export function registerRewriteTool(): void {
   registerTool({
     name: 'rewrite',
-    description: `
-      Rewrites the entire file. If you need to rewrite large chunks of the file, or are struggling to
-      to make a diff edit work, use this as a last resort. Prefer other edit types unless you are
-      struggling (have failed multiple times in a row).
-      This overwrites the ENTIRE file, so make sure to write everything you intend to overwrite: you
-      can't leave anything out by saying e.g. "[The rest of the file stays the same]"
-    `,
+    description:
+      `Completely replace an existing file's content. Unlike 'write', this requires the file to exist first - it's a safety measure to prevent accidental file creation. Use this when you need to overwrite a file entirely. For partial modifications, prefer 'edit' to change specific sections.`,
     parameters: {
       properties: {
-        filePath: {type: 'string', description: 'The path to the file'},
+        filePath: {type: 'string', description: 'Path to the existing file to rewrite'},
         text: {
           type: 'string',
-          description: 'The replaced file contents. This will rewrite and replace the entire file',
+          description:
+            'The new complete content for the file. This will replace everything currently in the file',
         },
       },
       required: ['filePath', 'text'],
@@ -26,10 +22,12 @@ export function registerRewriteTool(): void {
     const {filePath, text} = args;
 
     if (!filePath) {
-      throw new Error('filePath is required');
+      throw new Error(
+        'Missing required parameter: filePath. Please specify which file to rewrite.',
+      );
     }
     if (text === undefined) {
-      throw new Error('text is required');
+      throw new Error('Missing required parameter: text. Please provide the new file content.');
     }
 
     const absolutePath = path.isAbsolute(filePath)
@@ -40,13 +38,16 @@ export function registerRewriteTool(): void {
       await fs.access(absolutePath, fs.constants.R_OK);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        throw new Error(`File not found: ${absolutePath}`);
+        throw new Error(
+          `File not found: ${absolutePath}. Rewrite only works on existing files. Use 'create' to make a new file.`,
+        );
       }
       throw error;
     }
 
     await fs.writeFile(absolutePath, text, 'utf-8');
 
-    return {content: ''};
+    const lines = text.split('\n').length;
+    return {content: `Rewrote ${absolutePath} (${lines} lines)`};
   });
 }

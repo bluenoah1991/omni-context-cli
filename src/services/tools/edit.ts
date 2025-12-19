@@ -18,7 +18,7 @@ function replace(
 
   if (!normalizedContent.includes(normalizedOld)) {
     throw new Error(
-      `oldString not found in content. The search string must EXACTLY match, including all whitespace and indentation.`,
+      `Text not found in file. The oldString doesn't match any content. Tips:\n  • Check for extra/missing whitespace or line breaks\n  • Read the file first to see the exact content\n  • Make sure you're editing the right file`,
     );
   }
 
@@ -26,7 +26,7 @@ function replace(
 
   if (occurrences > 1 && !replaceAll) {
     throw new Error(
-      `oldString found ${occurrences} times in the file and requires more code context to uniquely identify the intended match. Either provide a larger string with more surrounding context to make it unique or use replaceAll to change every instance of oldString.`,
+      `Found ${occurrences} matches for this text. To fix this:\n  • Add more surrounding context to make the match unique, OR\n  • Set replaceAll=true to replace all ${occurrences} occurrences`,
     );
   }
 
@@ -41,29 +41,25 @@ export function registerEditTool(): void {
   registerTool(
     {
       name: 'edit',
-      description: `Performs exact string replacements in files.
-
-Usage:
-- You must use your Read tool at least once in the conversation before editing
-- When editing text from Read tool output, preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix
-- The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match
-- Never include any part of the line number prefix in the oldString or newString
-- ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required
-- The edit will FAIL if oldString is not found in the file with an error "oldString not found in content"
-- The edit will FAIL if oldString is found multiple times in the file with an error about requiring more code context
-- Either provide a larger string with more surrounding context to make it unique or use replaceAll to change every instance
-- Use replaceAll for replacing and renaming strings across the file (useful for renaming variables)`,
+      description:
+        `Make precise text replacements in a file. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique - if the text appears multiple times, include more surrounding context to make it unique, or set replaceAll=true to replace all occurrences. Line endings are normalized automatically.`,
       parameters: {
         properties: {
-          filePath: {type: 'string', description: 'The absolute path to the file to modify'},
-          oldString: {type: 'string', description: 'The text to replace'},
+          filePath: {type: 'string', description: 'Path to the file to edit'},
+          oldString: {
+            type: 'string',
+            description:
+              'The exact text to find and replace. Must match the file content exactly, including whitespace and indentation. Include enough context (usually 2-3 lines before and after) to make the match unique',
+          },
           newString: {
             type: 'string',
-            description: 'The text to replace it with (must be different from oldString)',
+            description:
+              'The replacement text. Can be empty string to delete the matched text. Preserve proper indentation to maintain code style',
           },
           replaceAll: {
             type: 'boolean',
-            description: 'Replace all occurrences of oldString (default false)',
+            description:
+              'If true, replace ALL occurrences of oldString. Default is false (single replacement). Use with caution',
           },
         },
         required: ['filePath', 'oldString', 'newString'],
@@ -75,10 +71,12 @@ Usage:
       const {filePath, oldString, newString, replaceAll} = args;
 
       if (!filePath) {
-        throw new Error('filePath is required');
+        throw new Error('Missing required parameter: filePath. Please specify which file to edit.');
       }
       if (oldString === newString) {
-        throw new Error('oldString and newString must be different');
+        throw new Error(
+          'oldString and newString are identical - nothing to change. Make sure you provide different values.',
+        );
       }
 
       const absolutePath = path.isAbsolute(filePath)
@@ -89,12 +87,16 @@ Usage:
       try {
         const stats = await fs.stat(absolutePath);
         if (stats.isDirectory()) {
-          throw new Error(`Path is a directory, not a file: ${absolutePath}`);
+          throw new Error(
+            `Cannot edit a directory: ${absolutePath}. This path points to a folder, not a file.`,
+          );
         }
         content = await fs.readFile(absolutePath, 'utf-8');
       } catch (error: any) {
         if (error.code === 'ENOENT') {
-          throw new Error(`File not found: ${absolutePath}`);
+          throw new Error(
+            `File not found: ${absolutePath}. Check the path or use 'create' to make a new file.`,
+          );
         }
         throw error;
       }
@@ -102,7 +104,7 @@ Usage:
       const newContent = replace(content, oldString, newString, replaceAll);
       await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-      return {content: 'Edit applied successfully'};
+      return {content: `Edit applied to ${absolutePath}`};
     },
   );
 }

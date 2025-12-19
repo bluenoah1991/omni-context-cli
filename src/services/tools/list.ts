@@ -1,47 +1,24 @@
 import * as fs from 'fs/promises';
+import ignore from 'ignore';
 import * as path from 'path';
 import { registerTool } from '../toolExecutor';
-
-const IGNORE_PATTERNS = [
-  'node_modules/',
-  '__pycache__/',
-  '.git/',
-  'dist/',
-  'build/',
-  'target/',
-  'vendor/',
-  'bin/',
-  'obj/',
-  '.idea/',
-  '.vscode/',
-  '.cache/',
-  'cache/',
-  'logs/',
-  '.venv/',
-  'venv/',
-  'env/',
-];
 
 const LIMIT = 100;
 
 async function* walkDirectory(
   dir: string,
-  ignorePatterns: string[],
-  baseDir?: string,
+  rootDir: string,
+  ig: ReturnType<typeof ignore>,
 ): AsyncGenerator<string> {
-  const base = baseDir || dir;
   const entries = await fs.readdir(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    const relativePath = path.relative(base, fullPath);
+    const relativePath = path.relative(rootDir, fullPath);
 
-    const shouldIgnore = ignorePatterns.some(pattern =>
-      relativePath.includes(pattern.replace('/', ''))
-    );
-    if (shouldIgnore) continue;
+    if (ig.ignores(relativePath)) continue;
 
     if (entry.isDirectory()) {
-      yield* walkDirectory(fullPath, ignorePatterns, base);
+      yield* walkDirectory(fullPath, rootDir, ig);
     } else {
       yield relativePath;
     }
@@ -52,18 +29,19 @@ export function registerListTool(): void {
   registerTool({
     name: 'list',
     description:
-      `Lists files and directories in a given path. The path parameter must be absolute; omit it to use the current working directory. You can optionally provide an array of glob patterns to ignore with the ignore parameter. You should generally prefer the Glob and Grep tools, if you know which directories to search.`,
+      `List files in a directory with a tree-like structure. Respects .gitignore and common ignore patterns (.git, .idea, .vscode). Limited to 100 files to keep output manageable. Use this to explore project structure before reading specific files. For finding files by pattern, use 'glob' instead.`,
     parameters: {
       properties: {
         path: {
           type: 'string',
           description:
-            'The absolute path to the directory to list (must be absolute, not relative). Optional.',
+            'Directory to list. Defaults to current working directory. Can be relative or absolute',
         },
         ignore: {
           type: 'array',
           items: {type: 'string'},
-          description: 'List of glob patterns to ignore',
+          description:
+            'Additional patterns to ignore (glob-style). Example: ["*.log", "temp/", "*.bak"]',
         },
       },
       required: [],
@@ -76,19 +54,31 @@ export function registerListTool(): void {
       stats = await fs.stat(searchPath);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        throw new Error(`No such directory: ${searchPath}`);
+        throw new Error(
+          `Directory not found: ${searchPath}. Check if the path exists or try a parent directory.`,
+        );
       }
       throw error;
     }
 
     if (!stats.isDirectory()) {
-      throw new Error(`${searchPath} is not a directory`);
+      throw new Error(
+        `Not a directory: ${searchPath}. This path points to a file. Use 'read' to view file contents.`,
+      );
     }
 
-    const ignoreGlobs = [...IGNORE_PATTERNS, ...(args?.ignore || [])];
+    const ig = ignore().add(['.git/', '.idea/', '.vscode/']);
+    try {
+      const content = await fs.readFile(path.join(searchPath, '.gitignore'), 'utf-8');
+      ig.add(content);
+    } catch {}
+    if (args?.ignore) {
+      ig.add(args.ignore);
+    }
+
     const files: string[] = [];
 
-    for await (const file of walkDirectory(searchPath, ignoreGlobs)) {
+    for await (const file of walkDirectory(searchPath, searchPath, ig)) {
       files.push(file);
       if (files.length >= LIMIT) break;
     }

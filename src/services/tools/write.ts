@@ -5,32 +5,33 @@ import { registerTool } from '../toolExecutor';
 export function registerWriteTool(): void {
   registerTool({
     name: 'write',
-    description: `Writes a file to the local filesystem.
-
-Usage:
-- This tool will overwrite the existing file if there is one at the provided path
-- If this is an existing file, you MUST use the Read tool first to read the file's contents
-- ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required
-- NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested
-- Only use emojis if the user explicitly requests it`,
+    description:
+      `Write content to a file, creating parent directories if needed. This will overwrite existing files without warning - use with caution. For new files, prefer 'create' which prevents accidental overwrites. For partial updates, use 'edit' instead.`,
     parameters: {
       properties: {
-        content: {type: 'string', description: 'The content to write to the file'},
         filePath: {
           type: 'string',
-          description: 'The absolute path to the file to write (must be absolute, not relative)',
+          description:
+            'Destination file path. Can be relative or absolute. Parent directories will be created automatically',
+        },
+        content: {
+          type: 'string',
+          description:
+            'The complete file content to write. Will replace any existing content entirely',
         },
       },
-      required: ['content', 'filePath'],
+      required: ['filePath', 'content'],
     },
   }, async (args: {content: string; filePath: string;}) => {
     const {content, filePath} = args;
 
     if (!filePath) {
-      throw new Error('filePath is required');
+      throw new Error(
+        'Missing required parameter: filePath. Please specify where to save the file.',
+      );
     }
     if (content === undefined) {
-      throw new Error('content is required');
+      throw new Error('Missing required parameter: content. Please provide the content to write.');
     }
 
     const absolutePath = path.isAbsolute(filePath)
@@ -42,6 +43,7 @@ Usage:
 
     await fs.writeFile(absolutePath, content, 'utf-8');
 
-    return {content: 'File written successfully'};
+    const lines = content.split('\n').length;
+    return {content: `Written ${lines} lines to ${absolutePath}`};
   });
 }

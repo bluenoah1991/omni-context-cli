@@ -21,18 +21,6 @@ function formatBashResult(result: any): string {
   return 'Command executed successfully';
 }
 
-function formatBatchCall(args: Record<string, unknown>): string {
-  const calls = (args.tool_calls as any[]) || [];
-  return `Executing ${calls.length} tools in parallel`;
-}
-
-function formatBatchResult(result: any): string {
-  if (result.summary) {
-    return `${result.summary.successful}/${result.summary.totalCalls} tools succeeded`;
-  }
-  return 'Batch execution completed';
-}
-
 function formatCreateCall(args: Record<string, unknown>): string {
   return String(args.filePath || '');
 }
@@ -88,19 +76,6 @@ function formatListResult(result: any): string {
   return 'Directory listed successfully';
 }
 
-function formatMultiEditCall(args: Record<string, unknown>): string {
-  const filePath = String(args.filePath || '');
-  const edits = (args.edits as any[]) || [];
-  return `${filePath} (${edits.length} edits)`;
-}
-
-function formatMultiEditResult(result: any): string {
-  if (result.content) {
-    return result.content;
-  }
-  return 'Multiple edits applied successfully';
-}
-
 function formatPrependCall(args: Record<string, unknown>): string {
   return String(args.filePath || '');
 }
@@ -128,42 +103,6 @@ function formatRewriteResult(): string {
   return 'File rewritten successfully';
 }
 
-function formatShellCall(args: Record<string, unknown>): string {
-  return String(args.cmd || '');
-}
-
-function formatShellResult(result: any): string {
-  if (result.content) {
-    const lines = result.content.split('\n').length;
-    return `Command executed (${lines} lines of output)`;
-  }
-  return 'Command executed successfully';
-}
-
-function formatTodoReadCall(): string {
-  return 'Reading todos';
-}
-
-function formatTodoReadResult(result: any): string {
-  if (result.todos) {
-    const active = result.todos.filter((t: any) => t.status !== 'completed').length;
-    return `${active} active todos`;
-  }
-  return 'Todos retrieved';
-}
-
-function formatTodoWriteCall(args: Record<string, unknown>): string {
-  const todos = (args.todos as any[]) || [];
-  return `Updating ${todos.length} todos`;
-}
-
-function formatTodoWriteResult(result: any): string {
-  if (result.content) {
-    return result.content;
-  }
-  return 'Todos updated successfully';
-}
-
 function formatWriteCall(args: Record<string, unknown>): string {
   return String(args.filePath || '');
 }
@@ -176,8 +115,6 @@ function formatToolCall(toolName: string, args: Record<string, unknown>): string
   switch (toolName) {
     case 'bash':
       return formatBashCall(args);
-    case 'batch':
-      return formatBatchCall(args);
     case 'create':
       return formatCreateCall(args);
     case 'edit':
@@ -188,20 +125,12 @@ function formatToolCall(toolName: string, args: Record<string, unknown>): string
       return formatGrepCall(args);
     case 'list':
       return formatListCall(args);
-    case 'multiedit':
-      return formatMultiEditCall(args);
     case 'prepend':
       return formatPrependCall(args);
     case 'read':
       return formatReadCall(args);
     case 'rewrite':
       return formatRewriteCall(args);
-    case 'shell':
-      return formatShellCall(args);
-    case 'todoread':
-      return formatTodoReadCall();
-    case 'todowrite':
-      return formatTodoWriteCall(args);
     case 'write':
       return formatWriteCall(args);
     default:
@@ -216,8 +145,6 @@ function formatToolResult(toolName: string, data: any): string {
   switch (toolName) {
     case 'bash':
       return formatBashResult(data.result);
-    case 'batch':
-      return formatBatchResult(data.result);
     case 'create':
       return formatCreateResult(data.result);
     case 'edit':
@@ -228,20 +155,12 @@ function formatToolResult(toolName: string, data: any): string {
       return formatGrepResult(data.result);
     case 'list':
       return formatListResult(data.result);
-    case 'multiedit':
-      return formatMultiEditResult(data.result);
     case 'prepend':
       return formatPrependResult();
     case 'read':
       return formatReadResult(data.result);
     case 'rewrite':
       return formatRewriteResult();
-    case 'shell':
-      return formatShellResult(data.result);
-    case 'todoread':
-      return formatTodoReadResult(data.result);
-    case 'todowrite':
-      return formatTodoWriteResult(data.result);
     case 'write':
       return formatWriteResult();
     default:

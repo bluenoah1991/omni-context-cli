@@ -8,21 +8,25 @@ const MAX_LINE_LENGTH = 2000;
 export function registerReadTool(): void {
   registerTool({
     name: 'read',
-    description: `Reads file contents as UTF-8. Prefer this to Unix tools like cat.
-
-Usage:
-- The filePath parameter is required and should be the path to the file to read
-- Optional offset parameter: line number to start reading from (0-based)
-- Optional limit parameter: number of lines to read (defaults to 2000)
-- Returns file content with line numbers
-- If file has more lines than read, a message will indicate how to read more
-- Supports reading binary files (returns error for truly binary files)
-- If file is not found, suggests similar files in the directory`,
+    description:
+      `Read the contents of a file with line numbers. Returns numbered lines for easy reference when editing. Use offset and limit for large files - start with the beginning, then read more sections as needed. Output format: each line prefixed with its line number (e.g., "00001| content").`,
     parameters: {
       properties: {
-        filePath: {type: 'string', description: 'The path to the file to read'},
-        offset: {type: 'number', description: 'The line number to start reading from (0-based)'},
-        limit: {type: 'number', description: 'The number of lines to read (defaults to 2000)'},
+        filePath: {
+          type: 'string',
+          description:
+            'Path to the file to read. Can be relative (resolved from current dir) or absolute',
+        },
+        offset: {
+          type: 'number',
+          description:
+            'Starting line number (0-based index). Use this to skip to a specific section. For example, offset=100 starts reading from line 101',
+        },
+        limit: {
+          type: 'number',
+          description:
+            'Maximum number of lines to read. Defaults to 2000. Increase for larger files, decrease if you only need a quick peek',
+        },
       },
       required: ['filePath'],
     },
@@ -30,7 +34,7 @@ Usage:
     const {filePath, offset = 0, limit = DEFAULT_READ_LIMIT} = args;
 
     if (!filePath) {
-      throw new Error('filePath is required');
+      throw new Error('Missing required parameter: filePath. Please specify which file to read.');
     }
 
     const absolutePath = path.isAbsolute(filePath)
@@ -52,15 +56,17 @@ Usage:
 
         if (suggestions.length > 0) {
           throw new Error(
-            `File not found: ${absolutePath}\n\nDid you mean one of these?\n${
-              suggestions.join('\n')
+            `File not found: ${absolutePath}\n\nPerhaps you meant one of these?\n  ${
+              suggestions.join('\n  ')
             }`,
           );
         }
       } catch {
       }
 
-      throw new Error(`File not found: ${absolutePath}`);
+      throw new Error(
+        `File not found: ${absolutePath}. Double-check the path or use the list/glob tool to find files.`,
+      );
     }
 
     const content = await fs.readFile(absolutePath, 'utf-8');
@@ -81,10 +87,11 @@ Usage:
     const hasMoreLines = totalLines > lastReadLine;
 
     if (hasMoreLines) {
-      output +=
-        `\n\n(File has more lines. Use 'offset' parameter to read beyond line ${lastReadLine})`;
+      output += `\n\n[More content available. Read from line ${
+        lastReadLine + 1
+      } onward using offset=${lastReadLine}]`;
     } else {
-      output += `\n\n(End of file - total ${totalLines} lines)`;
+      output += `\n\n[End of file - ${totalLines} lines total]`;
     }
     output += '\n</file>';
 

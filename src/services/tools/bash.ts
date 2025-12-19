@@ -8,67 +8,40 @@ const DEFAULT_TIMEOUT = 120000;
 export function registerBashTool(): void {
   registerTool({
     name: 'bash',
-    description: `
-Executes a given bash command in a persistent shell session with optional timeout.
-
-All commands run in the current working directory by default. Use the workdir parameter if you need to run a command in a different directory.
-
-Before executing the command:
-1. Directory Verification: If the command will create new directories or files, verify the parent directory exists
-2. Command Execution: Always quote file paths that contain spaces with double quotes
-
-Usage notes:
-- The command argument is required
-- Optional timeout in milliseconds (up to 600000ms / 10 minutes), default is 120000ms (2 minutes)
-- The description argument is required: write a clear, concise description of what this command does in 5-10 words
-- If output exceeds 30000 characters, it will be truncated
-- Avoid using Bash with find, grep, cat, head, tail, sed, awk, or echo commands unless truly necessary. Use dedicated tools instead:
-  * File search: Use glob (NOT find or ls)
-  * Content search: Use grep (NOT grep/rg in bash)
-  * Read files: Use read (NOT cat/head/tail)
-  * Edit files: Use edit (NOT sed/awk)
-  * Write files: Use write (NOT echo >/cat <<EOF)
-- When issuing multiple commands:
-  * If commands are independent: make multiple bash tool calls in parallel
-  * If commands depend on each other: use && to chain them (e.g., git add . && git commit -m "message" && git push)
-  * Use ; only when you need sequential commands but don't care if earlier ones fail
-  * DO NOT use newlines to separate commands
-- Try to maintain current working directory by using absolute paths and avoiding cd
-- Prefer workdir parameter over cd commands
-
-Working Directory:
-The workdir parameter sets the working directory for command execution. Prefer using workdir over "cd <dir> &&" command chains.
-
-Example: workdir="path/to/dir", command="pytest tests" is better than command="cd path/to/dir && pytest tests"
-    `,
+    description:
+      `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
     parameters: {
       properties: {
-        command: {type: 'string', description: 'The command to execute'},
-        timeout: {type: 'number', description: 'Optional timeout in milliseconds'},
+        command: {
+          type: 'string',
+          description:
+            'The shell command to execute. Can include pipes, redirects, and chained commands. Examples: "npm install", "git status", "ls -la | grep .ts"',
+        },
+        timeout: {
+          type: 'number',
+          description:
+            'Max execution time in milliseconds. Defaults to 120000 (2 minutes). Set higher for long operations like builds or installations',
+        },
         workdir: {
           type: 'string',
           description:
-            'The working directory to run the command in. Defaults to current directory.',
-        },
-        description: {
-          type: 'string',
-          description:
-            'Clear, concise description of what this command does in 5-10 words. Examples: "Lists files in current directory" for ls, "Shows working tree status" for git status',
+            'Working directory for the command. Can be relative (resolved from current dir) or absolute. Defaults to current working directory',
         },
       },
-      required: ['command', 'description'],
+      required: ['command'],
     },
-  }, async (args: {command: string; timeout?: number; workdir?: string; description: string;}) => {
-    const {command, timeout = DEFAULT_TIMEOUT, workdir, description} = args;
+  }, async (args: {command: string; timeout?: number; workdir?: string;}) => {
+    const {command, timeout = DEFAULT_TIMEOUT, workdir} = args;
 
     if (!command) {
-      throw new Error('command is required');
-    }
-    if (!description) {
-      throw new Error('description is required');
+      throw new Error(
+        'Missing required parameter: command. Please provide a shell command to execute.',
+      );
     }
     if (timeout !== undefined && timeout < 0) {
-      throw new Error(`Invalid timeout value: ${timeout}. Timeout must be a positive number.`);
+      throw new Error(
+        `Invalid timeout: ${timeout}ms. Timeout must be a positive number (e.g., 60000 for 1 minute).`,
+      );
     }
 
     const cwd = workdir ? path.resolve(process.cwd(), workdir) : process.cwd();
@@ -90,7 +63,11 @@ Example: workdir="path/to/dir", command="pytest tests" is better than command="c
       const timeoutId = setTimeout(() => {
         killed = true;
         child.kill();
-        reject(new Error(`Command timed out after ${timeout}ms`));
+        reject(
+          new Error(
+            `Command timed out after ${timeout}ms. The process was forcefully terminated. Consider increasing the timeout for long-running operations.`,
+          ),
+        );
       }, timeout);
 
       child.stdout.on('data', data => {
@@ -104,7 +81,11 @@ Example: workdir="path/to/dir", command="pytest tests" is better than command="c
       child.on('error', error => {
         clearTimeout(timeoutId);
         if (!killed) {
-          reject(new Error(`Failed to execute command: ${error.message}`));
+          reject(
+            new Error(
+              `Failed to start command: ${error.message}. Check if the command exists and is executable.`,
+            ),
+          );
         }
       });
 
@@ -119,13 +100,21 @@ Example: workdir="path/to/dir", command="pytest tests" is better than command="c
 
         if (output.length > MAX_OUTPUT_LENGTH) {
           output = output.substring(0, MAX_OUTPUT_LENGTH)
-            + `\n\n[Output truncated. Total length: ${output.length} characters]`;
+            + `\n\n[Output truncated at ${MAX_OUTPUT_LENGTH} chars. Total: ${output.length} chars]`;
         }
 
         if (code !== 0) {
-          reject(new Error(`Command failed with exit code ${code}:\n${output || 'No output'}`));
+          reject(
+            new Error(
+              `Command exited with code ${code}. This usually indicates an error.\n\n${
+                output || '(no output)'
+              }`,
+            ),
+          );
         } else {
-          resolve({content: output.trim() || 'Command executed successfully'});
+          resolve({
+            content: output.trim() || 'Done. Command completed successfully with no output.',
+          });
         }
       });
     });

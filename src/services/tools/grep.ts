@@ -1,22 +1,25 @@
 import * as fs from 'fs/promises';
+import ignore from 'ignore';
 import * as path from 'path';
 import { registerTool } from '../toolExecutor';
 
 const MAX_LINE_LENGTH = 2000;
 
-async function* walkDirectory(dir: string, include?: string): AsyncGenerator<string> {
+async function* walkDirectory(
+  dir: string,
+  rootDir: string,
+  ig: ReturnType<typeof ignore>,
+  include?: string,
+): AsyncGenerator<string> {
   const entries = await fs.readdir(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    const relativePath = path.relative(rootDir, fullPath);
+
+    if (ig.ignores(relativePath)) continue;
+
     if (entry.isDirectory()) {
-      if (
-        !entry.name.startsWith('.')
-        && entry.name !== 'node_modules'
-        && entry.name !== 'dist'
-        && entry.name !== 'build'
-      ) {
-        yield* walkDirectory(fullPath, include);
-      }
+      yield* walkDirectory(fullPath, rootDir, ig, include);
     } else {
       if (!include || matchPattern(entry.name, include)) {
         yield fullPath;
@@ -40,31 +43,24 @@ function matchPattern(filename: string, pattern: string): boolean {
 export function registerGrepTool(): void {
   registerTool({
     name: 'grep',
-    description: `Fast content search tool that works with any codebase size.
-
-Usage:
-- Searches file contents using regular expressions
-- Supports full regex syntax (e.g. "log.*Error", "function\\s+\\w+", etc.)
-- Filter files by pattern with the include parameter (e.g. "*.js", "*.{ts,tsx}")
-- Returns file paths and line numbers with at least one match sorted by modification time
-- Use this tool when you need to find files containing specific patterns
-
-Examples:
-- pattern: "function.*test" - Find all functions with 'test' in name
-- pattern: "import.*React" - Find all React imports
-- pattern: "TODO|FIXME" - Find all TODOs or FIXMEs
-- include: "*.ts" - Only search TypeScript files
-- include: "*.{js,ts}" - Search both JavaScript and TypeScript files`,
+    description:
+      `Search for text patterns inside files using regex. Returns matching lines with file paths and line numbers. Results are sorted by file modification time (newest first). Great for finding function definitions, variable usages, or any text pattern across the codebase. Limited to 100 matches. Respects .gitignore.`,
     parameters: {
       properties: {
-        pattern: {type: 'string', description: 'The regex pattern to search for in file contents'},
+        pattern: {
+          type: 'string',
+          description:
+            'Regex pattern to search for. Examples: "function\\s+\\w+", "TODO|FIXME", "import.*from". Case-sensitive by default',
+        },
         path: {
           type: 'string',
-          description: 'The directory to search in. Defaults to the current working directory.',
+          description:
+            'Directory to search in. Defaults to current working directory. Use to limit search scope',
         },
         include: {
           type: 'string',
-          description: 'File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")',
+          description:
+            'Filter by filename pattern. Examples: "*.ts" (TypeScript only), "*.{js,jsx}" (JS and JSX), "test_*.py" (Python test files)',
         },
       },
       required: ['pattern'],
@@ -73,18 +69,26 @@ Examples:
     const {pattern, path: searchPath, include} = args;
 
     if (!pattern) {
-      throw new Error('pattern is required');
+      throw new Error(
+        'Missing required parameter: pattern. Please provide a regex pattern to search for.',
+      );
     }
 
     const search = searchPath
       ? path.isAbsolute(searchPath) ? searchPath : path.resolve(process.cwd(), searchPath)
       : process.cwd();
 
+    const ig = ignore().add(['.git/', '.idea/', '.vscode/']);
+    try {
+      const content = await fs.readFile(path.join(search, '.gitignore'), 'utf-8');
+      ig.add(content);
+    } catch {}
+
     const regex = new RegExp(pattern, 'g');
     const matches: Array<{path: string; lineNum: number; lineText: string; modTime: number;}> = [];
     const limit = 100;
 
-    for await (const file of walkDirectory(search, include)) {
+    for await (const file of walkDirectory(search, search, ig, include)) {
       try {
         const content = await fs.readFile(file, 'utf-8');
         const lines = content.split('\n');
@@ -112,10 +116,13 @@ Examples:
     matches.sort((a, b) => b.modTime - a.modTime);
 
     if (matches.length === 0) {
-      return {content: 'No files found'};
+      return {
+        content:
+          `No matches found for pattern "${pattern}". Try a different pattern, check regex syntax, or expand the search path.`,
+      };
     }
 
-    const outputLines = [`Found ${matches.length} matches`];
+    const outputLines = [`Found ${matches.length} match(es) for "${pattern}":\n`];
     let currentFile = '';
 
     for (const match of matches) {
@@ -135,7 +142,9 @@ Examples:
 
     if (matches.length >= limit) {
       outputLines.push('');
-      outputLines.push('(Results are truncated. Consider using a more specific path or pattern.)');
+      outputLines.push(
+        '[Results limited to 100 matches. Use a more specific pattern or path to narrow down.]',
+      );
     }
 
     return {content: outputLines.join('\n')};

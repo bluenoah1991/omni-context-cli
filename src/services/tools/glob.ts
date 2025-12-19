@@ -1,20 +1,22 @@
 import * as fs from 'fs/promises';
+import ignore from 'ignore';
 import * as path from 'path';
 import { registerTool } from '../toolExecutor';
 
-async function* walkDirectory(dir: string): AsyncGenerator<string> {
+async function* walkDirectory(
+  dir: string,
+  rootDir: string,
+  ig: ReturnType<typeof ignore>,
+): AsyncGenerator<string> {
   const entries = await fs.readdir(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    const relativePath = path.relative(rootDir, fullPath);
+
+    if (ig.ignores(relativePath)) continue;
+
     if (entry.isDirectory()) {
-      if (
-        !entry.name.startsWith('.')
-        && entry.name !== 'node_modules'
-        && entry.name !== 'dist'
-        && entry.name !== 'build'
-      ) {
-        yield* walkDirectory(fullPath);
-      }
+      yield* walkDirectory(fullPath, rootDir, ig);
     } else {
       yield fullPath;
     }
@@ -31,26 +33,19 @@ function matchGlob(pattern: string, filepath: string): boolean {
 export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
-    description: `Fast file pattern matching tool that works with any codebase size.
-
-Usage:
-- Supports glob patterns like "**/*.js" or "src/**/*.ts"
-- Returns matching file paths sorted by modification time
-- Use this tool when you need to find files by name patterns
-- You have the capability to call multiple tools in a single response
-- It is always better to speculatively perform multiple searches as a batch that are potentially useful
-
-Examples:
-- "**/*.ts" - Find all TypeScript files
-- "src/**/*.tsx" - Find all TSX files in src directory
-- "*.json" - Find all JSON files in current directory`,
+    description:
+      `Find files matching a glob pattern. Results are sorted by modification time (newest first). Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore.`,
     parameters: {
       properties: {
-        pattern: {type: 'string', description: 'The glob pattern to match files against'},
+        pattern: {
+          type: 'string',
+          description:
+            'Glob pattern to match. Examples: "**/*.ts" (all TypeScript files), "src/**/*.test.js" (test files in src), "*.json" (JSON files in current dir)',
+        },
         path: {
           type: 'string',
           description:
-            'The directory to search in. If not specified, the current working directory will be used. IMPORTANT: Omit this field to use the default directory.',
+            'Starting directory for the search. Defaults to current working directory. Use to narrow down the search scope',
         },
       },
       required: ['pattern'],
@@ -59,18 +54,26 @@ Examples:
     const {pattern, path: searchPath} = args;
 
     if (!pattern) {
-      throw new Error('pattern is required');
+      throw new Error(
+        'Missing required parameter: pattern. Please provide a glob pattern like "**/*.ts" or "*.json".',
+      );
     }
 
     const search = searchPath
       ? path.isAbsolute(searchPath) ? searchPath : path.resolve(process.cwd(), searchPath)
       : process.cwd();
 
+    const ig = ignore().add(['.git/', '.idea/', '.vscode/']);
+    try {
+      const content = await fs.readFile(path.join(search, '.gitignore'), 'utf-8');
+      ig.add(content);
+    } catch {}
+
     const limit = 100;
     const files: Array<{path: string; mtime: number;}> = [];
     let truncated = false;
 
-    for await (const file of walkDirectory(search)) {
+    for await (const file of walkDirectory(search, search, ig)) {
       if (files.length >= limit) {
         truncated = true;
         break;
@@ -91,12 +94,17 @@ Examples:
 
     const output: string[] = [];
     if (files.length === 0) {
-      output.push('No files found');
+      output.push(
+        `No files match pattern "${pattern}". Try a broader pattern or check if you're in the right directory.`,
+      );
     } else {
+      output.push(`Found ${files.length} file(s) matching "${pattern}":\n`);
       output.push(...files.map(f => f.path));
       if (truncated) {
         output.push('');
-        output.push('(Results are truncated. Consider using a more specific path or pattern.)');
+        output.push(
+          '[Results limited to 100 files. Use a more specific path or pattern to narrow down.]',
+        );
       }
     }
 
