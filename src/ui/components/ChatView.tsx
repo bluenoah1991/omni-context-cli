@@ -1,5 +1,5 @@
-import { Box } from 'ink';
-import React, { useCallback, useRef, useState } from 'react';
+import { Box, useStdout } from 'ink';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
@@ -39,6 +39,16 @@ export function ChatView(): React.ReactElement {
   sessionRef.current = session;
 
   const pendingToolCallsRef = useRef<Map<string, PendingToolCall>>(new Map());
+  const {stdout} = useStdout();
+
+  useEffect(() => {
+    const isVSCode = process.env.TERM_PROGRAM === 'vscode';
+    const isWindows = process.platform === 'win32';
+
+    if (stdout && isWindows && isVSCode) {
+      stdout.write('\x1B[?25h');
+    }
+  }, [stdout]);
 
   const handleInterrupt = useCallback(() => {
     abortControllerRef.current?.abort();
