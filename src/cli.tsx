@@ -74,6 +74,8 @@ if (opts.continue) {
   }
 }
 
+process.stdout.write('\x1Bc');
+
 render(<ChatView />, {exitOnCtrlC: false});
 
 process.on('exit', () => {

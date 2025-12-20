@@ -364,10 +364,12 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onSelect={setSessionsIndex}
           onConfirm={i => {
             if (items[i].id === 'new') {
+              process.stdout.write('\x1Bc');
               useChatStore.getState().createNewSession();
               onClose();
             } else {
               const session = loadSession(items[i].id);
+              process.stdout.write('\x1Bc');
               useChatStore.getState().setSession(session);
               onClose();
             }
