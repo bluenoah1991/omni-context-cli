@@ -4,7 +4,7 @@ export interface ToolDefinition {
   parameters: {properties: Record<string, unknown>; required?: string[];};
 }
 
-export type ToolHandler = (args: any) => Promise<any>;
+export type ToolHandler = (args: any, signal?: AbortSignal) => Promise<any>;
 
 export interface ToolExecutionResult {
   success: boolean;

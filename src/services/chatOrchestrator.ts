@@ -53,7 +53,7 @@ async function processToolCalls(
   }
 
   const toolResults = await Promise.all(toolCalls.map(async toolCall => {
-    const result = await executeTool(toolCall.name, toolCall.input);
+    const result = await executeTool(toolCall.name, toolCall.input, signal);
     const content = JSON.stringify(result);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
     return {toolCallId: toolCall.id, content};

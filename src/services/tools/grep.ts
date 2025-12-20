@@ -65,7 +65,7 @@ export function registerGrepTool(): void {
       },
       required: ['pattern'],
     },
-  }, async (args: {pattern: string; path?: string; include?: string;}) => {
+  }, async (args: {pattern: string; path?: string; include?: string;}, signal?: AbortSignal) => {
     const {pattern, path: searchPath, include} = args;
 
     if (!pattern) {

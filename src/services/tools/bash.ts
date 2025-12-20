@@ -30,7 +30,7 @@ export function registerBashTool(): void {
       },
       required: ['command'],
     },
-  }, async (args: {command: string; timeout?: number; workdir?: string;}) => {
+  }, async (args: {command: string; timeout?: number; workdir?: string;}, signal?: AbortSignal) => {
     const {command, timeout = DEFAULT_TIMEOUT, workdir} = args;
 
     if (!command) {
@@ -69,6 +69,17 @@ export function registerBashTool(): void {
           ),
         );
       }, timeout);
+
+      if (signal) {
+        signal.addEventListener('abort', () => {
+          if (!killed) {
+            killed = true;
+            clearTimeout(timeoutId);
+            child.kill();
+            reject(new Error('Command was aborted by user request'));
+          }
+        });
+      }
 
       child.stdout.on('data', data => {
         stdout += data.toString();

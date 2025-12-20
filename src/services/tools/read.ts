@@ -30,7 +30,7 @@ export function registerReadTool(): void {
       },
       required: ['filePath'],
     },
-  }, async (args: {filePath: string; offset?: number; limit?: number;}) => {
+  }, async (args: {filePath: string; offset?: number; limit?: number;}, signal?: AbortSignal) => {
     const {filePath, offset = 0, limit = DEFAULT_READ_LIMIT} = args;
 
     if (!filePath) {

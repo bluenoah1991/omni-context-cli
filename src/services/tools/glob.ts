@@ -50,7 +50,7 @@ export function registerGlobTool(): void {
       },
       required: ['pattern'],
     },
-  }, async (args: {pattern: string; path?: string;}) => {
+  }, async (args: {pattern: string; path?: string;}, signal?: AbortSignal) => {
     const {pattern, path: searchPath} = args;
 
     if (!pattern) {

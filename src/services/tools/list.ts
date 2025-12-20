@@ -46,7 +46,7 @@ export function registerListTool(): void {
       },
       required: [],
     },
-  }, async (args?: {path?: string; ignore?: string[];}) => {
+  }, async (args?: {path?: string; ignore?: string[];}, signal?: AbortSignal) => {
     const searchPath = path.resolve(process.cwd(), args?.path || '.');
 
     let stats;

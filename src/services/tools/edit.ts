@@ -67,6 +67,7 @@ export function registerEditTool(): void {
     },
     async (
       args: {filePath: string; oldString: string; newString: string; replaceAll?: boolean;},
+      signal?: AbortSignal,
     ) => {
       const {filePath, oldString, newString, replaceAll} = args;
 

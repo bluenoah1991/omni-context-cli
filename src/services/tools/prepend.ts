@@ -18,7 +18,7 @@ export function registerPrependTool(): void {
       },
       required: ['filePath', 'text'],
     },
-  }, async (args: {filePath: string; text: string;}) => {
+  }, async (args: {filePath: string; text: string;}, signal?: AbortSignal) => {
     const {filePath, text} = args;
 
     if (!filePath) {

@@ -17,7 +17,11 @@ export function clearTools(): void {
   tools.clear();
 }
 
-export async function executeTool(toolName: string, args: any): Promise<ToolExecutionResult> {
+export async function executeTool(
+  toolName: string,
+  args: any,
+  signal?: AbortSignal,
+): Promise<ToolExecutionResult> {
   if (mcpManager.isMCPTool(toolName)) {
     try {
       const result = await mcpManager.executeTool(toolName, args);
@@ -34,7 +38,7 @@ export async function executeTool(toolName: string, args: any): Promise<ToolExec
   }
 
   try {
-    const result = await tool.handler(args);
+    const result = await tool.handler(args, signal);
     return {success: true, result};
   } catch (error) {
     return {success: false, error: String(error)};

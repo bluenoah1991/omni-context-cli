@@ -22,7 +22,7 @@ export function registerWriteTool(): void {
       },
       required: ['filePath', 'content'],
     },
-  }, async (args: {content: string; filePath: string;}) => {
+  }, async (args: {content: string; filePath: string;}, signal?: AbortSignal) => {
     const {content, filePath} = args;
 
     if (!filePath) {

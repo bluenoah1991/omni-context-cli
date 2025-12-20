@@ -18,7 +18,7 @@ export function registerCreateTool(): void {
       },
       required: ['filePath', 'content'],
     },
-  }, async (args: {filePath: string; content: string;}) => {
+  }, async (args: {filePath: string; content: string;}, signal?: AbortSignal) => {
     const {filePath, content} = args;
 
     if (!filePath) {
