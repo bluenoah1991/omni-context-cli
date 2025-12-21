@@ -21,6 +21,17 @@ function formatBashResult(result: any): string {
   return 'Command executed successfully';
 }
 
+function formatBashOutputCall(args: Record<string, unknown>): string {
+  return String(args.taskId || '');
+}
+
+function formatBashOutputResult(result: any): string {
+  if (result.content) {
+    return 'Task output retrieved';
+  }
+  return 'Task output retrieved successfully';
+}
+
 function formatCreateCall(args: Record<string, unknown>): string {
   return String(args.filePath || '');
 }
@@ -115,6 +126,8 @@ function formatToolCall(toolName: string, args: Record<string, unknown>): string
   switch (toolName) {
     case 'bash':
       return formatBashCall(args);
+    case 'bashOutput':
+      return formatBashOutputCall(args);
     case 'create':
       return formatCreateCall(args);
     case 'edit':
@@ -145,6 +158,8 @@ function formatToolResult(toolName: string, data: any): string {
   switch (toolName) {
     case 'bash':
       return formatBashResult(data.result);
+    case 'bashOutput':
+      return formatBashOutputResult(data.result);
     case 'create':
       return formatCreateResult(data.result);
     case 'edit':

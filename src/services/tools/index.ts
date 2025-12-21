@@ -1,4 +1,5 @@
 import { registerBashTool } from './bash';
+import { registerBashOutputTool } from './bashOutput';
 import { registerCreateTool } from './create';
 import { registerEditTool } from './edit';
 import { registerGlobTool } from './glob';
@@ -10,14 +11,15 @@ import { registerRewriteTool } from './rewrite';
 import { registerWriteTool } from './write';
 
 export function initializeTools(): void {
-  registerReadTool();
   registerBashTool();
+  registerBashOutputTool();
   registerCreateTool();
   registerEditTool();
-  registerListTool();
-  registerPrependTool();
-  registerRewriteTool();
-  registerWriteTool();
   registerGlobTool();
   registerGrepTool();
+  registerListTool();
+  registerPrependTool();
+  registerReadTool();
+  registerRewriteTool();
+  registerWriteTool();
 }
