@@ -1,28 +1,13 @@
 import * as fs from 'fs/promises';
+import { glob } from 'glob';
 import * as path from 'path';
-import { createAdditionalIgnores, isIgnored } from '../gitignoreParser';
+import { isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
+import { getGlobExcludes } from './ignorePatterns';
 
-async function* walkDirectory(dir: string, rootDir: string): AsyncGenerator<string> {
-  const entries = await fs.readdir(dir, {withFileTypes: true});
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-
-    if (await isIgnored(fullPath)) continue;
-
-    if (entry.isDirectory()) {
-      yield* walkDirectory(fullPath, rootDir);
-    } else {
-      yield fullPath;
-    }
-  }
-}
-
-function matchGlob(pattern: string, filepath: string): boolean {
-  const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*')
-    .replace(/\?/g, '.');
-  const regex = new RegExp(`^${regexPattern}$`);
-  return regex.test(filepath);
+interface GlobPath {
+  fullpath(): string;
+  mtimeMs?: number;
 }
 
 export function registerGlobTool(): void {
@@ -42,11 +27,15 @@ export function registerGlobTool(): void {
           description:
             'Starting directory for the search. Defaults to current working directory. Use to narrow down the search scope',
         },
+        nocase: {
+          type: 'boolean',
+          description: 'Perform a case-insensitive match. Defaults to false (case-sensitive)',
+        },
       },
       required: ['pattern'],
     },
-  }, async (args: {pattern: string; path?: string;}, signal?: AbortSignal) => {
-    const {pattern, path: searchPath} = args;
+  }, async (args: {pattern: string; path?: string; nocase?: boolean;}, signal?: AbortSignal) => {
+    const {pattern, path: searchPath, nocase = false} = args;
 
     if (!pattern) {
       throw new Error(
@@ -55,32 +44,48 @@ export function registerGlobTool(): void {
     }
 
     const rootDir = process.cwd();
-    const search = searchPath
+    const searchDir = searchPath
       ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
       : rootDir;
 
-    const limit = 100;
-    const files: Array<{path: string; mtime: number;}> = [];
-    let truncated = false;
+    let searchPattern = pattern;
+    try {
+      const stats = await fs.stat(path.resolve(searchDir, pattern));
+      if (stats.isFile()) {
+        searchPattern = glob.escape(pattern);
+      }
+    } catch {}
 
-    for await (const file of walkDirectory(search, rootDir)) {
-      if (files.length >= limit) {
-        truncated = true;
-        break;
+    const results = await glob(searchPattern, {
+      cwd: searchDir,
+      withFileTypes: true,
+      nodir: true,
+      stat: true,
+      nocase,
+      dot: true,
+      ignore: getGlobExcludes(),
+      follow: false,
+      signal,
+    });
+
+    const limit = 100;
+    const files: GlobPath[] = [];
+
+    for (const result of results) {
+      if (await isIgnored(result.fullpath())) {
+        continue;
       }
 
-      const relativePath = path.relative(search, file).replace(/\\/g, '/');
+      files.push(result);
 
-      if (matchGlob(pattern, relativePath)) {
-        try {
-          const stats = await fs.stat(file);
-          files.push({path: file, mtime: stats.mtime.getTime()});
-        } catch {
-        }
+      if (files.length >= limit) {
+        break;
       }
     }
 
-    files.sort((a, b) => b.mtime - a.mtime);
+    files.sort((a, b) => (b.mtimeMs ?? 0) - (a.mtimeMs ?? 0));
+
+    const truncated = results.length > limit;
 
     const output: string[] = [];
     if (files.length === 0) {
@@ -89,7 +94,7 @@ export function registerGlobTool(): void {
       );
     } else {
       output.push(`Found ${files.length} file(s) matching "${pattern}":\n`);
-      output.push(...files.map(f => f.path));
+      output.push(...files.map(f => f.fullpath()));
       if (truncated) {
         output.push('');
         output.push(
