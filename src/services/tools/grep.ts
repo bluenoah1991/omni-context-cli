@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
-import ignore from 'ignore';
 import * as path from 'path';
+import { createAdditionalIgnores, isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
 
 const MAX_LINE_LENGTH = 2000;
@@ -8,18 +8,16 @@ const MAX_LINE_LENGTH = 2000;
 async function* walkDirectory(
   dir: string,
   rootDir: string,
-  ig: ReturnType<typeof ignore>,
   include?: string,
 ): AsyncGenerator<string> {
   const entries = await fs.readdir(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    const relativePath = path.relative(rootDir, fullPath);
 
-    if (ig.ignores(relativePath)) continue;
+    if (await isIgnored(fullPath)) continue;
 
     if (entry.isDirectory()) {
-      yield* walkDirectory(fullPath, rootDir, ig, include);
+      yield* walkDirectory(fullPath, rootDir, include);
     } else {
       if (!include || matchPattern(entry.name, include)) {
         yield fullPath;
@@ -74,21 +72,16 @@ export function registerGrepTool(): void {
       );
     }
 
+    const rootDir = process.cwd();
     const search = searchPath
-      ? path.isAbsolute(searchPath) ? searchPath : path.resolve(process.cwd(), searchPath)
-      : process.cwd();
-
-    const ig = ignore().add(['.git/', '.idea/', '.vscode/']);
-    try {
-      const content = await fs.readFile(path.join(search, '.gitignore'), 'utf-8');
-      ig.add(content);
-    } catch {}
+      ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
+      : rootDir;
 
     const regex = new RegExp(pattern, 'g');
     const matches: Array<{path: string; lineNum: number; lineText: string; modTime: number;}> = [];
     const limit = 100;
 
-    for await (const file of walkDirectory(search, search, ig, include)) {
+    for await (const file of walkDirectory(search, rootDir, include)) {
       try {
         const content = await fs.readFile(file, 'utf-8');
         const lines = content.split('\n');

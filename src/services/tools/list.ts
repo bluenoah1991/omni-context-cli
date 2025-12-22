@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
-import ignore from 'ignore';
+import { Ignore } from 'ignore';
 import * as path from 'path';
+import { createAdditionalIgnores, isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
 
 const LIMIT = 100;
@@ -8,19 +9,18 @@ const LIMIT = 100;
 async function* walkDirectory(
   dir: string,
   rootDir: string,
-  ig: ReturnType<typeof ignore>,
+  additionalIgnores: Ignore | null,
 ): AsyncGenerator<string> {
   const entries = await fs.readdir(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    const relativePath = path.relative(rootDir, fullPath);
 
-    if (ig.ignores(relativePath)) continue;
+    if (await isIgnored(fullPath, additionalIgnores)) continue;
 
     if (entry.isDirectory()) {
-      yield* walkDirectory(fullPath, rootDir, ig);
+      yield* walkDirectory(fullPath, rootDir, additionalIgnores);
     } else {
-      yield relativePath;
+      yield path.relative(rootDir, fullPath);
     }
   }
 }
@@ -47,7 +47,8 @@ export function registerListTool(): void {
       required: [],
     },
   }, async (args?: {path?: string; ignore?: string[];}, signal?: AbortSignal) => {
-    const searchPath = path.resolve(process.cwd(), args?.path || '.');
+    const rootDir = process.cwd();
+    const searchPath = path.resolve(rootDir, args?.path || '.');
 
     let stats;
     try {
@@ -67,18 +68,11 @@ export function registerListTool(): void {
       );
     }
 
-    const ig = ignore().add(['.git/', '.idea/', '.vscode/']);
-    try {
-      const content = await fs.readFile(path.join(searchPath, '.gitignore'), 'utf-8');
-      ig.add(content);
-    } catch {}
-    if (args?.ignore) {
-      ig.add(args.ignore);
-    }
+    const additionalIgnores = createAdditionalIgnores(args?.ignore);
 
     const files: string[] = [];
 
-    for await (const file of walkDirectory(searchPath, searchPath, ig)) {
+    for await (const file of walkDirectory(searchPath, rootDir, additionalIgnores)) {
       files.push(file);
       if (files.length >= LIMIT) break;
     }
