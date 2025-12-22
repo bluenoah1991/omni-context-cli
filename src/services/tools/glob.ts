@@ -1,20 +1,15 @@
-import * as fs from 'fs/promises';
+import { existsSync } from 'fs';
 import { glob } from 'glob';
 import * as path from 'path';
 import { isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
 import { getGlobExcludes } from './ignorePatterns';
 
-interface GlobPath {
-  fullpath(): string;
-  mtimeMs?: number;
-}
-
 export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
     description:
-      `Find files matching a glob pattern. Results are sorted by modification time (newest first). Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore.`,
+      `Find files matching a glob pattern. Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore.`,
     parameters: {
       properties: {
         pattern: {
@@ -49,43 +44,37 @@ export function registerGlobTool(): void {
       : rootDir;
 
     let searchPattern = pattern;
-    try {
-      const stats = await fs.stat(path.resolve(searchDir, pattern));
-      if (stats.isFile()) {
-        searchPattern = glob.escape(pattern);
-      }
-    } catch {}
-
-    const results = await glob(searchPattern, {
-      cwd: searchDir,
-      withFileTypes: true,
-      nodir: true,
-      stat: true,
-      nocase,
-      dot: true,
-      ignore: getGlobExcludes(),
-      follow: false,
-      signal,
-    });
+    const fullPath = path.join(searchDir, pattern);
+    if (existsSync(fullPath)) {
+      searchPattern = glob.escape(pattern);
+    }
 
     const limit = 100;
-    const files: GlobPath[] = [];
+    const files: string[] = [];
+    let truncated = false;
 
-    for (const result of results) {
-      if (await isIgnored(result.fullpath())) {
+    for await (
+      const result of glob.iterate(searchPattern, {
+        cwd: searchDir,
+        nodir: true,
+        nocase,
+        dot: true,
+        ignore: getGlobExcludes(),
+        follow: false,
+        signal,
+      })
+    ) {
+      if (await isIgnored(result)) {
         continue;
       }
 
-      files.push(result);
-
       if (files.length >= limit) {
+        truncated = true;
         break;
       }
+
+      files.push(result);
     }
-
-    files.sort((a, b) => (b.mtimeMs ?? 0) - (a.mtimeMs ?? 0));
-
-    const truncated = results.length > limit;
 
     const output: string[] = [];
     if (files.length === 0) {
@@ -94,7 +83,7 @@ export function registerGlobTool(): void {
       );
     } else {
       output.push(`Found ${files.length} file(s) matching "${pattern}":\n`);
-      output.push(...files.map(f => f.fullpath()));
+      output.push(...files);
       if (truncated) {
         output.push('');
         output.push(

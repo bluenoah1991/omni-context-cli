@@ -57,8 +57,10 @@ function formatGlobCall(args: Record<string, unknown>): string {
 
 function formatGlobResult(result: any): string {
   if (result.content) {
-    const lines = result.content.split('\n').filter((l: string) => l.trim()).length;
-    return `Found ${lines} files`;
+    const match = result.content.match(/Found (\d+) file\(s\)/);
+    if (match) {
+      return `Found ${match[1]} files`;
+    }
   }
   return 'Pattern search completed';
 }
