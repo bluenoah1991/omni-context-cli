@@ -119,6 +119,6 @@ export function registerListTool(): void {
 
     const output = `${searchPath}${path.sep}\n` + renderDir('.', 0);
 
-    return {content: output};
+    return {content: output, fileCount: files.length};
   });
 }

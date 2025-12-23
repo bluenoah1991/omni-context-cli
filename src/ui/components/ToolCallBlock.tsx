@@ -79,9 +79,8 @@ function formatListCall(args: Record<string, unknown>): string {
 }
 
 function formatListResult(result: any): string {
-  if (result.content) {
-    const entries = result.content.split('\n').length;
-    return `Listed ${entries} entries`;
+  if (result.fileCount !== undefined) {
+    return `Listed ${result.fileCount} files`;
   }
   return 'Directory listed successfully';
 }
