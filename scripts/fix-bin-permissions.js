@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { chmodSync, existsSync } from 'fs';
+import { chmodSync, existsSync, readdirSync, statSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,9 +12,6 @@ if (!existsSync(binDir)) {
 }
 
 function fixPermissions(dir) {
-  const {readdirSync, statSync} = require('fs');
-  const {join} = require('path');
-
   const files = readdirSync(dir);
   for (const file of files) {
     const filePath = join(dir, file);
