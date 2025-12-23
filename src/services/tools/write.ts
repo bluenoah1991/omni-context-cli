@@ -7,7 +7,7 @@ export function registerWriteTool(): void {
     {
       name: 'write',
       description:
-        `Write content to a file, creating parent directories if needed. This will overwrite existing files without warning - use with caution. For new files, prefer 'create' which prevents accidental overwrites. For partial updates, use 'edit' instead.`,
+        `Write content to a file, creating parent directories if needed. This will overwrite existing files without warning - use with caution. For new files, use createOnly=true to prevent overwriting. For partial updates, use 'edit' or 'append' instead.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
@@ -55,7 +55,7 @@ export function registerWriteTool(): void {
         try {
           await fs.access(absolutePath);
           throw new Error(
-            `File already exists: ${absolutePath}. To modify it, use 'edit' for partial changes or 'rewrite' to replace all content.`,
+            `File already exists: ${absolutePath}. To modify it, use 'edit' for partial changes or 'write' to replace all content.`,
           );
         } catch (error: any) {
           if (error.code !== 'ENOENT') {

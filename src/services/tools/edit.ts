@@ -97,7 +97,7 @@ export function registerEditTool(): void {
       } catch (error: any) {
         if (error.code === 'ENOENT') {
           throw new Error(
-            `File not found: ${absolutePath}. Check the path or use 'create' to make a new file.`,
+            `File not found: ${absolutePath}. Check the path or use 'write' to create a new file.`,
           );
         }
         throw error;
