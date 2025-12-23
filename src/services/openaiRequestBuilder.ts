@@ -1,4 +1,4 @@
-import systemPrompt from '../prompts/system.txt';
+import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AppConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { applyInterceptors } from './requestInterceptor';
@@ -8,7 +8,7 @@ export async function buildOpenAIRequest(
   config: AppConfig,
   messages: OpenAIMessage[],
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const systemMessages = [{role: 'system', content: systemPrompt}];
+  const systemMessages = [{role: 'system', content: buildSystemPrompt()}];
 
   const request: Record<string, unknown> = {
     model: config.model,

@@ -1,4 +1,4 @@
-import systemPrompt from '../prompts/system.txt';
+import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { AppConfig } from '../types/config';
 import { applyInterceptors } from './requestInterceptor';
@@ -8,7 +8,7 @@ export async function buildAnthropicRequest(
   config: AppConfig,
   messages: AnthropicMessage[],
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const systemBlocks = [{text: systemPrompt, type: 'text'}];
+  const systemBlocks = [{text: buildSystemPrompt(), type: 'text'}];
 
   const request: Record<string, unknown> = {
     model: config.model,
