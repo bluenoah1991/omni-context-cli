@@ -55,7 +55,10 @@ async function processToolCalls(
   const toolResults: {toolCallId: string; content: string;}[] = [];
 
   for (const toolCall of toolCalls) {
-    if (signal?.aborted) break;
+    if (signal?.aborted) {
+      callbacks.onError?.('Tool execution interrupted');
+      break;
+    }
 
     callbacks.onToolCall({id: toolCall.id, name: toolCall.name, input: toolCall.input});
 
@@ -86,9 +89,8 @@ export async function runConversation(
       message = await streamAIResponse(config, currentSession.messages, callbacks, signal);
     } catch (error) {
       const errorText = `${error}`;
-
       callbacks.onError?.(errorText);
-      return addAssistantMessage(currentSession, errorText, config.provider);
+      return currentSession;
     }
 
     const messageInputTokens = 'inputTokens' in message ? (message.inputTokens ?? 0) : 0;

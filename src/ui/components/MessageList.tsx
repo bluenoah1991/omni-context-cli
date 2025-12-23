@@ -2,6 +2,7 @@ import { Static, Text } from 'ink';
 import React, { useMemo } from 'react';
 import { UIMessage } from '../../types/uiMessage';
 import { colors } from '../theme/colors';
+import { ErrorBlock } from './ErrorBlock';
 import { Header } from './Header';
 import { MessageItem } from './MessageItem';
 
@@ -16,11 +17,12 @@ interface MessageListProps {
   sessionId: string;
   isLoading: boolean;
   streamingOutput: boolean;
+  error: string | null;
 }
 
 export const MessageList = React.memo(
   function MessageList(
-    {messages, sessionId, isLoading, streamingOutput}: MessageListProps,
+    {messages, sessionId, isLoading, streamingOutput, error}: MessageListProps,
   ): React.ReactElement {
     const staticItems = useMemo(() => {
       const items: StaticItem[] = [{type: 'header', sessionId: sessionId}];
@@ -69,6 +71,7 @@ export const MessageList = React.memo(
         {shouldShowLastMessage && (
           <MessageItem message={lastMessage} showIcon={getShowIcon(messages.length - 1)} />
         )}
+        {error && <ErrorBlock content={error} />}
       </>
     );
   },

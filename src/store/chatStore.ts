@@ -41,7 +41,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   updateMessages: updater => set(state => ({messages: updater(state.messages)})),
 
-  setLoading: isLoading => set({isLoading}),
+  setLoading: isLoading => set(isLoading ? {isLoading, error: null} : {isLoading}),
 
   setError: error => set({error}),
 

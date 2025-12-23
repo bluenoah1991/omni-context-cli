@@ -17,19 +17,23 @@ export function ChatView(): React.ReactElement {
     session,
     messages,
     isLoading,
+    error,
     setSession,
     updateSessionTokens,
     updateMessages,
     setLoading,
+    setError,
   } = useChatStore(
     useShallow(state => ({
       session: state.session,
       messages: state.messages,
       isLoading: state.isLoading,
+      error: state.error,
       setSession: state.setSession,
       updateSessionTokens: state.updateSessionTokens,
       updateMessages: state.updateMessages,
       setLoading: state.setLoading,
+      setError: state.setError,
     })),
   );
   const [showMenu, setShowMenu] = useState(false);
@@ -80,6 +84,9 @@ export function ChatView(): React.ReactElement {
             session.cachedTokens ?? 0,
           );
         },
+        onError: (errorText: string) => {
+          setError(errorText);
+        },
         onContent: (content: string) => {
           updateMessages(messages => {
             const last = messages[messages.length - 1];
@@ -127,7 +134,7 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [config.provider, updateMessages, setLoading, setSession]);
+  }, [config.provider, updateMessages, setLoading, setSession, setError]);
 
   return (
     <Box flexDirection='column' padding={1}>
@@ -136,6 +143,7 @@ export function ChatView(): React.ReactElement {
         sessionId={session.id}
         isLoading={isLoading}
         streamingOutput={config.streamingOutput ?? false}
+        error={error}
       />
 
       <Box height={1} marginBottom={1}>{isLoading && <LoadingIndicator />}</Box>
