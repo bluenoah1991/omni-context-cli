@@ -13,3 +13,7 @@ export function getCoreIgnorePatterns(): string[] {
 export function getGlobExcludes(additionalExcludes: string[] = []): string[] {
   return [...getCoreIgnorePatterns(), ...additionalExcludes];
 }
+
+export function getGrepExcludes(additionalExcludes: string[] = []): string[] {
+  return [...getCoreIgnorePatterns(), ...additionalExcludes];
+}
