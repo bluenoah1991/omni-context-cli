@@ -6,7 +6,7 @@ import { registerTool } from '../toolExecutor';
 import { getGrepExcludes } from './ignorePatterns';
 
 const MAX_LINE_LENGTH = 1000;
-const MAX_OUTPUT_BYTES = 4 * 1024;
+const MAX_OUTPUT_BYTES = 16 * 1024;
 
 function getRipgrepPath(): string {
   const platform = process.platform;
