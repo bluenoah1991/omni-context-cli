@@ -10,11 +10,7 @@ import { applyContextWindow, countTotalTokens } from './contextWindow';
 import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
-import {
-  addAssistantMessage,
-  addToolResultMessages,
-  getLastAssistantToolCalls,
-} from './sessionManager';
+import { addToolResultMessages, getLastAssistantToolCalls } from './sessionManager';
 import { executeTool } from './toolExecutor';
 
 async function streamAIResponse(
