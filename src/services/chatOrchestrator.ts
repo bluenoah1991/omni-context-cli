@@ -52,7 +52,6 @@ async function processToolCalls(
 
   for (const toolCall of toolCalls) {
     if (signal?.aborted) {
-      callbacks.onError?.('Tool execution interrupted');
       break;
     }
 
@@ -65,9 +64,12 @@ async function processToolCalls(
   }
 
   if (signal?.aborted) {
-    return {session, shouldContinue: false};
+    callbacks.onError?.('Tool execution interrupted');
   }
-  return {session: addToolResultMessages(session, toolResults, provider), shouldContinue: true};
+  return {
+    session: addToolResultMessages(session, toolResults, provider),
+    shouldContinue: !signal?.aborted,
+  };
 }
 
 export async function runConversation(

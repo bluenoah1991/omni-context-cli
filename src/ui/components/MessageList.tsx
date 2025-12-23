@@ -37,6 +37,10 @@ export const MessageList = React.memo(
       return message?.role === 'user';
     };
 
+    const isToolMessage = (message: UIMessage | null | undefined): boolean => {
+      return message?.role === 'tool_call' || message?.role === 'tool_result';
+    };
+
     const getShowIcon = (index: number): boolean => {
       if (index === 0) return false;
       const prev = messages[index - 1];
@@ -45,7 +49,7 @@ export const MessageList = React.memo(
 
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const shouldShowLastMessage = lastMessage && isLoading
-      && (streamingOutput || isHumanMessage(lastMessage));
+      && (streamingOutput || isHumanMessage(lastMessage) || isToolMessage(lastMessage));
 
     return (
       <>
