@@ -106,10 +106,7 @@ export function registerEditTool(): void {
       const newContent = replace(content, oldString, newString, replaceAll);
       await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-      return {
-        result: {content: `Edit applied to ${absolutePath}`},
-        displayText: 'File edited successfully',
-      };
+      return {result: `Edit applied to ${absolutePath}`, displayText: 'File edited successfully'};
     },
   );
 }

@@ -72,7 +72,7 @@ export function registerWriteTool(): void {
       const lines = content.split('\n').length;
       const action = createOnly ? 'Created' : 'Written';
       return {
-        result: {content: `${action} ${lines} lines to ${absolutePath}`},
+        result: `${action} ${lines} lines to ${absolutePath}`,
         displayText: `${action} ${lines} lines`,
       };
     },

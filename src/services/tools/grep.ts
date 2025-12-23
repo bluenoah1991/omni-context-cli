@@ -268,18 +268,18 @@ export function registerGrepTool(): void {
 
             if (!result) {
               resolve({
-                result: {content: `No matches found for "${pattern}".`, matchCount: 0},
+                result: `No matches found for "${pattern}".`,
                 displayText: 'No matches found',
               });
             } else {
               resolve({
-                result: {content: result, matchCount},
+                result: result,
                 displayText: matchCount > 0 ? `Found ${matchCount} matches` : 'No matches found',
               });
             }
           } else if (code === 1) {
             resolve({
-              result: {content: `No matches found for "${pattern}".`, matchCount: 0},
+              result: `No matches found for "${pattern}".`,
               displayText: 'No matches found',
             });
           } else if (code === 2) {
@@ -287,7 +287,7 @@ export function registerGrepTool(): void {
             reject(new Error(errorMsg));
           } else {
             resolve({
-              result: {content: `No matches found for "${pattern}".`},
+              result: `No matches found for "${pattern}".`,
               displayText: 'No matches found',
             });
           }

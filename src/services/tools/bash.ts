@@ -72,10 +72,8 @@ export function registerBashTool(): void {
         const taskId = createTask(child);
 
         return {
-          result: {
-            content:
-              `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
-          },
+          result:
+            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
           displayText: `Background task started: ${taskId}`,
         };
       }
@@ -156,10 +154,7 @@ export function registerBashTool(): void {
           } else {
             const result = output.trim() || 'Done. Command completed successfully with no output.';
             const lines = result.split('\n').length;
-            resolve({
-              result: {content: result},
-              displayText: `Command executed (${lines} lines of output)`,
-            });
+            resolve({result: result, displayText: `Command executed (${lines} lines of output)`});
           }
         });
       });

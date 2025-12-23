@@ -65,7 +65,7 @@ export function registerAppendTool(): void {
       const addedLines = text.split('\n').length;
       const location = position === 'start' ? 'start of' : 'end of';
       return {
-        result: {content: `Added ${addedLines} lines to ${location} ${absolutePath}`},
+        result: `Added ${addedLines} lines to ${location} ${absolutePath}`,
         displayText: `Added ${addedLines} lines to ${location}`,
       };
     },

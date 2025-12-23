@@ -62,7 +62,7 @@ export function registerBashOutputTool(): void {
       }s)`;
 
     return {
-      result: {content: `${statusInfo}\n\nOutput:\n${output || '(no output yet)'}`},
+      result: `${statusInfo}\n\nOutput:\n${output || '(no output yet)'}`,
       displayText: 'Task output retrieved',
     };
   });

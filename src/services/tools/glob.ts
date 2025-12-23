@@ -94,7 +94,7 @@ export function registerGlobTool(): void {
     }
 
     return {
-      result: {content: output.join('\n')},
+      result: output.join('\n'),
       displayText: files.length > 0 ? `Found ${files.length} files` : 'Pattern search completed',
     };
   });
