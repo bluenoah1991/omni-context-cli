@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { registerTool } from '../toolExecutor';
+import { COMMON_IGNORE_PATTERNS } from './ignorePatterns';
 
 const MAX_LINE_LENGTH = 2000;
 const MAX_OUTPUT_BYTES = 4 * 1024;
@@ -189,6 +190,10 @@ export function registerGrepTool(): void {
 
       if (fileType) {
         rgArgs.push('--type', fileType);
+      }
+
+      for (const ignorePattern of COMMON_IGNORE_PATTERNS) {
+        rgArgs.push('--glob', `!${ignorePattern}`);
       }
 
       if (glob) {
