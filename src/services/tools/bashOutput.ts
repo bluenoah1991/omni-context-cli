@@ -7,7 +7,7 @@ export function registerBashOutputTool(): void {
   registerTool({
     name: 'bashOutput',
     description:
-      'Retrieve the output of a background bash task by its task ID. Use this to check the status and output of commands that were started in the background. Returns the current stdout, stderr, and exit code (if the task has completed).',
+      'Retrieve the output of a background bash task by its task ID. Use this for: checking the status of long-running commands, retrieving output from background tasks, or verifying task completion. Returns the current stdout, stderr, and exit code (if the task has completed).',
     formatCall: (args: Record<string, unknown>) => String(args.taskId || ''),
     parameters: {
       properties: {

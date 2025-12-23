@@ -9,7 +9,7 @@ export function registerReadTool(): void {
   registerTool({
     name: 'read',
     description:
-      `Read the contents of a file with line numbers. Returns numbered lines for easy reference when editing. Use offset and limit for large files - start with the beginning, then read more sections as needed. Output format: each line prefixed with its line number (e.g., "00001| content").`,
+      `Read the contents of a file with line numbers. Use this for: previewing file contents, reviewing code before editing, or examining specific sections of large files. Returns numbered lines for easy reference when editing. Use offset and limit for large files - start with the beginning, then read more sections as needed. Output format: each line prefixed with its line number (e.g., "00001| content").`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {

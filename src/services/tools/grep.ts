@@ -63,7 +63,7 @@ export function registerGrepTool(): void {
     {
       name: 'grep',
       description:
-        `Search for text patterns in files using regex. Returns matching lines with file paths and line numbers. Respects .gitignore. Searches hidden files by default.`,
+        `Search for text patterns in files using regex. Use this for: finding function definitions, locating variable usage, searching for specific text patterns, or code auditing. Returns matching lines with file paths and line numbers. Respects .gitignore. Searches hidden files by default. Output includes match counts and can be filtered by file type, path, or glob pattern.`,
       formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
       parameters: {
         properties: {

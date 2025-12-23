@@ -42,7 +42,7 @@ export function registerEditTool(): void {
     {
       name: 'edit',
       description:
-        `Make precise text replacements in a file. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique - if the text appears multiple times, include more surrounding context to make it unique, or set replaceAll=true to replace all occurrences. Line endings are normalized automatically.`,
+        `Make precise text replacements in a file. Use this for: fixing bugs, updating function implementations, changing variable names, or modifying specific code sections. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique - if the text appears multiple times, include more surrounding context to make it unique, or set replaceAll=true to replace all occurrences. Line endings are normalized automatically.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
