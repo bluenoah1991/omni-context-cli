@@ -9,7 +9,7 @@ export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
     description:
-      `Find files matching a glob pattern. Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore.`,
+      `Find files matching a glob pattern. Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore. To list all files in a specific directory, use "path/*" (direct children only) or "path/**/*" (recursive, all subdirectories).`,
     formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
     parameters: {
       properties: {
