@@ -52,13 +52,22 @@ async function processToolCalls(
     return {session, shouldContinue: false};
   }
 
-  const toolResults = await Promise.all(toolCalls.map(async toolCall => {
+  const toolResults: {toolCallId: string; content: string;}[] = [];
+
+  for (const toolCall of toolCalls) {
+    if (signal?.aborted) break;
+
+    callbacks.onToolCall({id: toolCall.id, name: toolCall.name, input: toolCall.input});
+
     const result = await executeTool(toolCall.name, toolCall.input, signal);
     const content = JSON.stringify(result);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
-    return {toolCallId: toolCall.id, content};
-  }));
+    toolResults.push({toolCallId: toolCall.id, content});
+  }
 
+  if (signal?.aborted) {
+    return {session, shouldContinue: false};
+  }
   return {session: addToolResultMessages(session, toolResults, provider), shouldContinue: true};
 }
 

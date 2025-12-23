@@ -4,9 +4,9 @@ import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
 interface ToolCallBlockProps {
+  type: 'call' | 'result';
   toolName: string;
   content: string;
-  result?: string;
 }
 
 function formatBashCall(args: Record<string, unknown>): string {
@@ -186,54 +186,41 @@ function formatToolResult(toolName: string, data: any): string {
 }
 
 export const ToolCallBlock = React.memo(
-  function ToolCallBlock({toolName, content, result}: ToolCallBlockProps): React.ReactElement {
+  function ToolCallBlock({type, toolName, content}: ToolCallBlockProps): React.ReactElement {
     const contentWidth = useContentWidth();
-    let callText = '';
 
-    try {
-      const data = JSON.parse(content);
-      callText = `${toolName}: ${formatToolCall(toolName, data)}`;
-    } catch {
-      callText = `${toolName}: ${content}`;
-    }
+    let text = '';
+    let textColor: string = colors.secondary;
 
-    let resultText = '';
-    let resultColor: string = colors.secondary;
-
-    if (result) {
+    if (type === 'call') {
       try {
-        const resultData = JSON.parse(result);
+        const data = JSON.parse(content);
+        text = `${toolName}: ${formatToolCall(toolName, data)}`;
+      } catch {
+        text = `${toolName}: ${content}`;
+      }
+    } else {
+      try {
+        const resultData = JSON.parse(content);
         if (resultData.error) {
-          resultText = resultData.error;
-          resultColor = colors.error;
+          text = resultData.error;
+          textColor = colors.error;
         } else {
-          resultText = formatToolResult(toolName, resultData);
+          text = formatToolResult(toolName, resultData);
         }
       } catch {
-        resultText = result;
+        text = content;
       }
     }
 
     return (
-      <Box marginBottom={1} flexDirection='column'>
-        <Box>
-          <Box marginRight={1}>
-            <Text color={colors.secondary}>{' '}</Text>
-          </Box>
-          <Box marginRight={3} flexDirection='column' width={contentWidth}>
-            <Text color={colors.secondary} wrap='wrap'>{callText}</Text>
-          </Box>
+      <Box marginTop={type === 'call' ? 0 : -1} marginBottom={1}>
+        <Box marginRight={1}>
+          <Text color={colors.secondary}>{' '}</Text>
         </Box>
-        {result && (
-          <Box>
-            <Box marginRight={1}>
-              <Text color={colors.secondary}>{' '}</Text>
-            </Box>
-            <Box marginRight={3} flexDirection='column' width={contentWidth}>
-              <Text color={resultColor} wrap='wrap'>{resultText}</Text>
-            </Box>
-          </Box>
-        )}
+        <Box marginRight={3} flexDirection='column' width={contentWidth}>
+          <Text color={textColor} wrap='wrap'>{text}</Text>
+        </Box>
       </Box>
     );
   },

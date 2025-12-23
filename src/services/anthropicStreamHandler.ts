@@ -119,7 +119,6 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       };
 
       this.completedToolCalls.push(completedToolCall);
-      this.callbacks.onToolCall(completedToolCall);
       this.currentToolCall = null;
     }
   }

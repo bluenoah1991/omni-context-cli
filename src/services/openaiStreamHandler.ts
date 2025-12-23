@@ -116,7 +116,6 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
         const completedToolCall: ToolCall = {id: toolCall.id, name: toolCall.name, input};
 
         this.completedToolCalls.push(completedToolCall);
-        this.callbacks.onToolCall(completedToolCall);
       }
     }
 

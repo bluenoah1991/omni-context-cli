@@ -1,4 +1,4 @@
-export type MessageRole = 'user' | 'assistant' | 'thinking' | 'tool_call';
+export type MessageRole = 'user' | 'assistant' | 'thinking' | 'tool_call' | 'tool_result';
 
 export interface UIMessage {
   role: MessageRole;
@@ -6,5 +6,4 @@ export interface UIMessage {
   timestamp: number;
   toolName?: string;
   toolCallId?: string;
-  toolResult?: string;
 }

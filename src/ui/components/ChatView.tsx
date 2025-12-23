@@ -5,7 +5,7 @@ import { runConversation } from '../../services/chatOrchestrator';
 import { getAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
-import { PendingToolCall } from '../../types/tool';
+
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
@@ -37,8 +37,6 @@ export function ChatView(): React.ReactElement {
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
-
-  const pendingToolCallsRef = useRef<Map<string, PendingToolCall>>(new Map());
   const {stdout} = useStdout();
 
   useEffect(() => {
@@ -101,34 +99,32 @@ export function ChatView(): React.ReactElement {
           });
         },
         onToolCall: toolCall => {
-          pendingToolCallsRef.current.set(toolCall.id, {
-            content: JSON.stringify(toolCall.input),
-            timestamp: Date.now(),
-            toolName: toolCall.name,
-          });
+          updateMessages(
+            messages => [...messages, {
+              role: 'tool_call',
+              content: JSON.stringify(toolCall.input),
+              timestamp: Date.now(),
+              toolName: toolCall.name,
+              toolCallId: toolCall.id,
+            }]
+          );
         },
         onToolResult: toolResult => {
-          const pendingCall = pendingToolCallsRef.current.get(toolResult.id);
-          if (pendingCall) {
-            pendingToolCallsRef.current.delete(toolResult.id);
-            updateMessages(
-              messages => [...messages, {
-                role: 'tool_call',
-                content: pendingCall.content,
-                timestamp: pendingCall.timestamp,
-                toolName: pendingCall.toolName,
-                toolCallId: toolResult.id,
-                toolResult: toolResult.content,
-              }]
-            );
-          }
+          updateMessages(
+            messages => [...messages, {
+              role: 'tool_result',
+              content: toolResult.content,
+              timestamp: Date.now(),
+              toolName: toolResult.name,
+              toolCallId: toolResult.id,
+            }]
+          );
         },
       }, abortController.signal);
 
       setSession(finalSession);
       saveSession(finalSession, config.provider);
     } finally {
-      pendingToolCallsRef.current.clear();
       setLoading(false);
     }
   }, [config.provider, updateMessages, setLoading, setSession]);

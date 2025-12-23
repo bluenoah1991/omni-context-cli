@@ -26,9 +26,18 @@ export const MessageItem = React.memo(
       case 'tool_call':
         return (
           <ToolCallBlock
+            type='call'
             toolName={message.toolName || 'unknown'}
             content={message.content}
-            result={message.toolResult}
+          />
+        );
+
+      case 'tool_result':
+        return (
+          <ToolCallBlock
+            type='result'
+            toolName={message.toolName || 'unknown'}
+            content={message.content}
           />
         );
 

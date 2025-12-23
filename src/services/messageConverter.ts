@@ -82,7 +82,13 @@ function openAIMessageToUI(
           timestamp: pending.timestamp,
           toolName: pending.toolName,
           toolCallId,
-          toolResult: resultContent,
+        });
+        uiMessages.push({
+          role: 'tool_result',
+          content: resultContent,
+          timestamp,
+          toolName: pending.toolName,
+          toolCallId,
         });
       }
       break;
@@ -150,7 +156,13 @@ function anthropicMessageToUI(
           timestamp: pending.timestamp,
           toolName: pending.toolName,
           toolCallId: block.tool_use_id,
-          toolResult: resultContent,
+        });
+        uiMessages.push({
+          role: 'tool_result',
+          content: resultContent,
+          timestamp,
+          toolName: pending.toolName,
+          toolCallId: block.tool_use_id,
         });
       }
     }

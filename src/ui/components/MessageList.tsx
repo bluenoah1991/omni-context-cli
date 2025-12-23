@@ -32,7 +32,7 @@ export const MessageList = React.memo(
     }, [messages, sessionId, isLoading]);
 
     const isHumanMessage = (message: UIMessage | null | undefined): boolean => {
-      return message?.role === 'user' && !message?.toolResult;
+      return message?.role === 'user';
     };
 
     const getShowIcon = (index: number): boolean => {
