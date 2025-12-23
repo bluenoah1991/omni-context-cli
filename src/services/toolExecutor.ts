@@ -22,7 +22,7 @@ export function formatToolCall(toolName: string, args: any): string {
   if (tool?.definition.formatCall) {
     return tool.definition.formatCall(args);
   }
-  return toolName;
+  return Object.values(args).map(v => String(v)).join(' ');
 }
 
 export async function executeTool(
