@@ -2,8 +2,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { registerTool } from '../toolExecutor';
 
-const DEFAULT_READ_LIMIT = 2000;
-const MAX_LINE_LENGTH = 2000;
+const DEFAULT_READ_LIMIT = 50;
+const MAX_LINE_LENGTH = 1000;
 
 export function registerReadTool(): void {
   registerTool({
@@ -26,7 +26,7 @@ export function registerReadTool(): void {
         limit: {
           type: 'number',
           description:
-            'Maximum number of lines to read. Defaults to 2000. Increase for larger files, decrease if you only need a quick peek',
+            'Maximum number of lines to read. Defaults to 50. Increase for larger files, decrease if you only need a quick peek',
         },
       },
       required: ['filePath'],
