@@ -7,6 +7,7 @@ export function registerPrependTool(): void {
     name: 'prepend',
     description:
       `Insert text at the beginning of an existing file. The original content is preserved and shifted down. Useful for adding imports, headers, license comments, or any content that should appear at the top. The file must already exist - use 'create' for new files.`,
+    formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {type: 'string', description: 'Path to the file. Must be an existing file'},
@@ -51,6 +52,9 @@ export function registerPrependTool(): void {
     await fs.writeFile(absolutePath, newContent, 'utf-8');
 
     const addedLines = text.split('\n').length;
-    return {content: `Prepended ${addedLines} lines to ${absolutePath}`};
+    return {
+      result: {content: `Prepended ${addedLines} lines to ${absolutePath}`},
+      displayText: 'Text prepended successfully',
+    };
   });
 }

@@ -30,6 +30,7 @@ export function registerListTool(): void {
     name: 'list',
     description:
       `List files in a directory with a tree-like structure. Respects .gitignore and common ignore patterns (.git, .idea, .vscode). Limited to 100 files to keep output manageable. Use this to explore project structure before reading specific files. For finding files by pattern, use 'glob' instead.`,
+    formatCall: (args: Record<string, unknown>) => String(args?.path || '.'),
     parameters: {
       properties: {
         path: {
@@ -119,6 +120,9 @@ export function registerListTool(): void {
 
     const output = `${searchPath}${path.sep}\n` + renderDir('.', 0);
 
-    return {content: output, fileCount: files.length};
+    return {
+      result: {content: output, fileCount: files.length},
+      displayText: `Listed ${files.length} files`,
+    };
   });
 }

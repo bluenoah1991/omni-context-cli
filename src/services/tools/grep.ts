@@ -64,6 +64,7 @@ export function registerGrepTool(): void {
       name: 'grep',
       description:
         `Search for text patterns in files using regex. Returns matching lines with file paths and line numbers. Respects .gitignore. Searches hidden files by default.`,
+      formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
       parameters: {
         properties: {
           pattern: {
@@ -117,7 +118,7 @@ export function registerGrepTool(): void {
         fileType?: string;
       },
       signal?: AbortSignal,
-    ): Promise<{content: string; matchCount?: number;}> => {
+    ) => {
       const {
         pattern,
         path: searchPath,
@@ -266,17 +267,29 @@ export function registerGrepTool(): void {
             const matchCount = result ? countMatches(result, outputMode) : 0;
 
             if (!result) {
-              resolve({content: `No matches found for "${pattern}".`, matchCount: 0});
+              resolve({
+                result: {content: `No matches found for "${pattern}".`, matchCount: 0},
+                displayText: 'No matches found',
+              });
             } else {
-              resolve({content: result, matchCount});
+              resolve({
+                result: {content: result, matchCount},
+                displayText: matchCount > 0 ? `Found ${matchCount} matches` : 'No matches found',
+              });
             }
           } else if (code === 1) {
-            resolve({content: `No matches found for "${pattern}".`, matchCount: 0});
+            resolve({
+              result: {content: `No matches found for "${pattern}".`, matchCount: 0},
+              displayText: 'No matches found',
+            });
           } else if (code === 2) {
             const errorMsg = stderr.trim() || 'Search error';
             reject(new Error(errorMsg));
           } else {
-            resolve({content: `No matches found for "${pattern}".`});
+            resolve({
+              result: {content: `No matches found for "${pattern}".`},
+              displayText: 'No matches found',
+            });
           }
         });
 

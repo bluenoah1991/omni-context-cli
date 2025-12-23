@@ -12,6 +12,7 @@ export function registerBashTool(): void {
       name: 'bash',
       description:
         `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
+      formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
           command: {
@@ -71,8 +72,11 @@ export function registerBashTool(): void {
         const taskId = createTask(child);
 
         return {
-          content:
-            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
+          result: {
+            content:
+              `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
+          },
+          displayText: `Background task started: ${taskId}`,
         };
       }
 
@@ -150,8 +154,11 @@ export function registerBashTool(): void {
               ),
             );
           } else {
+            const result = output.trim() || 'Done. Command completed successfully with no output.';
+            const lines = result.split('\n').length;
             resolve({
-              content: output.trim() || 'Done. Command completed successfully with no output.',
+              result: {content: result},
+              displayText: `Command executed (${lines} lines of output)`,
             });
           }
         });

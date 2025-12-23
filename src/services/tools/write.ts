@@ -7,6 +7,7 @@ export function registerWriteTool(): void {
     name: 'write',
     description:
       `Write content to a file, creating parent directories if needed. This will overwrite existing files without warning - use with caution. For new files, prefer 'create' which prevents accidental overwrites. For partial updates, use 'edit' instead.`,
+    formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {
@@ -44,6 +45,9 @@ export function registerWriteTool(): void {
     await fs.writeFile(absolutePath, content, 'utf-8');
 
     const lines = content.split('\n').length;
-    return {content: `Written ${lines} lines to ${absolutePath}`};
+    return {
+      result: {content: `Written ${lines} lines to ${absolutePath}`},
+      displayText: 'File written successfully',
+    };
   });
 }

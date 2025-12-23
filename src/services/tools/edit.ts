@@ -43,6 +43,7 @@ export function registerEditTool(): void {
       name: 'edit',
       description:
         `Make precise text replacements in a file. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique - if the text appears multiple times, include more surrounding context to make it unique, or set replaceAll=true to replace all occurrences. Line endings are normalized automatically.`,
+      formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
           filePath: {type: 'string', description: 'Path to the file to edit'},
@@ -105,7 +106,10 @@ export function registerEditTool(): void {
       const newContent = replace(content, oldString, newString, replaceAll);
       await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-      return {content: `Edit applied to ${absolutePath}`};
+      return {
+        result: {content: `Edit applied to ${absolutePath}`},
+        displayText: 'File edited successfully',
+      };
     },
   );
 }

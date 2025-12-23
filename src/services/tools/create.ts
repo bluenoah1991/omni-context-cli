@@ -7,6 +7,7 @@ export function registerCreateTool(): void {
     name: 'create',
     description:
       `Create a new file with the given content. This tool is safe - it will refuse to overwrite existing files. Use this when you want to add a new file to the project. For modifying existing files, use 'edit' or 'rewrite' instead.`,
+    formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {
@@ -51,6 +52,9 @@ export function registerCreateTool(): void {
     await fs.writeFile(absolutePath, content, 'utf-8');
 
     const lines = content.split('\n').length;
-    return {content: `Created ${absolutePath} (${lines} lines)`, lines};
+    return {
+      result: {content: `Created ${absolutePath} (${lines} lines)`, lines},
+      displayText: `Created file with ${lines} lines`,
+    };
   });
 }

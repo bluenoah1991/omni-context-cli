@@ -7,6 +7,7 @@ export function registerRewriteTool(): void {
     name: 'rewrite',
     description:
       `Completely replace an existing file's content. Unlike 'write', this requires the file to exist first - it's a safety measure to prevent accidental file creation. Use this when you need to overwrite a file entirely. For partial modifications, prefer 'edit' to change specific sections.`,
+    formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {type: 'string', description: 'Path to the existing file to rewrite'},
@@ -48,6 +49,9 @@ export function registerRewriteTool(): void {
     await fs.writeFile(absolutePath, text, 'utf-8');
 
     const lines = text.split('\n').length;
-    return {content: `Rewrote ${absolutePath} (${lines} lines)`};
+    return {
+      result: {content: `Rewrote ${absolutePath} (${lines} lines)`},
+      displayText: 'File rewritten successfully',
+    };
   });
 }

@@ -8,6 +8,7 @@ export function registerBashOutputTool(): void {
     name: 'bashOutput',
     description:
       'Retrieve the output of a background bash task by its task ID. Use this to check the status and output of commands that were started in the background. Returns the current stdout, stderr, and exit code (if the task has completed).',
+    formatCall: (args: Record<string, unknown>) => String(args.taskId || ''),
     parameters: {
       properties: {
         taskId: {
@@ -60,6 +61,9 @@ export function registerBashOutputTool(): void {
         Math.round(runningTime / 1000)
       }s)`;
 
-    return {content: `${statusInfo}\n\nOutput:\n${output || '(no output yet)'}`};
+    return {
+      result: {content: `${statusInfo}\n\nOutput:\n${output || '(no output yet)'}`},
+      displayText: 'Task output retrieved',
+    };
   });
 }

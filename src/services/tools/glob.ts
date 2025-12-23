@@ -10,6 +10,7 @@ export function registerGlobTool(): void {
     name: 'glob',
     description:
       `Find files matching a glob pattern. Useful for locating files when you know the naming pattern but not the exact location. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore.`,
+    formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
     parameters: {
       properties: {
         pattern: {
@@ -92,6 +93,9 @@ export function registerGlobTool(): void {
       }
     }
 
-    return {content: output.join('\n')};
+    return {
+      result: {content: output.join('\n')},
+      displayText: files.length > 0 ? `Found ${files.length} files` : 'Pattern search completed',
+    };
   });
 }

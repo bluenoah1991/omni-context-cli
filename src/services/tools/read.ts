@@ -10,6 +10,7 @@ export function registerReadTool(): void {
     name: 'read',
     description:
       `Read the contents of a file with line numbers. Returns numbered lines for easy reference when editing. Use offset and limit for large files - start with the beginning, then read more sections as needed. Output format: each line prefixed with its line number (e.g., "00001| content").`,
+    formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {
@@ -95,6 +96,9 @@ export function registerReadTool(): void {
     }
     output += '\n</file>';
 
-    return {content: output, lines: totalLines, path: absolutePath};
+    return {
+      result: {content: output, lines: totalLines, path: absolutePath},
+      displayText: `Got ${totalLines} lines of output`,
+    };
   });
 }

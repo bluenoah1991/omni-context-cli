@@ -17,6 +17,14 @@ export function clearTools(): void {
   tools.clear();
 }
 
+export function formatToolCall(toolName: string, args: any): string {
+  const tool = tools.get(toolName);
+  if (tool?.definition.formatCall) {
+    return tool.definition.formatCall(args);
+  }
+  return toolName;
+}
+
 export async function executeTool(
   toolName: string,
   args: any,
@@ -39,7 +47,7 @@ export async function executeTool(
 
   try {
     const result = await tool.handler(args, signal);
-    return {success: true, result};
+    return {success: true, result: result.result, displayText: result.displayText};
   } catch (error) {
     return {success: false, error: String(error)};
   }
