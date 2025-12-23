@@ -70,11 +70,8 @@ function formatGrepCall(args: Record<string, unknown>): string {
 }
 
 function formatGrepResult(result: any): string {
-  if (result.content) {
-    const matches = result.content.match(/Line \d+:/g)?.length || 0;
-    return `Found ${matches} matches`;
-  }
-  return 'Content search completed';
+  const count = result.matchCount ?? 0;
+  return count > 0 ? `Found ${count} matches` : 'No matches found';
 }
 
 function formatListCall(args: Record<string, unknown>): string {

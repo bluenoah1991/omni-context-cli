@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { readFileSync, writeFileSync } from 'fs';
+import { cpSync, readFileSync, writeFileSync } from 'fs';
 import JavaScriptObfuscator from 'javascript-obfuscator';
 
 const isWatch = process.argv.includes('--watch');
@@ -72,5 +72,8 @@ if (isWatch) {
   });
 
   writeFileSync('dist/cli.js', obfuscated.getObfuscatedCode(), 'utf8');
+
+  cpSync('bin', 'dist/bin', { recursive: true });
+
   console.log('Build complete with obfuscation!');
 }

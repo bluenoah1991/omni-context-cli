@@ -1,145 +1,287 @@
-import * as fs from 'fs/promises';
+import { spawn } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
-import { createAdditionalIgnores, isIgnored } from '../gitignoreParser';
+import { fileURLToPath } from 'url';
 import { registerTool } from '../toolExecutor';
 
 const MAX_LINE_LENGTH = 2000;
+const MAX_OUTPUT_BYTES = 4 * 1024;
 
-async function* walkDirectory(
-  dir: string,
-  rootDir: string,
-  include?: string,
-): AsyncGenerator<string> {
-  const entries = await fs.readdir(dir, {withFileTypes: true});
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
+function getRipgrepPath(): string {
+  const platform = process.platform;
 
-    if (await isIgnored(fullPath)) continue;
-
-    if (entry.isDirectory()) {
-      yield* walkDirectory(fullPath, rootDir, include);
-    } else {
-      if (!include || matchPattern(entry.name, include)) {
-        yield fullPath;
-      }
-    }
+  let binDir: string;
+  if (platform === 'win32') {
+    binDir = 'x86_64-pc-windows-msvc';
+  } else if (platform === 'darwin') {
+    binDir = 'aarch64-apple-darwin';
+  } else {
+    binDir = 'x86_64-unknown-linux-musl';
   }
+
+  const exeName = platform === 'win32' ? 'rg.exe' : 'rg';
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+  const binPath = path.join(scriptDir, 'bin', binDir, exeName);
+
+  if (fs.existsSync(binPath)) {
+    return binPath;
+  }
+
+  return 'rg';
 }
 
-function matchPattern(filename: string, pattern: string): boolean {
-  const patterns = pattern.includes(',')
-    ? pattern.replace(/[{}]/g, '').split(',').map(p => p.trim())
-    : [pattern];
+function countMatches(output: string, mode: string): number {
+  if (!output) return 0;
 
-  return patterns.some(p => {
-    const regexPattern = p.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.');
-    const regex = new RegExp(`^${regexPattern}$`);
-    return regex.test(filename);
-  });
+  const lines = output.split('\n').filter(line => line.trim());
+
+  if (mode === 'files_with_matches') {
+    return lines.length;
+  }
+
+  if (mode === 'count') {
+    return lines.reduce((sum, line) => {
+      const colonPos = line.lastIndexOf(':');
+      if (colonPos > 0) {
+        const count = parseInt(line.substring(colonPos + 1), 10);
+        return sum + (isNaN(count) ? 0 : count);
+      }
+      return sum;
+    }, 0);
+  }
+
+  return lines.filter(line => {
+    const colonPos = line.indexOf(':');
+    const dashPos = line.indexOf('-');
+    return colonPos > 0 && (dashPos === -1 || colonPos < dashPos);
+  }).length;
 }
 
 export function registerGrepTool(): void {
-  registerTool({
-    name: 'grep',
-    description:
-      `Search for text patterns inside files using regex. Returns matching lines with file paths and line numbers. Results are sorted by file modification time (newest first). Great for finding function definitions, variable usages, or any text pattern across the codebase. Limited to 100 matches. Respects .gitignore.`,
-    parameters: {
-      properties: {
-        pattern: {
-          type: 'string',
-          description:
-            'Regex pattern to search for. Examples: "function\\s+\\w+", "TODO|FIXME", "import.*from". Case-sensitive by default',
+  registerTool(
+    {
+      name: 'grep',
+      description:
+        `Search for text patterns in files using regex. Returns matching lines with file paths and line numbers. Respects .gitignore. Searches hidden files by default.`,
+      parameters: {
+        properties: {
+          pattern: {
+            type: 'string',
+            description: 'Regex pattern to search for. Case-sensitive by default.',
+          },
+          path: {
+            type: 'string',
+            description: 'Directory or file to search in. Defaults to current working directory.',
+          },
+          glob: {
+            type: 'string',
+            description: 'Glob pattern for files to include. Examples: "*.ts", "*.{js,jsx}"',
+          },
+          outputMode: {
+            type: 'string',
+            description:
+              'Output mode: "content" (default, show matches), "files_with_matches" (file paths only), "count" (match counts).',
+          },
+          ignoreCase: {type: 'boolean', description: 'Case-insensitive search.'},
+          linesContext: {
+            type: 'number',
+            description: 'Number of context lines before and after each match.',
+          },
+          linesBefore: {type: 'number', description: 'Number of context lines before each match.'},
+          linesAfter: {type: 'number', description: 'Number of context lines after each match.'},
+          showLineNumbers: {type: 'boolean', description: 'Show line numbers. Default is true.'},
+          maxDepth: {type: 'number', description: 'Maximum directory depth to search.'},
+          multiline: {type: 'boolean', description: 'Enable multiline matching.'},
+          fileType: {
+            type: 'string',
+            description: 'File type to search. Examples: "ts", "py", "js"',
+          },
         },
-        path: {
-          type: 'string',
-          description:
-            'Directory to search in. Defaults to current working directory. Use to limit search scope',
-        },
-        include: {
-          type: 'string',
-          description:
-            'Filter by filename pattern. Examples: "*.ts" (TypeScript only), "*.{js,jsx}" (JS and JSX), "test_*.py" (Python test files)',
-        },
+        required: ['pattern'],
       },
-      required: ['pattern'],
     },
-  }, async (args: {pattern: string; path?: string; include?: string;}, signal?: AbortSignal) => {
-    const {pattern, path: searchPath, include} = args;
+    async (
+      args: {
+        pattern: string;
+        path?: string;
+        glob?: string;
+        outputMode?: string;
+        ignoreCase?: boolean;
+        linesContext?: number;
+        linesBefore?: number;
+        linesAfter?: number;
+        showLineNumbers?: boolean;
+        maxDepth?: number;
+        multiline?: boolean;
+        fileType?: string;
+      },
+      signal?: AbortSignal,
+    ): Promise<{content: string; matchCount?: number;}> => {
+      const {
+        pattern,
+        path: searchPath,
+        glob,
+        outputMode = 'content',
+        ignoreCase,
+        linesContext,
+        linesBefore,
+        linesAfter,
+        showLineNumbers = true,
+        maxDepth,
+        multiline,
+        fileType,
+      } = args;
 
-    if (!pattern) {
-      throw new Error(
-        'Missing required parameter: pattern. Please provide a regex pattern to search for.',
-      );
-    }
+      if (!pattern) {
+        throw new Error('Missing required parameter: pattern');
+      }
 
-    const rootDir = process.cwd();
-    const search = searchPath
-      ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
-      : rootDir;
+      const rootDir = process.cwd();
+      const targetPath = searchPath
+        ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
+        : rootDir;
 
-    const regex = new RegExp(pattern, 'g');
-    const matches: Array<{path: string; lineNum: number; lineText: string; modTime: number;}> = [];
-    const limit = 100;
+      const rgPath = getRipgrepPath();
 
-    for await (const file of walkDirectory(search, rootDir, include)) {
-      try {
-        const content = await fs.readFile(file, 'utf-8');
-        const lines = content.split('\n');
-        const stats = await fs.stat(file);
+      const rgArgs: string[] = [
+        '--color=never',
+        '--max-columns',
+        String(MAX_LINE_LENGTH),
+        '--max-columns-preview',
+        '--hidden',
+      ];
 
-        for (let i = 0; i < lines.length; i++) {
-          if (regex.test(lines[i])) {
-            matches.push({
-              path: file,
-              lineNum: i + 1,
-              lineText: lines[i],
-              modTime: stats.mtime.getTime(),
-            });
+      if (outputMode === 'files_with_matches') {
+        rgArgs.push('--files-with-matches');
+      } else if (outputMode === 'count') {
+        rgArgs.push('--count');
+      } else {
+        if (showLineNumbers) {
+          rgArgs.push('--line-number');
+        } else {
+          rgArgs.push('--no-line-number');
+        }
+        rgArgs.push('--no-heading', '--with-filename');
+      }
 
-            if (matches.length >= limit) break;
+      if (ignoreCase) {
+        rgArgs.push('--ignore-case');
+      }
+
+      if (linesContext && linesContext > 0) {
+        rgArgs.push('--context', String(Math.min(linesContext, 10)));
+      } else {
+        if (linesBefore && linesBefore > 0) {
+          rgArgs.push('--before-context', String(Math.min(linesBefore, 10)));
+        }
+        if (linesAfter && linesAfter > 0) {
+          rgArgs.push('--after-context', String(Math.min(linesAfter, 10)));
+        }
+      }
+
+      if (maxDepth && maxDepth > 0) {
+        rgArgs.push('--max-depth', String(maxDepth));
+      }
+
+      if (multiline) {
+        rgArgs.push('--multiline');
+      }
+
+      if (fileType) {
+        rgArgs.push('--type', fileType);
+      }
+
+      if (glob) {
+        rgArgs.push('--glob', glob);
+      }
+
+      rgArgs.push('--', pattern, targetPath);
+
+      return new Promise((resolve, reject) => {
+        const child = spawn(rgPath, rgArgs, {
+          cwd: rootDir,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          windowsHide: true,
+        });
+
+        let stdout = '';
+        let stderr = '';
+        let stdoutBytes = 0;
+        let truncated = false;
+
+        const onAbort = () => {
+          child.kill('SIGTERM');
+          reject(new Error('Search aborted'));
+        };
+
+        if (signal) {
+          if (signal.aborted) {
+            child.kill('SIGTERM');
+            reject(new Error('Search aborted'));
+            return;
           }
-          regex.lastIndex = 0;
+          signal.addEventListener('abort', onAbort, {once: true});
         }
 
-        if (matches.length >= limit) break;
-      } catch {
-      }
-    }
+        child.stdout.on('data', (data: Buffer) => {
+          if (truncated) return;
 
-    matches.sort((a, b) => b.modTime - a.modTime);
+          const chunk = data.toString();
+          if (stdoutBytes + chunk.length > MAX_OUTPUT_BYTES) {
+            const remaining = MAX_OUTPUT_BYTES - stdoutBytes;
+            stdout += chunk.slice(0, remaining);
+            stdoutBytes = MAX_OUTPUT_BYTES;
+            truncated = true;
+            child.kill('SIGTERM');
+          } else {
+            stdout += chunk;
+            stdoutBytes += chunk.length;
+          }
+        });
 
-    if (matches.length === 0) {
-      return {
-        content:
-          `No matches found for pattern "${pattern}". Try a different pattern, check regex syntax, or expand the search path.`,
-      };
-    }
+        child.stderr.on('data', (data: Buffer) => {
+          stderr += data.toString();
+        });
 
-    const outputLines = [`Found ${matches.length} match(es) for "${pattern}":\n`];
-    let currentFile = '';
+        child.on('close', code => {
+          if (signal) {
+            signal.removeEventListener('abort', onAbort);
+          }
 
-    for (const match of matches) {
-      if (currentFile !== match.path) {
-        if (currentFile !== '') {
-          outputLines.push('');
-        }
-        currentFile = match.path;
-        outputLines.push(`${match.path}:`);
-      }
+          if (code === 0 || code === null) {
+            let result = stdout.trim();
+            if (truncated) {
+              const lastNewline = result.lastIndexOf('\n');
+              if (lastNewline > 0) {
+                result = result.slice(0, lastNewline);
+              }
+              result += '\n\n[Output truncated. Use more specific pattern or path.]';
+            }
 
-      const truncatedLineText = match.lineText.length > MAX_LINE_LENGTH
-        ? match.lineText.substring(0, MAX_LINE_LENGTH) + '...'
-        : match.lineText;
-      outputLines.push(`  Line ${match.lineNum}: ${truncatedLineText}`);
-    }
+            const matchCount = result ? countMatches(result, outputMode) : 0;
 
-    if (matches.length >= limit) {
-      outputLines.push('');
-      outputLines.push(
-        '[Results limited to 100 matches. Use a more specific pattern or path to narrow down.]',
-      );
-    }
+            if (!result) {
+              resolve({content: `No matches found for "${pattern}".`, matchCount: 0});
+            } else {
+              resolve({content: result, matchCount});
+            }
+          } else if (code === 1) {
+            resolve({content: `No matches found for "${pattern}".`, matchCount: 0});
+          } else if (code === 2) {
+            const errorMsg = stderr.trim() || 'Search error';
+            reject(new Error(errorMsg));
+          } else {
+            resolve({content: `No matches found for "${pattern}".`});
+          }
+        });
 
-    return {content: outputLines.join('\n')};
-  });
+        child.on('error', err => {
+          if (signal) {
+            signal.removeEventListener('abort', onAbort);
+          }
+          reject(err);
+        });
+      });
+    },
+  );
 }
