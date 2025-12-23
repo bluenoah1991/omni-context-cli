@@ -11,7 +11,7 @@ export function registerBashTool(): void {
     {
       name: 'bash',
       description:
-        `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
+        `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use bash only when those tools are insufficient. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
