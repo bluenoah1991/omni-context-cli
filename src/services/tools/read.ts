@@ -80,13 +80,13 @@ export function registerReadTool(): void {
       return `${(index + offset + 1).toString().padStart(5, '0')}| ${line}`;
     });
 
-    let output = '<file>\n';
-    output += formattedContent.join('\n');
-
     const totalLines = lines.length;
-    const lastReadLine = offset + formattedContent.length;
+    const linesRead = formattedContent.length;
+    const lastReadLine = offset + linesRead;
     const hasMoreLines = totalLines > lastReadLine;
 
+    let output = '<file>\n';
+    output += formattedContent.join('\n');
     if (hasMoreLines) {
       output += `\n\n[More content available. Read from line ${
         lastReadLine + 1
@@ -96,9 +96,6 @@ export function registerReadTool(): void {
     }
     output += '\n</file>';
 
-    return {
-      result: {content: output, lines: totalLines, path: absolutePath},
-      displayText: `Got ${totalLines} lines of output`,
-    };
+    return {result: output, displayText: `Got ${linesRead} lines of output`};
   });
 }
