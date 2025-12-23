@@ -9,9 +9,9 @@ const DEFAULT_TIMEOUT = 120000;
 export function registerBashTool(): void {
   registerTool(
     {
-      name: 'bash',
+      name: 'shell',
       description:
-        `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use bash only when those tools are insufficient. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
+        `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use shell only when those tools are insufficient. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
@@ -73,7 +73,7 @@ export function registerBashTool(): void {
 
         return {
           result:
-            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
+            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'taskOutput' tool to check the output.`,
           displayText: `Background task started: ${taskId}`,
         };
       }
