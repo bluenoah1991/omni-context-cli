@@ -1,4 +1,3 @@
-import { registerAppendTool } from './append';
 import { registerBashTool } from './bash';
 import { registerBashOutputTool } from './bashOutput';
 import { registerEditTool } from './edit';
@@ -8,7 +7,6 @@ import { registerReadTool } from './read';
 import { registerWriteTool } from './write';
 
 export function initializeTools(): void {
-  registerAppendTool();
   registerBashTool();
   registerBashOutputTool();
   registerEditTool();
