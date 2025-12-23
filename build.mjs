@@ -31,6 +31,24 @@ const optionalDepsPlugin = {
   },
 };
 
+const watchReporterPlugin = {
+  name: 'watch-reporter',
+  setup(build) {
+    build.onEnd((result) => {
+      if (result.errors.length > 0) {
+        console.error('✖ Build failed:');
+        result.errors.forEach((error) => {
+          console.error(`  ${error.location?.file || ''}:${error.location?.line || ''} - ${error.text}`);
+        });
+      } else {
+        const now = new Date();
+        const time = now.toTimeString().split(' ')[0];
+        console.log(`[${time}] ✓ Build complete`);
+      }
+    });
+  },
+};
+
 const buildOptions = {
   entryPoints: ['src/cli.tsx'],
   bundle: true,
@@ -48,7 +66,10 @@ const buildOptions = {
 };
 
 if (isWatch) {
-  const ctx = await esbuild.context(buildOptions);
+  const ctx = await esbuild.context({
+    ...buildOptions,
+    plugins: [...buildOptions.plugins, watchReporterPlugin],
+  });
   await ctx.watch();
   console.log('Watching for changes...');
 } else {
