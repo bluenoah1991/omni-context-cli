@@ -12,7 +12,8 @@
     "dev": "node build.mjs --watch",
     "start": "node dist/cli.js",
     "format": "dprint fmt",
-    "format:check": "dprint check"
+    "format:check": "dprint check",
+    "postinstall": "node scripts/fix-bin-permissions.js"
   },
   "keywords": [
     "cli",
@@ -22,7 +23,8 @@
   "author": "bluenoah1991",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "scripts"
   ],
   "dependencies": {
     "figlet": "^1.8.0"
