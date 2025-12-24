@@ -1,12 +1,14 @@
 import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AppConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
+import { ToolFilter } from '../types/tool';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
 export async function buildOpenAIRequest(
   config: AppConfig,
   messages: OpenAIMessage[],
+  toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const systemMessages = [{role: 'system', content: buildSystemPrompt()}];
 
@@ -38,7 +40,8 @@ export async function buildOpenAIRequest(
     request.reasoning_effort = 'high';
   }
 
-  const tools = await getTools();
+  const tools = await getTools(toolFilter);
+
   if (tools.length) {
     request.tools = tools.map(tool => ({
       type: 'function',

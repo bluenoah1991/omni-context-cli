@@ -95,6 +95,7 @@ if (isWatch) {
   writeFileSync('dist/cli.js', obfuscated.getObfuscatedCode(), 'utf8');
 
   cpSync('bin', 'dist/bin', { recursive: true });
+  cpSync('agents', 'dist/agents', { recursive: true });
 
   console.log('Build complete with obfuscation!');
 }

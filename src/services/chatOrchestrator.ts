@@ -3,6 +3,7 @@ import { AppConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
 import { StreamCallbacks } from '../types/streamCallbacks';
+import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getAppConfig } from './configManager';
@@ -18,13 +19,14 @@ async function streamAIResponse(
   messages: ChatMessage[],
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
+  toolFilter?: ToolFilter,
 ): Promise<ChatMessage> {
   const contextConfig = {maxTokens: (config.contextSize ?? 200) * 1024, usageRatio: 0.8};
   const {messages: windowedMessages} = applyContextWindow(messages, contextConfig);
 
   const {headers, body} = config.provider === 'openai'
-    ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[])
-    : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[]);
+    ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[], toolFilter)
+    : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[], toolFilter);
 
   saveRequest(config.provider, headers, body);
 
@@ -76,15 +78,23 @@ export async function runConversation(
   session: Session,
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
+  toolFilter?: ToolFilter,
+  appConfig?: AppConfig,
 ): Promise<Session> {
   let currentSession = session;
-  const config = getAppConfig();
+  const config = appConfig ?? getAppConfig();
 
   while (true) {
     let message: ChatMessage;
 
     try {
-      message = await streamAIResponse(config, currentSession.messages, callbacks, signal);
+      message = await streamAIResponse(
+        config,
+        currentSession.messages,
+        callbacks,
+        signal,
+        toolFilter,
+      );
     } catch (error) {
       const errorText = `${error}`;
       callbacks.onError?.(errorText);

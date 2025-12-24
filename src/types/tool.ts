@@ -24,3 +24,8 @@ export interface PendingToolCall {
   timestamp: number;
   toolName: string;
 }
+
+export interface ToolFilter {
+  includeAgents?: boolean;
+  allowedTools?: string[] | null;
+}

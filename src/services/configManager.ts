@@ -43,6 +43,19 @@ export function setDefaultModel(modelId: string): void {
   saveOmxConfig(config);
 }
 
+export function getAgentModel(config: OmxConfig): ModelConfig | undefined {
+  if (config.agentModelId) {
+    return config.models.find(m => m.id === config.agentModelId);
+  }
+  return getDefaultModel(config);
+}
+
+export function setAgentModel(modelId: string): void {
+  const config = loadOmxConfig();
+  config.agentModelId = modelId;
+  saveOmxConfig(config);
+}
+
 export function addModel(model: Omit<ModelConfig, 'id'>): void {
   const config = loadOmxConfig();
   const id = `${model.provider}-${Date.now()}`;

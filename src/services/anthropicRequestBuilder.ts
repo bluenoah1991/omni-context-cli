@@ -1,12 +1,14 @@
 import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { AppConfig } from '../types/config';
+import { ToolFilter } from '../types/tool';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
 export async function buildAnthropicRequest(
   config: AppConfig,
   messages: AnthropicMessage[],
+  toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const systemBlocks = [{text: buildSystemPrompt(), type: 'text'}];
 
@@ -25,7 +27,8 @@ export async function buildAnthropicRequest(
     request.thinking = {type: 'enabled', budget_tokens: 10000};
   }
 
-  const tools = await getTools();
+  const tools = await getTools(toolFilter);
+
   if (tools.length) {
     request.tools = tools.map(tool => ({
       name: tool.name,

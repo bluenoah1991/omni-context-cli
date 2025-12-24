@@ -1,3 +1,4 @@
+import { registerAgents } from '../agentManager';
 import { registerBashTool } from './bash';
 import { registerBashOutputTool } from './bashOutput';
 import { registerEditTool } from './edit';
@@ -14,4 +15,5 @@ export function initializeTools(): void {
   registerGrepTool();
   registerReadTool();
   registerWriteTool();
+  registerAgents();
 }

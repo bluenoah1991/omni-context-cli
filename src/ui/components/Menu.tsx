@@ -2,10 +2,12 @@ import { Box } from 'ink';
 import React, { useState } from 'react';
 import {
   addModel,
+  getAgentModel,
   getAppConfig,
   initializeAppConfig,
   loadOmxConfig,
   removeModel,
+  setAgentModel,
   setDefaultModel,
   toggleStreamingOutput,
   toggleThinking,
@@ -23,6 +25,7 @@ type View =
   | 'select'
   | 'add'
   | 'set-default'
+  | 'agent-model'
   | 'delete'
   | 'thinking'
   | 'streaming'
@@ -56,6 +59,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [mainIndex, setMainIndex] = useState(0);
   const [selectIndex, setSelectIndex] = useState(0);
   const [setDefaultIndex, setSetDefaultIndex] = useState<number>();
+  const [agentModelIndex, setAgentModelIndex] = useState<number>();
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
   const [streamingIndex, setStreamingIndex] = useState<number>();
@@ -69,6 +73,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'sessions', label: '↻ Load a previous session'},
       {id: 'add', label: '+ Add a new model'},
       {id: 'default', label: '★ Change the default model'},
+      {id: 'agent-model', label: '◈ Change the agent model'},
       {id: 'delete', label: '− Remove a model'},
       {id: 'thinking', label: '◉ Toggle thinking mode'},
       {id: 'streaming', label: '⇵ Toggle streaming output'},
@@ -94,10 +99,11 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             else if (i === 1) setView('sessions');
             else if (i === 2) setView('add');
             else if (i === 3) setView('set-default');
-            else if (i === 4) setView('delete');
-            else if (i === 5) setView('thinking');
-            else if (i === 6) setView('streaming');
-            else if (i === 7) process.exit(0);
+            else if (i === 4) setView('agent-model');
+            else if (i === 5) setView('delete');
+            else if (i === 6) setView('thinking');
+            else if (i === 7) setView('streaming');
+            else if (i === 8) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -226,6 +232,43 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             if (config.models[i]) {
               setDefaultModel(config.models[i].id);
               initializeAppConfig();
+              onClose();
+            }
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No models configured yet. Add one first!'
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'agent-model') {
+    const items: SelectItem[] = config.models.map(m => ({
+      id: m.id,
+      label: m.nickname,
+      hint: m.id === config.agentModelId ? ' [agent]' : undefined,
+    }));
+    const agentModel = getAgentModel(config);
+    const currentIndex = agentModel ? config.models.findIndex(m => m.id === agentModel.id) : 0;
+    const initialIndex = currentIndex >= 0 ? currentIndex : 0;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='agent-model'
+          title='Which model should agents use?'
+          items={items}
+          selectedIndex={agentModelIndex ?? initialIndex}
+          onSelect={setAgentModelIndex}
+          onConfirm={i => {
+            if (config.models[i]) {
+              setAgentModel(config.models[i].id);
               onClose();
             }
           }}

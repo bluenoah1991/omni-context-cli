@@ -13,6 +13,7 @@ export interface ModelConfig {
 export interface OmxConfig {
   models: ModelConfig[];
   defaultModelId?: string;
+  agentModelId?: string;
   enableThinking: boolean;
   streamingOutput: boolean;
 }
