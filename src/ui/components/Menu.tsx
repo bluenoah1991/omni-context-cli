@@ -71,7 +71,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'default', label: '★ Change the default model'},
       {id: 'delete', label: '− Remove a model'},
       {id: 'thinking', label: '◉ Toggle thinking mode'},
-      {id: 'streaming', label: '⚡ Toggle streaming output'},
+      {id: 'streaming', label: '⇵ Toggle streaming output'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
