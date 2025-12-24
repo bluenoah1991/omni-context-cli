@@ -10,18 +10,23 @@ interface HeaderProps {
 }
 
 export const Header = React.memo(function Header({sessionId}: HeaderProps): React.ReactElement {
-  const line1 = figlet.textSync('Omni', {font: 'ANSI Shadow'});
-  const line2 = figlet.textSync('Context CLI', {font: 'ANSI Shadow'});
+  const line1 = figlet.textSync('Omni ', {font: 'Calvin S'});
+  const line2 = figlet.textSync('Context CLI', {font: 'Calvin S'});
   const cwdName = path.basename(process.cwd());
+  const separatorLength = 80;
+  const separator = '─'.repeat(separatorLength);
 
   return (
-    <Box flexDirection='column' marginBottom={2}>
-      <Text color={colors.primary}>{line1}</Text>
-      <Text color={colors.text}>{line2}</Text>
-      <Box marginTop={1}>
-        <Text color={colors.muted}>
-          Version: {packageJson.version} | {cwdName} | Session: {sessionId}
-        </Text>
+    <Box flexDirection='column' marginY={1}>
+      <Box flexDirection='row'>
+        <Text color={colors.primary}>{line1}</Text>
+        <Text color={colors.text}>{line2}</Text>
+      </Box>
+      <Box flexDirection='column' marginTop={1}>
+        <Text color={colors.muted}>▸ Version: {packageJson.version}</Text>
+        <Text color={colors.muted}>▸ Project: {cwdName}</Text>
+        <Text color={colors.muted}>▸ Session: {sessionId}</Text>
+        <Text color={colors.muted} dimColor>{separator}</Text>
       </Box>
     </Box>
   );

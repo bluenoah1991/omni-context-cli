@@ -137,7 +137,7 @@ export function ChatView(): React.ReactElement {
   }, [config.provider, updateMessages, setLoading, setSession, setError]);
 
   return (
-    <Box flexDirection='column' paddingLeft={1} paddingRight={2}>
+    <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
       <MessageList
         messages={messages}
         sessionId={session.id}
