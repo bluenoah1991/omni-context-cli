@@ -1,6 +1,6 @@
 ---
 name: explore
-description: Research and explore codebase to understand implementation details
+description: PREFERRED for code research, investigation, and understanding project structure. Use this agent to explore codebases, analyze implementations, trace dependencies, and gather comprehensive information before making changes. More efficient than direct tool calls for multi-step investigation tasks.
 allowedTools: [read, glob, grep, bash, bashOutput]
 parameters:
   properties:
