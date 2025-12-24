@@ -75,12 +75,7 @@ function TokenRenderer({token}: {token: Token;}): React.ReactElement {
 }
 
 function BlockquoteRenderer({token}: {token: Tokens.Blockquote;}) {
-  return (
-    <Box paddingLeft={2}>
-      <Text color={colors.muted}>│</Text>
-      <Text italic>{renderTokensAsPlaintext(token.tokens)}</Text>
-    </Box>
-  );
+  return <Text color={colors.muted} italic>{renderTokensAsPlaintext(token.tokens)}</Text>;
 }
 
 function BrRenderer() {
@@ -88,32 +83,15 @@ function BrRenderer() {
 }
 
 function CodeRenderer({token}: {token: Tokens.Code;}) {
-  if (token.lang || token.codeBlockStyle !== 'indented') {
-    const langTag = token.lang
-      ? `┌─ ${token.lang} ` + '─'.repeat(Math.max(0, 40 - token.lang.length))
-      : '┌' + '─'.repeat(42);
-    const footer = '└' + '─'.repeat(42);
-
-    return (
-      <Box flexDirection='column' marginBottom={1}>
-        <Text color={colors.muted}>{langTag}</Text>
-        <Box paddingLeft={2} flexDirection='column'>
-          <HighlightedCode code={token.text} language={token.lang} />
-        </Box>
-        <Text color={colors.muted}>{footer}</Text>
-      </Box>
-    );
-  }
-
   return (
-    <Box flexDirection='column' marginBottom={1} paddingLeft={2}>
+    <Box flexDirection='column' marginBottom={1}>
       <HighlightedCode code={token.text} language={token.lang} />
     </Box>
   );
 }
 
 function CodespanRenderer({token}: {token: Tokens.Codespan;}) {
-  return <Text inverse>{token.text}</Text>;
+  return <Text color={colors.muted}>{token.text}</Text>;
 }
 
 function DefRenderer({token}: {token: Tokens.Def;}) {
@@ -134,29 +112,17 @@ function EscapeRenderer({token}: {token: Tokens.Escape;}) {
 }
 
 function HeadingRenderer({token}: {token: Tokens.Heading;}) {
-  const headingColors = [
-    colors.accent,
-    colors.primary,
-    colors.secondary,
-    colors.info,
-    colors.text,
-    colors.muted,
-  ] as const;
-  const color = headingColors[Math.min(token.depth - 1, headingColors.length - 1)];
-  const marker = token.depth === 1 ? '█' : token.depth === 2 ? '▆' : '▉';
-
   return (
     <Box marginBottom={1}>
-      <Text color={color} bold>{marker} {renderTokensAsPlaintext(token.tokens)}</Text>
+      <Text bold>{renderTokensAsPlaintext(token.tokens)}</Text>
     </Box>
   );
 }
 
 function HrRenderer() {
-  const width = Math.min(process.stdout.columns || 80, 80);
   return (
     <Box marginBottom={1}>
-      <Text color={colors.muted}>{'─'.repeat(width)}</Text>
+      <Text color={colors.muted}>{'─'.repeat(40)}</Text>
     </Box>
   );
 }
@@ -166,23 +132,22 @@ function HtmlRenderer({token}: {token: Tokens.HTML | Tokens.Tag;}) {
 }
 
 function ImageRenderer({token}: {token: Tokens.Image;}) {
-  return <Text color={colors.warning}>[Image: {token.text}]</Text>;
+  return <Text color={colors.muted}>[{token.text}]</Text>;
 }
 
 function LinkRenderer({token}: {token: Tokens.Link;}) {
-  const linkText = renderTokensAsPlaintext(token.tokens);
-  return <Text color={colors.primary}>{linkText} ({token.href})</Text>;
+  return <Text>{renderTokensAsPlaintext(token.tokens)}</Text>;
 }
 
 function ListRenderer({token}: {token: Tokens.List;}) {
   return (
-    <Box flexDirection='column' marginBottom={1} paddingLeft={0}>
+    <Box flexDirection='column' marginBottom={1}>
       {token.items.map((item, index) => (
         <Box key={index} flexDirection='row'>
-          <Text color={colors.secondary}>
+          <Text>
             {token.ordered
               ? `${(typeof token.start === 'number' ? token.start : 1) + index}. `
-              : '• '}
+              : '- '}
           </Text>
           <ListItemRenderer token={item} />
         </Box>
@@ -192,47 +157,12 @@ function ListRenderer({token}: {token: Tokens.List;}) {
 }
 
 function ListItemRenderer({token}: {token: Tokens.ListItem;}) {
-  if (token.task && typeof token.checked === 'boolean') {
-    return (
-      <Box flexDirection='column' flexGrow={1}>
-        <Box flexDirection='row'>
-          <Text color={token.checked ? colors.info : colors.muted}>
-            {token.checked ? '[✓]' : '[ ]'}
-            {' '}
-          </Text>
-          <Box flexDirection='column' flexGrow={1}>
-            {token.tokens.map((childToken, index) => (
-              <Box
-                key={index}
-                paddingLeft={childToken.type === 'list' || childToken.type === 'code'
-                    || childToken.type === 'blockquote'
-                  ? 1
-                  : 0}
-              >
-                <TokenRenderer token={childToken} />
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box flexDirection='column' flexGrow={1}>
-      <Box flexDirection='column'>
-        {token.tokens.map((childToken, index) => (
-          <Box
-            key={index}
-            paddingLeft={childToken.type === 'list' || childToken.type === 'code'
-                || childToken.type === 'blockquote'
-              ? 1
-              : 0}
-          >
-            <TokenRenderer token={childToken} />
-          </Box>
-        ))}
-      </Box>
+      {token.task && typeof token.checked === 'boolean' && (
+        <Text>{token.checked ? '[x]' : '[ ]'}</Text>
+      )}
+      {token.tokens.map((childToken, index) => <TokenRenderer key={index} token={childToken} />)}
     </Box>
   );
 }
@@ -263,12 +193,10 @@ function TableRenderer({token}: {token: Tokens.Table;}) {
     return Math.max(maxWidth, 3);
   });
 
-  const separator = '├' + columnWidths.map(w => '─'.repeat(w + 2)).join('┼') + '┤';
-
   return (
     <Box flexDirection='column' marginBottom={1}>
       <TableRowRenderer cells={token.header} columnWidths={columnWidths} isHeader={true} />
-      <Text color={colors.muted}>{separator}</Text>
+      <Text color={colors.muted}>{'─'.repeat(columnWidths.reduce((a, b) => a + b + 2, 0))}</Text>
       {token.rows.map((row, index) => (
         <TableRowRenderer key={index} cells={row} columnWidths={columnWidths} isHeader={false} />
       ))}
@@ -285,14 +213,13 @@ function TableRowRenderer(
 ) {
   return (
     <Box flexDirection='row'>
-      <Text color={colors.muted}>│</Text>
       {cells.map((cell, index) => {
         const cellText = renderTokensAsPlaintext(cell.tokens);
         const paddedText = cellText.padEnd(columnWidths[index]);
         return (
           <React.Fragment key={index}>
-            <Text color={isHeader ? colors.info : colors.text} bold={isHeader}>{paddedText}</Text>
-            <Text color={colors.muted}>│</Text>
+            <Text bold={isHeader}>{paddedText}</Text>
+            {index < cells.length - 1 && <Text></Text>}
           </React.Fragment>
         );
       })}
