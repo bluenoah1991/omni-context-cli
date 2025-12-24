@@ -6,19 +6,41 @@ import { registerTool } from '../toolExecutor';
 const MAX_OUTPUT_LENGTH = 30000;
 const DEFAULT_TIMEOUT = 120000;
 
+let wslAvailable: boolean | null = null;
+
+async function checkWSL(): Promise<boolean> {
+  if (wslAvailable !== null) return wslAvailable;
+  if (process.platform !== 'win32') {
+    wslAvailable = false;
+    return false;
+  }
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn('wsl.exe', ['--status'], {stdio: 'ignore', windowsHide: true});
+      child.on('error', reject);
+      child.on('close', code => (code === 0 ? resolve() : reject()));
+    });
+    wslAvailable = true;
+    return true;
+  } catch {
+    wslAvailable = false;
+    return false;
+  }
+}
+
 export function registerBashTool(): void {
   registerTool(
     {
-      name: 'shell',
+      name: 'bash',
       description:
-        `Run shell commands in the system terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use shell only when those tools are insufficient. On Windows, commands run in PowerShell; on Unix systems, they run in bash. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
+        `Execute bash commands in the terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use bash only when those tools are insufficient. On Windows, automatically uses WSL bash if available. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
           command: {
             type: 'string',
             description:
-              'The shell command to execute. Can include pipes, redirects, and chained commands. Examples: "npm install", "git status", "ls -la | grep .ts"',
+              'The bash command to execute. Can include pipes, redirects, and chained commands. Examples: "npm install", "git status", "ls -la | grep .ts"',
           },
           timeout: {
             type: 'number',
@@ -47,7 +69,7 @@ export function registerBashTool(): void {
 
       if (!command) {
         throw new Error(
-          'Missing required parameter: command. Please provide a shell command to execute.',
+          'Missing required parameter: command. Please provide a bash command to execute.',
         );
       }
       if (timeout !== undefined && timeout < 0) {
@@ -58,8 +80,13 @@ export function registerBashTool(): void {
 
       const cwd = workdir ? path.resolve(process.cwd(), workdir) : process.cwd();
 
-      const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
-      const shellArgs = process.platform === 'win32' ? ['-Command', command] : ['-c', command];
+      const useWSL = await checkWSL();
+      const shell = useWSL
+        ? 'wsl.exe'
+        : (process.platform === 'win32' ? 'powershell.exe' : '/bin/bash');
+      const shellArgs = useWSL
+        ? ['bash', '-c', command]
+        : (process.platform === 'win32' ? ['-Command', command] : ['-c', command]);
 
       if (background) {
         const child = spawn(shell, shellArgs, {
@@ -73,7 +100,7 @@ export function registerBashTool(): void {
 
         return {
           result:
-            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'taskOutput' tool to check the output.`,
+            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
           displayText: `Background task started: ${taskId}`,
         };
       }
