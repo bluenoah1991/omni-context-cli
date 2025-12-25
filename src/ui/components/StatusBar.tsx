@@ -39,7 +39,7 @@ export function StatusBar(
 
   const nickname = config.nickname || config.model || 'Not Set';
   const thinkingText = config.enableThinking ? ' (Thinking)' : '';
-  const orchestratorText = config.orchestratorMode ? ' ♪♪♪' : '';
+  const orchestratorText = config.orchestratorMode ? ' ♪♪' : '';
   const contextLimit = (config.contextSize ?? 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
