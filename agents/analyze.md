@@ -1,15 +1,15 @@
 ---
 name: analyze
-description: Deep-dive analysis of code quality, architecture decisions, and potential issues. Use after explore to evaluate specific components, understand design tradeoffs, or assess technical debt before making changes.
+description: Deep code-level analysis of specific modules, functions, or implementations. Use when you need to understand HOW code works internally, trace execution flows, evaluate algorithms, or assess code quality. Focuses on actual implementation details, not project structure.
 allowedTools: [read, glob, grep, bash, bashOutput]
 parameters:
   properties:
     target:
       type: string
-      description: The component, pattern, or concern to analyze
+      description: The specific module, file, class, or function to analyze
     focus:
       type: string
-      description: "Analysis angle: architecture, complexity, dependencies, security, or performance"
+      description: "Analysis angle: implementation logic, complexity, dependencies, security, performance, or code quality"
   required: [target]
 ---
 
@@ -17,6 +17,6 @@ Analyze: {{target}}
 
 Focus area: {{focus}}
 
-Locate the relevant code and map out its structure and relationships. Look for patterns, anti-patterns, and edge cases. Assess the quality, maintainability, and potential risks.
+Read the actual code and trace through its logic. Understand the implementation details—how functions work, what algorithms are used, how data flows through the system. Look at edge cases, error handling, and potential issues.
 
-Cover the current state and how it works, what's well-designed, what needs improvement or poses risks, and how dependencies are structured. Give concrete recommendations prioritized by impact. Be specific with file locations and code references.
+Cover: the implementation approach and key logic, code quality and patterns used, potential issues or risks with specific line references, how it integrates with dependencies, and concrete recommendations for improvements. Include code snippets and specific line numbers in your analysis.
