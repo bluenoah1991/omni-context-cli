@@ -55,7 +55,7 @@ export function registerBashTool(): void {
           background: {
             type: 'boolean',
             description:
-              'Run in the background? Returns a task ID right away. Perfect for servers, watch tasks, or daemons. Default: false',
+              'Run in the background? Returns a task ID right away. Perfect for servers, watch tasks, or daemons. Default: false.',
           },
         },
         required: ['command'],
@@ -118,9 +118,7 @@ export function registerBashTool(): void {
           killed = true;
           child.kill();
           reject(
-            new Error(
-              `Timed out after ${timeout}ms and got killed. Need more time? Bump up the timeout.`,
-            ),
+            new Error(`Timed out after ${timeout}ms. Need more time? Increase the timeout value.`),
           );
         }, timeout);
 

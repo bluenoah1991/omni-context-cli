@@ -77,7 +77,7 @@ export function registerEditTool(): void {
       }
       if (oldString === newString) {
         throw new Error(
-          'oldString and newString are identical—nothing to change. Try different values.',
+          'oldString and newString are identical. Nothing to change—try different values.',
         );
       }
 

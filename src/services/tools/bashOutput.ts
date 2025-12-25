@@ -52,8 +52,8 @@ export function registerBashOutputTool(): void {
     }
 
     const statusInfo = isRunning
-      ? `Running (${Math.round(runningTime / 1000)}s so far)`
-      : `Done with exit code ${taskData.exitCode} (took ${Math.round(runningTime / 1000)}s)`;
+      ? `Running for ${Math.round(runningTime / 1000)}s`
+      : `Finished with exit code ${taskData.exitCode} (took ${Math.round(runningTime / 1000)}s)`;
 
     return {
       result: `${statusInfo}\n\nOutput:\n${output || '(nothing yet)'}`,

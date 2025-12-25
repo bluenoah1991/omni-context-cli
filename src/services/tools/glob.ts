@@ -11,7 +11,7 @@ export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
     description:
-      `Find files by pattern. Great for locating files when you know the name pattern but not the location, finding all files of a certain type, or exploring directory structure. Standard glob syntax: * (matches anything), ** (matches any path), ? (matches one char). Capped at 100 results. Respects .gitignore. For directories: "path/*" (direct children) or "path/**/*" (recursive, everything).`,
+      `Find files by pattern. Great for locating files when you know the name pattern but not the location, finding all files of a certain type, or exploring directory structure. Standard glob syntax: * (matches anything), ** (matches any path), ? (matches one char). Capped at ${MAX_FILES} results. Respects .gitignore. For directories: "path/*" (direct children) or "path/**/*" (recursive, everything).`,
     formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
     parameters: {
       properties: {
@@ -25,7 +25,7 @@ export function registerGlobTool(): void {
           description:
             'Where to start searching. Default: current directory. Use this to narrow the search scope.',
         },
-        nocase: {type: 'boolean', description: 'Case-insensitive matching? Default: false.'},
+        nocase: {type: 'boolean', description: 'Enable case-insensitive matching? Default: false.'},
       },
       required: ['pattern'],
     },

@@ -1,6 +1,6 @@
 ---
 name: explore
-description: ALWAYS USE THIS FIRST for code research and project archaeology. Digs through codebases, analyzes implementations, traces dependencies, and gathers intel before you commit to changes. Way more efficient than running tools yourself for multi-step investigations.
+description: ALWAYS USE THIS FIRST for code research and project archaeology. Digs through codebases, analyzes implementations, traces dependencies, and gathers intel before you commit to changes. Far more efficient than running tools yourself for multi-step investigations.
 allowedTools: [read, glob, grep, bash, bashOutput]
 parameters:
   properties:
@@ -18,11 +18,11 @@ Work systematically:
 3. Read important files to understand what's actually happening
 4. Follow the breadcrumbs—trace code flow and dependencies
 
-Deliver a solid report with:
+Deliver a comprehensive report with:
 - Key files and what they do
 - Implementation approach and architecture
 - Important functions, classes, and data structures
 - How things connect and depend on each other
 - Notable patterns or design choices
 
-Give actionable insights, not just code dumps.
+Provide actionable insights, not just code dumps.
