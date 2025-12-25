@@ -50,6 +50,12 @@ export function registerAgents(): void {
       name: `agent_${agent.name}`,
       description: agent.description,
       parameters: agent.parameters,
+      formatCall: (args: Record<string, unknown>) => {
+        const values = Object.values(args).filter(v => v !== undefined && v !== null);
+        if (values.length === 0) return agent.name;
+        const formatted = values.map(v => String(v)).join(' ');
+        return formatted.length > 50 ? formatted.slice(0, 47) + '...' : formatted;
+      },
     }, async (args, signal) => {
       const callbacks = {
         onContent: () => {},
