@@ -39,7 +39,7 @@ export function StatusBar(
 
   const nickname = config.nickname || config.model || 'Not Set';
   const thinkingText = config.enableThinking ? ' (Thinking)' : '';
-  const orchestratorText = config.orchestratorMode ? ' ♪♪' : '';
+  const specialistText = config.specialistMode ? ' ♪♪' : '';
   const contextLimit = (config.contextSize ?? 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
@@ -52,7 +52,7 @@ export function StatusBar(
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
-          : `| ${nickname}${thinkingText}${orchestratorText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
+          : `| ${nickname}${thinkingText}${specialistText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
       </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}

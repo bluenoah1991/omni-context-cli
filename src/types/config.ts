@@ -16,7 +16,7 @@ export interface OmxConfig {
   agentModelId?: string;
   enableThinking: boolean;
   streamingOutput: boolean;
-  orchestratorMode: boolean;
+  specialistMode: boolean;
 }
 
 export interface AppConfig {
@@ -26,7 +26,7 @@ export interface AppConfig {
   apiKey: string;
   enableThinking?: boolean;
   streamingOutput?: boolean;
-  orchestratorMode?: boolean;
+  specialistMode?: boolean;
   modelId?: string;
   nickname?: string;
   contextSize?: number;
@@ -39,5 +39,5 @@ export const DEFAULT_CONFIG: AppConfig = {
   apiKey: '',
   enableThinking: false,
   streamingOutput: false,
-  orchestratorMode: false,
+  specialistMode: false,
 };

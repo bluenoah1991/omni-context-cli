@@ -9,7 +9,7 @@ import {
   removeModel,
   setAgentModel,
   setDefaultModel,
-  toggleOrchestratorMode,
+  toggleSpecialistMode,
   toggleStreamingOutput,
   toggleThinking,
   updateAppConfig,
@@ -30,7 +30,7 @@ type View =
   | 'delete'
   | 'thinking'
   | 'streaming'
-  | 'orchestrator'
+  | 'specialist'
   | 'sessions';
 
 function normalizeApiUrl(url: string, provider: Provider): string {
@@ -65,7 +65,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
   const [streamingIndex, setStreamingIndex] = useState<number>();
-  const [orchestratorIndex, setOrchestratorIndex] = useState<number>();
+  const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
 
   const config = loadOmxConfig();
@@ -80,7 +80,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'delete', label: '− Remove a model'},
       {id: 'thinking', label: '◉ Toggle thinking mode'},
       {id: 'streaming', label: '⇵ Toggle streaming output'},
-      {id: 'orchestrator', label: '♪ Toggle orchestrator mode'},
+      {id: 'specialist', label: '♪ Toggle specialist mode'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
@@ -107,7 +107,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             else if (i === 5) setView('delete');
             else if (i === 6) setView('thinking');
             else if (i === 7) setView('streaming');
-            else if (i === 8) setView('orchestrator');
+            else if (i === 8) setView('specialist');
             else if (i === 9) process.exit(0);
           }}
           onCancel={onClose}
@@ -139,7 +139,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
                 config.models[i],
                 config.enableThinking,
                 config.streamingOutput,
-                config.orchestratorMode,
+                config.specialistMode,
               );
               onClose();
             }
@@ -390,12 +390,12 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'orchestrator') {
-    const items: SelectItem[] = [{id: 'on', label: '✓ Enable orchestrator mode'}, {
+  if (view === 'specialist') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable specialist mode'}, {
       id: 'off',
-      label: '✗ Disable orchestrator mode',
+      label: '✗ Disable specialist mode',
     }];
-    const initialIndex = config.orchestratorMode ? 0 : 1;
+    const initialIndex = config.specialistMode ? 0 : 1;
 
     return (
       <Box
@@ -406,15 +406,15 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
-          key='orchestrator-mode'
-          title='Enable orchestrator mode for hierarchical agent workflow?'
+          key='specialist-mode'
+          title='Enable specialist mode for hierarchical agent workflow?'
           items={items}
-          selectedIndex={orchestratorIndex ?? initialIndex}
-          onSelect={setOrchestratorIndex}
+          selectedIndex={specialistIndex ?? initialIndex}
+          onSelect={setSpecialistIndex}
           onConfirm={i => {
             const shouldEnable = i === 0;
-            if (shouldEnable !== config.orchestratorMode) {
-              toggleOrchestratorMode();
+            if (shouldEnable !== config.specialistMode) {
+              toggleSpecialistMode();
               initializeAppConfig();
             }
             onClose();

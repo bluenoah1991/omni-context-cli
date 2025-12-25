@@ -75,7 +75,7 @@ export function ChatView(): React.ReactElement {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    const toolFilter = config.orchestratorMode
+    const toolFilter = config.specialistMode
       ? {includeAgents: true, includeMcp: false, allowedTools: []}
       : undefined;
 
