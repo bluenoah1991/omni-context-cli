@@ -33,29 +33,29 @@ export function registerBashTool(): void {
     {
       name: 'bash',
       description:
-        `Execute bash commands in the terminal. Use this for: running build scripts, installing dependencies, executing CLI tools, or any system-level operations. Prefer using dedicated tools (like read, write, edit, glob, grep) when possible, and use bash only when those tools are insufficient. On Windows, automatically uses WSL bash if available. The output is captured and returned. Long-running commands will be terminated after the timeout.`,
+        `Run bash commands in your terminal. Good for builds, installs, CLI tools, and system stuff. Save it for when specialized tools won't cut it—prefer read, write, edit, glob, or grep when you can. Windows users get WSL bash automatically if it's around. Output comes back to you. Long-runners get cut off at timeout.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
           command: {
             type: 'string',
             description:
-              'The bash command to execute. Can include pipes, redirects, and chained commands. Examples: "npm install", "git status", "ls -la | grep .ts"',
+              'Bash command to run. Pipes, redirects, chains—all good. Like: "npm install", "git status", "ls -la | grep .ts"',
           },
           timeout: {
             type: 'number',
             description:
-              'Max execution time in milliseconds. Defaults to 120000 (2 minutes). Set higher for long operations like builds or installations',
+              'Max runtime in milliseconds. Default: 120000 (2 min). Bump it up for builds or installs',
           },
           workdir: {
             type: 'string',
             description:
-              'Working directory for the command. Can be relative (resolved from current dir) or absolute. Defaults to current working directory',
+              'Where to run the command. Relative or absolute path. Defaults to current directory',
           },
           background: {
             type: 'boolean',
             description:
-              'Whether to run the command in the background. When true, returns a task ID immediately without waiting for completion. Useful for long-running commands like dev servers, watch tasks, or daemon processes. Defaults to false.',
+              'Run in the background? Returns a task ID right away. Perfect for servers, watch tasks, or daemons. Default: false',
           },
         },
         required: ['command'],
@@ -68,13 +68,11 @@ export function registerBashTool(): void {
       const {command, timeout = DEFAULT_TIMEOUT, workdir, background = false} = args;
 
       if (!command) {
-        throw new Error(
-          'Missing required parameter: command. Please provide a bash command to execute.',
-        );
+        throw new Error('Need a command here. What do you want to run?');
       }
       if (timeout !== undefined && timeout < 0) {
         throw new Error(
-          `Invalid timeout: ${timeout}ms. Timeout must be a positive number (e.g., 60000 for 1 minute).`,
+          `Timeout can't be negative (got ${timeout}ms). Try something positive, like 60000 for a minute.`,
         );
       }
 
@@ -100,8 +98,8 @@ export function registerBashTool(): void {
 
         return {
           result:
-            `Background task started with ID: ${taskId}\nCommand: ${command}\nUse the 'bashOutput' tool to check the output.`,
-          displayText: `Background task started: ${taskId}`,
+            `Task ${taskId} is running in the background\nCommand: ${command}\nCheck output with bashOutput tool.`,
+          displayText: `Task ${taskId} running`,
         };
       }
 
@@ -121,7 +119,7 @@ export function registerBashTool(): void {
           child.kill();
           reject(
             new Error(
-              `Command timed out after ${timeout}ms. The process was forcefully terminated. Consider increasing the timeout for long-running operations.`,
+              `Timed out after ${timeout}ms and got killed. Need more time? Bump up the timeout.`,
             ),
           );
         }, timeout);
@@ -132,7 +130,7 @@ export function registerBashTool(): void {
               killed = true;
               clearTimeout(timeoutId);
               child.kill();
-              reject(new Error('Command was aborted by user request'));
+              reject(new Error('Aborted on request'));
             }
           });
         }
@@ -150,7 +148,7 @@ export function registerBashTool(): void {
           if (!killed) {
             reject(
               new Error(
-                `Failed to start command: ${error.message}. Check if the command exists and is executable.`,
+                `Couldn't start command: ${error.message}. Does it exist? Is it executable?`,
               ),
             );
           }
@@ -167,21 +165,19 @@ export function registerBashTool(): void {
 
           if (output.length > MAX_OUTPUT_LENGTH) {
             output = output.substring(0, MAX_OUTPUT_LENGTH)
-              + `\n\n[Output truncated at ${MAX_OUTPUT_LENGTH} chars. Total: ${output.length} chars]`;
+              + `\n\n[Truncated at ${MAX_OUTPUT_LENGTH} chars of ${output.length}]`;
           }
 
           if (code !== 0) {
             reject(
               new Error(
-                `Command exited with code ${code}. This usually indicates an error.\n\n${
-                  output || '(no output)'
-                }`,
+                `Exited with code ${code}. Something went wrong.\n\n${output || '(no output)'}`,
               ),
             );
           } else {
-            const result = output.trim() || 'Done. Command completed successfully with no output.';
+            const result = output.trim() || 'Done—no output';
             const lines = result.split('\n').length;
-            resolve({result: result, displayText: `Command executed (${lines} lines of output)`});
+            resolve({result: result, displayText: `Done (${lines} lines)`});
           }
         });
       });

@@ -18,7 +18,7 @@ function replace(
 
   if (!normalizedContent.includes(normalizedOld)) {
     throw new Error(
-      `Text not found in file. The oldString doesn't match any content. Tips:\n  • Check for extra/missing whitespace or line breaks\n  • Read the file first to see the exact content\n  • Make sure you're editing the right file`,
+      `Can't find that text in the file. Tips:\n  • Watch your whitespace and line breaks\n  • Read the file first to see what's actually there\n  • Check you've got the right file`,
     );
   }
 
@@ -26,7 +26,7 @@ function replace(
 
   if (occurrences > 1 && !replaceAll) {
     throw new Error(
-      `Found ${occurrences} matches for this text. To fix this:\n  • Add more surrounding context to make the match unique, OR\n  • Set replaceAll=true to replace all ${occurrences} occurrences`,
+      `Found ${occurrences} matches. Either:\n  • Add more context to make it unique, OR\n  • Use replaceAll=true to replace all ${occurrences}`,
     );
   }
 
@@ -42,25 +42,25 @@ export function registerEditTool(): void {
     {
       name: 'edit',
       description:
-        `Make precise text replacements in a file. Use this for: fixing bugs, updating function implementations, changing variable names, or modifying specific code sections. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique - if the text appears multiple times, include more surrounding context to make it unique, or set replaceAll=true to replace all occurrences. Line endings are normalized automatically.`,
+        `Make surgical text replacements in files. Good for bug fixes, updating functions, renaming variables, or tweaking specific code sections. Give the exact text to find (oldString) and what to replace it with (newString). Must be unique—if it appears multiple times, add more context or use replaceAll=true. Line endings handled automatically.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
-          filePath: {type: 'string', description: 'Path to the file to edit'},
+          filePath: {type: 'string', description: 'File to edit'},
           oldString: {
             type: 'string',
             description:
-              'The exact text to find and replace. Must match the file content exactly, including whitespace and indentation. Include enough context (usually 2-3 lines before and after) to make the match unique',
+              'Exact text to find and replace. Match it perfectly—whitespace, indentation, everything. Include 2-3 lines of context to make it unique',
           },
           newString: {
             type: 'string',
             description:
-              'The replacement text. Can be empty string to delete the matched text. Preserve proper indentation to maintain code style',
+              'Replacement text. Empty string deletes the match. Keep your indentation consistent',
           },
           replaceAll: {
             type: 'boolean',
             description:
-              'If true, replace ALL occurrences of oldString. Default is false (single replacement). Use with caution',
+              'Replace all occurrences? Default: false (single replacement). Use carefully',
           },
         },
         required: ['filePath', 'oldString', 'newString'],
@@ -73,11 +73,11 @@ export function registerEditTool(): void {
       const {filePath, oldString, newString, replaceAll} = args;
 
       if (!filePath) {
-        throw new Error('Missing required parameter: filePath. Please specify which file to edit.');
+        throw new Error('Need a filePath. Which file do you want to edit?');
       }
       if (oldString === newString) {
         throw new Error(
-          'oldString and newString are identical - nothing to change. Make sure you provide different values.',
+          'oldString and newString are identical—nothing to change. Try different values.',
         );
       }
 
@@ -89,15 +89,13 @@ export function registerEditTool(): void {
       try {
         const stats = await fs.stat(absolutePath);
         if (stats.isDirectory()) {
-          throw new Error(
-            `Cannot edit a directory: ${absolutePath}. This path points to a folder, not a file.`,
-          );
+          throw new Error(`Can't edit a directory: ${absolutePath}. That's a folder, not a file.`);
         }
         content = await fs.readFile(absolutePath, 'utf-8');
       } catch (error: any) {
         if (error.code === 'ENOENT') {
           throw new Error(
-            `File not found: ${absolutePath}. Check the path or use 'write' to create a new file.`,
+            `File not found: ${absolutePath}. Check the path, or use 'write' to create it.`,
           );
         }
         throw error;
@@ -106,7 +104,7 @@ export function registerEditTool(): void {
       const newContent = replace(content, oldString, newString, replaceAll);
       await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-      return {result: `Edit applied to ${absolutePath}`, displayText: 'File edited successfully'};
+      return {result: `Edited ${absolutePath}`, displayText: 'File edited'};
     },
   );
 }

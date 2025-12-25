@@ -7,24 +7,19 @@ export function registerWriteTool(): void {
     {
       name: 'write',
       description:
-        `Write content to a file, creating parent directories if needed. This will overwrite existing files without warning - use with caution. Use this for: creating new configuration files, writing complete file contents, or initializing new project files. To prevent accidental overwrites, use createOnly=true for new files. For partial updates to existing files, prefer the 'edit' tool instead to avoid losing existing content.`,
+        `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful. Good for new config files, writing complete contents, or initializing project files. To avoid accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
           filePath: {
             type: 'string',
             description:
-              'Destination file path. Can be relative or absolute. Parent directories will be created automatically',
+              'Destination path. Relative or absolute. Creates parent directories automatically',
           },
-          content: {
-            type: 'string',
-            description:
-              'The complete file content to write. Will replace any existing content entirely',
-          },
+          content: {type: 'string', description: 'Complete file content. Replaces everything'},
           createOnly: {
             type: 'boolean',
-            description:
-              'If true, only create new files and refuse to overwrite existing files. Default is false',
+            description: 'Only create new files? Refuses to overwrite. Default: false',
           },
         },
         required: ['filePath', 'content'],
@@ -37,14 +32,10 @@ export function registerWriteTool(): void {
       const {content, filePath, createOnly = false} = args;
 
       if (!filePath) {
-        throw new Error(
-          'Missing required parameter: filePath. Please specify where to save the file.',
-        );
+        throw new Error('Need a filePath. Where do you want to save this?');
       }
       if (content === undefined) {
-        throw new Error(
-          'Missing required parameter: content. Please provide the content to write.',
-        );
+        throw new Error('Need content. What do you want to write?');
       }
 
       const absolutePath = path.isAbsolute(filePath)
@@ -55,7 +46,7 @@ export function registerWriteTool(): void {
         try {
           await fs.access(absolutePath);
           throw new Error(
-            `File already exists: ${absolutePath}. To modify it, use 'edit' for partial changes or 'write' to replace all content.`,
+            `File exists: ${absolutePath}. Use 'edit' for changes or 'write' to replace it all.`,
           );
         } catch (error: any) {
           if (error.code !== 'ENOENT') {
@@ -70,7 +61,7 @@ export function registerWriteTool(): void {
       await fs.writeFile(absolutePath, content, 'utf-8');
 
       const lines = content.split('\n').length;
-      const action = createOnly ? 'Created' : 'Written';
+      const action = createOnly ? 'Created' : 'Wrote';
       return {
         result: `${action} ${lines} lines to ${absolutePath}`,
         displayText: `${action} ${lines} lines`,

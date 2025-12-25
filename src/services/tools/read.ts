@@ -9,24 +9,23 @@ export function registerReadTool(): void {
   registerTool({
     name: 'read',
     description:
-      `Read the contents of a file with line numbers. Use this for: previewing file contents, reviewing code before editing, or examining specific sections of large files. Returns numbered lines for easy reference when editing. Use offset and limit for large files - start with the beginning, then read more sections as needed. Output format: each line prefixed with its line number (e.g., "00001| content").`,
+      `Read file contents with line numbers. Good for previewing files, reviewing code before edits, or checking specific sections of big files. Returns numbered lines for easy reference. Use offset and limit for large files—start at the top, then read more as needed. Format: line number prefix like "00001| content".`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {
           type: 'string',
-          description:
-            'Path to the file to read. Can be relative (resolved from current dir) or absolute',
+          description: 'File path. Relative (from current dir) or absolute',
         },
         offset: {
           type: 'number',
           description:
-            'Starting line number (0-based index). Use this to skip to a specific section. For example, offset=100 starts reading from line 101',
+            'Start line (0-based). Skips to a section. Like, offset=100 starts at line 101',
         },
         limit: {
           type: 'number',
           description:
-            'Maximum number of lines to read. Defaults to 50. Increase for larger files, decrease if you only need a quick peek',
+            'Max lines to read. Default: 50. Bump it for big files, drop it for quick peeks',
         },
       },
       required: ['filePath'],
@@ -35,7 +34,7 @@ export function registerReadTool(): void {
     const {filePath, offset = 0, limit = DEFAULT_READ_LIMIT} = args;
 
     if (!filePath) {
-      throw new Error('Missing required parameter: filePath. Please specify which file to read.');
+      throw new Error('Need a filePath. Which file do you want to read?');
     }
 
     const absolutePath = path.isAbsolute(filePath)
@@ -57,17 +56,13 @@ export function registerReadTool(): void {
 
         if (suggestions.length > 0) {
           throw new Error(
-            `File not found: ${absolutePath}\n\nPerhaps you meant one of these?\n  ${
-              suggestions.join('\n  ')
-            }`,
+            `File not found: ${absolutePath}\n\nMaybe one of these?\n  ${suggestions.join('\n  ')}`,
           );
         }
       } catch {
       }
 
-      throw new Error(
-        `File not found: ${absolutePath}. Double-check the path or use the list/glob tool to find files.`,
-      );
+      throw new Error(`File not found: ${absolutePath}. Check the path or use glob to find files.`);
     }
 
     const content = await fs.readFile(absolutePath, 'utf-8');
@@ -87,13 +82,13 @@ export function registerReadTool(): void {
 
     let output = formattedContent.join('\n');
     if (hasMoreLines) {
-      output += `\n\n[More content available. Read from line ${
+      output += `\n\n[More below. Continue from line ${
         lastReadLine + 1
-      } onward using offset=${lastReadLine}]`;
+      } with offset=${lastReadLine}]`;
     } else {
-      output += `\n\n[End of file - ${totalLines} lines total]`;
+      output += `\n\n[End of file—${totalLines} lines total]`;
     }
 
-    return {result: output, displayText: `Got ${linesRead} lines of output`};
+    return {result: output, displayText: `Read ${linesRead} lines`};
   });
 }

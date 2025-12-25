@@ -9,24 +9,20 @@ export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
     description:
-      `Find files matching a glob pattern. Use this for: locating files when you know the naming pattern but not the exact location, finding all files of a certain type, or exploring directory structure. Supports standard glob syntax: * (any chars), ** (any path), ? (single char). Limited to 100 results. Respects .gitignore. To list all files in a specific directory, use "path/*" (direct children only) or "path/**/*" (recursive, all subdirectories).`,
+      `Find files by pattern. Good for locating files when you know the name pattern but not where they live, finding all files of a type, or exploring structure. Standard glob: * (anything), ** (any path), ? (one char). Caps at 100 results. Respects .gitignore. For a directory: "path/*" (direct kids) or "path/**/*" (recursive, everything).`,
     formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
     parameters: {
       properties: {
         pattern: {
           type: 'string',
           description:
-            'Glob pattern to match. Examples: "**/*.ts" (all TypeScript files), "src/**/*.test.js" (test files in src), "*.json" (JSON files in current dir)',
+            'Glob pattern. Like: "**/*.ts" (all TS files), "src/**/*.test.js" (tests in src), "*.json" (JSON in current dir)',
         },
         path: {
           type: 'string',
-          description:
-            'Starting directory for the search. Defaults to current working directory. Use to narrow down the search scope',
+          description: 'Where to start searching. Default: current directory. Narrows the scope',
         },
-        nocase: {
-          type: 'boolean',
-          description: 'Perform a case-insensitive match. Defaults to false (case-sensitive)',
-        },
+        nocase: {type: 'boolean', description: 'Case-insensitive? Default: false'},
       },
       required: ['pattern'],
     },
@@ -34,9 +30,7 @@ export function registerGlobTool(): void {
     const {pattern, path: searchPath, nocase = false} = args;
 
     if (!pattern) {
-      throw new Error(
-        'Missing required parameter: pattern. Please provide a glob pattern like "**/*.ts" or "*.json".',
-      );
+      throw new Error('Need a pattern. Try something like "**/*.ts" or "*.json".');
     }
 
     const rootDir = process.cwd();
@@ -79,23 +73,19 @@ export function registerGlobTool(): void {
 
     const output: string[] = [];
     if (files.length === 0) {
-      output.push(
-        `No files match pattern "${pattern}". Try a broader pattern or check if you're in the right directory.`,
-      );
+      output.push(`No matches for "${pattern}". Try going broader or check your location.`);
     } else {
       output.push(`Found ${files.length} file(s) matching "${pattern}":\n`);
       output.push(...files);
       if (truncated) {
         output.push('');
-        output.push(
-          '[Results limited to 100 files. Use a more specific path or pattern to narrow down.]',
-        );
+        output.push('[Capped at 100 files. Be more specific with your pattern or path.]');
       }
     }
 
     return {
       result: output.join('\n'),
-      displayText: files.length > 0 ? `Found ${files.length} files` : 'Pattern search completed',
+      displayText: files.length > 0 ? `Found ${files.length} files` : 'Search complete',
     };
   });
 }

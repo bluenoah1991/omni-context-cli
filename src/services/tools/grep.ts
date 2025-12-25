@@ -63,41 +63,29 @@ export function registerGrepTool(): void {
     {
       name: 'grep',
       description:
-        `Search for text patterns in files using regex. Use this for: finding function definitions, locating variable usage, searching for specific text patterns, or code auditing. Returns matching lines with file paths and line numbers. Respects .gitignore. Searches hidden files by default. Output includes match counts and can be filtered by file type, path, or glob pattern.`,
+        `Search for text patterns with regex. Good for finding function definitions, tracking variable usage, hunting specific patterns, or code audits. Returns matches with file paths and line numbers. Respects .gitignore. Searches hidden files. Output shows match counts and can filter by type, path, or glob.`,
       formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
       parameters: {
         properties: {
-          pattern: {
-            type: 'string',
-            description: 'Regex pattern to search for. Case-sensitive by default.',
-          },
+          pattern: {type: 'string', description: 'Regex pattern. Case-sensitive by default.'},
           path: {
             type: 'string',
-            description: 'Directory or file to search in. Defaults to current working directory.',
+            description: 'Directory or file to search. Default: current directory.',
           },
-          glob: {
-            type: 'string',
-            description: 'Glob pattern for files to include. Examples: "*.ts", "*.{js,jsx}"',
-          },
+          glob: {type: 'string', description: 'File glob pattern. Like: "*.ts", "*.{js,jsx}"'},
           outputMode: {
             type: 'string',
             description:
-              'Output mode: "content" (default, show matches), "files_with_matches" (file paths only), "count" (match counts).',
+              'Output: "content" (default, show matches), "files_with_matches" (paths only), "count" (counts).',
           },
-          ignoreCase: {type: 'boolean', description: 'Case-insensitive search.'},
-          linesContext: {
-            type: 'number',
-            description: 'Number of context lines before and after each match.',
-          },
-          linesBefore: {type: 'number', description: 'Number of context lines before each match.'},
-          linesAfter: {type: 'number', description: 'Number of context lines after each match.'},
-          showLineNumbers: {type: 'boolean', description: 'Show line numbers. Default is true.'},
-          maxDepth: {type: 'number', description: 'Maximum directory depth to search.'},
-          multiline: {type: 'boolean', description: 'Enable multiline matching.'},
-          fileType: {
-            type: 'string',
-            description: 'File type to search. Examples: "ts", "py", "js"',
-          },
+          ignoreCase: {type: 'boolean', description: 'Case-insensitive?'},
+          linesContext: {type: 'number', description: 'Context lines before and after matches.'},
+          linesBefore: {type: 'number', description: 'Context lines before matches.'},
+          linesAfter: {type: 'number', description: 'Context lines after matches.'},
+          showLineNumbers: {type: 'boolean', description: 'Show line numbers? Default: true.'},
+          maxDepth: {type: 'number', description: 'Max directory depth.'},
+          multiline: {type: 'boolean', description: 'Multiline matching?'},
+          fileType: {type: 'string', description: 'File type filter. Like: "ts", "py", "js"'},
         },
         required: ['pattern'],
       },
@@ -135,7 +123,7 @@ export function registerGrepTool(): void {
       } = args;
 
       if (!pattern) {
-        throw new Error('Missing required parameter: pattern');
+        throw new Error('Need a pattern to search for');
       }
 
       const rootDir = process.cwd();
@@ -261,35 +249,26 @@ export function registerGrepTool(): void {
               if (lastNewline > 0) {
                 result = result.slice(0, lastNewline);
               }
-              result += '\n\n[Output truncated. Use more specific pattern or path.]';
+              result += '\n\n[Output truncated. Be more specific with your pattern or path.]';
             }
 
             const matchCount = result ? countMatches(result, outputMode) : 0;
 
             if (!result) {
-              resolve({
-                result: `No matches found for "${pattern}".`,
-                displayText: 'No matches found',
-              });
+              resolve({result: `No matches for "${pattern}".`, displayText: 'No matches'});
             } else {
               resolve({
                 result: result,
-                displayText: matchCount > 0 ? `Found ${matchCount} matches` : 'No matches found',
+                displayText: matchCount > 0 ? `Found ${matchCount} matches` : 'No matches',
               });
             }
           } else if (code === 1) {
-            resolve({
-              result: `No matches found for "${pattern}".`,
-              displayText: 'No matches found',
-            });
+            resolve({result: `No matches for "${pattern}".`, displayText: 'No matches'});
           } else if (code === 2) {
             const errorMsg = stderr.trim() || 'Search error';
             reject(new Error(errorMsg));
           } else {
-            resolve({
-              result: `No matches found for "${pattern}".`,
-              displayText: 'No matches found',
-            });
+            resolve({result: `No matches for "${pattern}".`, displayText: 'No matches'});
           }
         });
 

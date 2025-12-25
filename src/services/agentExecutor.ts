@@ -29,33 +29,33 @@ export async function executeAgent(
   const userMessage = interpolatePrompt(agent.promptTemplate, params);
   const sessionWithMessage = addUserMessage(session, userMessage, appConfig.provider);
 
-  try {
-    const result = await runConversation(sessionWithMessage, callbacks, signal, {
-      includeAgents: false,
-      allowedTools: agent.allowedTools || null,
-    }, appConfig);
+  const result = await runConversation(sessionWithMessage, callbacks, signal, {
+    includeAgents: false,
+    allowedTools: agent.allowedTools || null,
+  }, appConfig);
 
-    const lastMessage = result.messages[result.messages.length - 1];
-    let displayText = '';
+  const lastMessage = result.messages[result.messages.length - 1];
+  let displayText = '';
 
-    if (appConfig.provider === 'anthropic') {
-      const content = lastMessage.content;
-      if (Array.isArray(content)) {
-        displayText = content.filter((block: any) => block.type === 'text').map((block: any) =>
-          block.text
-        ).join('\n');
-      }
-    } else {
-      displayText = String(lastMessage.content || '');
+  if (appConfig.provider === 'anthropic') {
+    const content = lastMessage.content;
+    if (Array.isArray(content)) {
+      displayText = content.filter((block: any) => block.type === 'text').map((block: any) =>
+        block.text
+      ).join('\n');
     }
-
-    return {
-      result: displayText,
-      displayText: `Agent ${agent.name} completed: ${displayText.slice(0, 200)}${
-        displayText.length > 200 ? '...' : ''
-      }`,
-    };
-  } catch (error) {
-    throw error;
+  } else {
+    displayText = String(lastMessage.content || '');
   }
+
+  if (signal?.aborted) {
+    throw new Error(`Agent ${agent.name} was interrupted`);
+  }
+
+  return {
+    result: displayText,
+    displayText: `Agent ${agent.name} done: ${displayText.slice(0, 200)}${
+      displayText.length > 200 ? '...' : ''
+    }`,
+  };
 }
