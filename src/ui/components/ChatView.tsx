@@ -143,7 +143,7 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [config.provider, updateMessages, setLoading, setSession, setError]);
+  }, [config, updateMessages, setLoading, setSession, setError]);
 
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
