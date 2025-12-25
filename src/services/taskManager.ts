@@ -8,7 +8,7 @@ export interface TaskData {
   endTime?: number;
 }
 
-const MAX_OUTPUT_PER_STREAM = 30000;
+const MAX_OUTPUT_PER_STREAM = 10000;
 const TASK_CLEANUP_DELAY = 300000;
 
 const backgroundTasks = new Map<string, TaskData>();

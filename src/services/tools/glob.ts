@@ -5,6 +5,8 @@ import { isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
 import { getGlobExcludes } from './ignorePatterns';
 
+const MAX_FILES = 100;
+
 export function registerGlobTool(): void {
   registerTool({
     name: 'glob',
@@ -45,7 +47,6 @@ export function registerGlobTool(): void {
       searchPattern = glob.escape(pattern);
     }
 
-    const limit = 100;
     const files: string[] = [];
     let truncated = false;
 
@@ -64,7 +65,7 @@ export function registerGlobTool(): void {
         continue;
       }
 
-      if (files.length >= limit) {
+      if (files.length >= MAX_FILES) {
         truncated = true;
         break;
       }
@@ -82,7 +83,7 @@ export function registerGlobTool(): void {
       output.push(...files);
       if (truncated) {
         output.push('');
-        output.push('[Capped at 100 files. Be more specific with your pattern or path.]');
+        output.push(`[Capped at ${MAX_FILES} files. Be more specific with your pattern or path.]`);
       }
     }
 

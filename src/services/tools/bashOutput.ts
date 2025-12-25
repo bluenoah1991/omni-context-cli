@@ -48,7 +48,7 @@ export function registerBashOutputTool(): void {
 
     if (output.length > MAX_OUTPUT_LENGTH) {
       output = output.substring(0, MAX_OUTPUT_LENGTH)
-        + `\n\n[Truncated at ${MAX_OUTPUT_LENGTH} chars of ${output.length}]`;
+        + `\n\n[Output truncated at ${MAX_OUTPUT_LENGTH} chars out of ${output.length} total]`;
     }
 
     const statusInfo = isRunning

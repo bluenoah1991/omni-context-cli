@@ -176,8 +176,7 @@ export function registerBashTool(): void {
             );
           } else {
             const result = output.trim() || 'Finished with no output';
-            const lines = result.split('\n').length;
-            resolve({result: result, displayText: `Finished (${lines} lines)`});
+            resolve({result: result, displayText: 'Command finished'});
           }
         });
       });

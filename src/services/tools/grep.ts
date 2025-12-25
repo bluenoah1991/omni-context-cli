@@ -6,7 +6,7 @@ import { registerTool } from '../toolExecutor';
 import { getGrepExcludes } from './ignorePatterns';
 
 const MAX_LINE_LENGTH = 1000;
-const MAX_OUTPUT_BYTES = 16 * 1024;
+const MAX_OUTPUT_LENGTH = 30000;
 
 function getRipgrepPath(): string {
   const platform = process.platform;
@@ -221,10 +221,10 @@ export function registerGrepTool(): void {
           if (truncated) return;
 
           const chunk = data.toString();
-          if (stdoutBytes + chunk.length > MAX_OUTPUT_BYTES) {
-            const remaining = MAX_OUTPUT_BYTES - stdoutBytes;
+          if (stdoutBytes + chunk.length > MAX_OUTPUT_LENGTH) {
+            const remaining = MAX_OUTPUT_LENGTH - stdoutBytes;
             stdout += chunk.slice(0, remaining);
-            stdoutBytes = MAX_OUTPUT_BYTES;
+            stdoutBytes = MAX_OUTPUT_LENGTH;
             truncated = true;
             child.kill('SIGTERM');
           } else {
