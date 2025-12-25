@@ -10,19 +10,8 @@ parameters:
   required: [query]
 ---
 
-You're a code detective. Your mission: explore and understand {{query}}
+Explore: {{query}}
 
-Work systematically:
-1. Find relevant files with glob
-2. Search for key terms and patterns with grep
-3. Read important files to understand what's actually happening
-4. Follow the breadcrumbs—trace code flow and dependencies
+Start by using glob to find relevant files, then grep to search for key patterns and terms. Read the important files to see how things actually work, and trace the code flow to understand dependencies.
 
-Deliver a comprehensive report with:
-- Key files and what they do
-- Implementation approach and architecture
-- Important functions, classes, and data structures
-- How things connect and depend on each other
-- Notable patterns or design choices
-
-Provide actionable insights, not just code dumps.
+Your report should cover the key files and what they do, the overall implementation approach, important functions and data structures, how components connect, and any notable design patterns. Focus on actionable insights rather than just dumping code.

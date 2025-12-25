@@ -75,59 +75,68 @@ export function ChatView(): React.ReactElement {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
+    const toolFilter = config.orchestratorMode
+      ? {includeAgents: true, includeMcp: false, allowedTools: []}
+      : undefined;
+
     try {
-      const finalSession = await runConversation(updatedSession, {
-        onSessionUpdate: session => {
-          updateSessionTokens(
-            session.inputTokens ?? 0,
-            session.outputTokens ?? 0,
-            session.cachedTokens ?? 0,
-          );
+      const finalSession = await runConversation(
+        updatedSession,
+        {
+          onSessionUpdate: session => {
+            updateSessionTokens(
+              session.inputTokens ?? 0,
+              session.outputTokens ?? 0,
+              session.cachedTokens ?? 0,
+            );
+          },
+          onError: (errorText: string) => {
+            setError(errorText);
+          },
+          onContent: (content: string) => {
+            updateMessages(messages => {
+              const last = messages[messages.length - 1];
+              if (last?.role === 'assistant') {
+                return [...messages.slice(0, -1), {...last, content: last.content + content}];
+              }
+              return [...messages, {role: 'assistant', content, timestamp: Date.now()}];
+            });
+          },
+          onThinking: (thinking: string) => {
+            updateMessages(messages => {
+              const last = messages[messages.length - 1];
+              if (last?.role === 'thinking') {
+                return [...messages.slice(0, -1), {...last, content: last.content + thinking}];
+              }
+              return [...messages, {role: 'thinking', content: thinking, timestamp: Date.now()}];
+            });
+          },
+          onToolCall: toolCall => {
+            updateMessages(
+              messages => [...messages, {
+                role: 'tool_call',
+                content: JSON.stringify(toolCall.input),
+                timestamp: Date.now(),
+                toolName: toolCall.name,
+                toolCallId: toolCall.id,
+              }]
+            );
+          },
+          onToolResult: toolResult => {
+            updateMessages(
+              messages => [...messages, {
+                role: 'tool_result',
+                content: toolResult.content,
+                timestamp: Date.now(),
+                toolName: toolResult.name,
+                toolCallId: toolResult.id,
+              }]
+            );
+          },
         },
-        onError: (errorText: string) => {
-          setError(errorText);
-        },
-        onContent: (content: string) => {
-          updateMessages(messages => {
-            const last = messages[messages.length - 1];
-            if (last?.role === 'assistant') {
-              return [...messages.slice(0, -1), {...last, content: last.content + content}];
-            }
-            return [...messages, {role: 'assistant', content, timestamp: Date.now()}];
-          });
-        },
-        onThinking: (thinking: string) => {
-          updateMessages(messages => {
-            const last = messages[messages.length - 1];
-            if (last?.role === 'thinking') {
-              return [...messages.slice(0, -1), {...last, content: last.content + thinking}];
-            }
-            return [...messages, {role: 'thinking', content: thinking, timestamp: Date.now()}];
-          });
-        },
-        onToolCall: toolCall => {
-          updateMessages(
-            messages => [...messages, {
-              role: 'tool_call',
-              content: JSON.stringify(toolCall.input),
-              timestamp: Date.now(),
-              toolName: toolCall.name,
-              toolCallId: toolCall.id,
-            }]
-          );
-        },
-        onToolResult: toolResult => {
-          updateMessages(
-            messages => [...messages, {
-              role: 'tool_result',
-              content: toolResult.content,
-              timestamp: Date.now(),
-              toolName: toolResult.name,
-              toolCallId: toolResult.id,
-            }]
-          );
-        },
-      }, abortController.signal);
+        abortController.signal,
+        toolFilter,
+      );
 
       setSession(finalSession);
       saveSession(finalSession, config.provider);

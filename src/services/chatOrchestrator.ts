@@ -20,6 +20,7 @@ async function streamAIResponse(
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
+  isFromAgent?: boolean,
 ): Promise<ChatMessage> {
   const contextConfig = {maxTokens: (config.contextSize ?? 200) * 1024, usageRatio: 0.8};
   const {messages: windowedMessages} = applyContextWindow(messages, contextConfig);
@@ -28,7 +29,7 @@ async function streamAIResponse(
     ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[], toolFilter)
     : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[], toolFilter);
 
-  saveRequest(config.provider, headers, body);
+  saveRequest(config.provider, headers, body, isFromAgent);
 
   const previousTokens = countTotalTokens(messages);
   const handler = config.provider === 'openai'
@@ -80,6 +81,7 @@ export async function runConversation(
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
   appConfig?: AppConfig,
+  isFromAgent?: boolean,
 ): Promise<Session> {
   let currentSession = session;
   const config = appConfig ?? getAppConfig();
@@ -94,6 +96,7 @@ export async function runConversation(
         callbacks,
         signal,
         toolFilter,
+        isFromAgent,
       );
     } catch (error) {
       const errorText = `${error}`;

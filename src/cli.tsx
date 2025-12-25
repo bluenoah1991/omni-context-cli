@@ -58,6 +58,7 @@ if (opts.continue) {
           savedModel,
           config.enableThinking ?? false,
           config.streamingOutput ?? false,
+          config.orchestratorMode ?? false,
         );
       } else {
         const fallbackModel = findFirstModelByProvider(config.provider);
@@ -66,6 +67,7 @@ if (opts.continue) {
             fallbackModel,
             config.enableThinking ?? false,
             config.streamingOutput ?? false,
+            config.orchestratorMode ?? false,
           );
         }
       }

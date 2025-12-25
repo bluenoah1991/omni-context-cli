@@ -24,12 +24,13 @@ export function saveRequest(
   provider: string,
   headers: Record<string, string>,
   body: unknown,
+  isFromAgent?: boolean,
 ): void {
   if (!diagnosticEnabled) return;
 
   ensureDiagnosticDir();
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `${provider}-${timestamp}.json`;
+  const filename = `${isFromAgent ? '_' : ''}${provider}-${timestamp}.json`;
   const filepath = path.join(DIAGNOSTIC_DIR, filename);
   const data = {headers, body};
   fs.writeFileSync(filepath, JSON.stringify(data, null, 2), 'utf-8');

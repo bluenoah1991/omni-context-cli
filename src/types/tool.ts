@@ -27,5 +27,6 @@ export interface PendingToolCall {
 
 export interface ToolFilter {
   includeAgents?: boolean;
+  includeMcp?: boolean;
   allowedTools?: string[] | null;
 }

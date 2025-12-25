@@ -10,7 +10,7 @@ export async function buildAnthropicRequest(
   messages: AnthropicMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const systemBlocks = [{text: buildSystemPrompt(), type: 'text'}];
+  const systemBlocks = [{text: buildSystemPrompt(config.orchestratorMode), type: 'text'}];
 
   const request: Record<string, unknown> = {
     model: config.model,

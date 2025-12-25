@@ -10,7 +10,7 @@ export async function buildOpenAIRequest(
   messages: OpenAIMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const systemMessages = [{role: 'system', content: buildSystemPrompt()}];
+  const systemMessages = [{role: 'system', content: buildSystemPrompt(config.orchestratorMode)}];
 
   const request: Record<string, unknown> = {
     model: config.model,

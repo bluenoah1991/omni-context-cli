@@ -25,14 +25,18 @@ export async function executeAgent(
   if (!agentModel) {
     throw new Error('No models configured');
   }
-  const appConfig = modelConfigToAppConfig(agentModel, true, false);
+  const appConfig = modelConfigToAppConfig(agentModel, true, false, false);
   const userMessage = interpolatePrompt(agent.promptTemplate, params);
   const sessionWithMessage = addUserMessage(session, userMessage, appConfig.provider);
 
-  const result = await runConversation(sessionWithMessage, callbacks, signal, {
-    includeAgents: false,
-    allowedTools: agent.allowedTools || null,
-  }, appConfig);
+  const result = await runConversation(
+    sessionWithMessage,
+    callbacks,
+    signal,
+    {includeAgents: false, includeMcp: true, allowedTools: agent.allowedTools || null},
+    appConfig,
+    true,
+  );
 
   const lastMessage = result.messages[result.messages.length - 1];
   let displayText = '';

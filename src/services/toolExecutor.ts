@@ -8,12 +8,21 @@ export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[
   const mcpTools = mcpManager.getAllToolDefinitions();
   let allTools = [...localTools, ...mcpTools];
 
-  if (toolFilter?.includeAgents === false) {
+  if (!toolFilter) return allTools;
+
+  if (toolFilter.includeAgents === false) {
     allTools = allTools.filter(t => !t.name.startsWith('agent_'));
   }
 
-  if (toolFilter?.allowedTools) {
-    allTools = allTools.filter(t => toolFilter.allowedTools!.includes(t.name));
+  if (toolFilter.includeMcp === false) {
+    allTools = allTools.filter(t => !t.name.startsWith('mcp_'));
+  }
+
+  if (toolFilter.allowedTools) {
+    allTools = allTools.filter(t =>
+      t.name.startsWith('agent_') || t.name.startsWith('mcp_')
+      || toolFilter.allowedTools!.includes(t.name)
+    );
   }
 
   return allTools;

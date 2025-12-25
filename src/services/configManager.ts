@@ -17,7 +17,12 @@ function ensureConfigDir(): void {
 export function loadOmxConfig(): OmxConfig {
   ensureConfigDir();
   if (!fs.existsSync(CONFIG_FILE)) {
-    const defaultConfig: OmxConfig = {models: [], enableThinking: false, streamingOutput: false};
+    const defaultConfig: OmxConfig = {
+      models: [],
+      enableThinking: false,
+      streamingOutput: false,
+      orchestratorMode: false,
+    };
     saveOmxConfig(defaultConfig);
     return defaultConfig;
   }
@@ -84,6 +89,7 @@ export function removeModel(modelId: string): void {
         defaultModel,
         config.enableThinking,
         config.streamingOutput,
+        config.orchestratorMode,
       );
       if (previousProvider !== currentConfig.provider) {
         const {useChatStore} = require('../store/chatStore');
@@ -94,6 +100,7 @@ export function removeModel(modelId: string): void {
         ...DEFAULT_CONFIG,
         enableThinking: config.enableThinking,
         streamingOutput: config.streamingOutput,
+        orchestratorMode: config.orchestratorMode,
       };
     }
   }
@@ -111,10 +118,17 @@ export function toggleStreamingOutput(): void {
   saveOmxConfig(config);
 }
 
+export function toggleOrchestratorMode(): void {
+  const config = loadOmxConfig();
+  config.orchestratorMode = !config.orchestratorMode;
+  saveOmxConfig(config);
+}
+
 export function modelConfigToAppConfig(
   model: ModelConfig,
   enableThinking: boolean,
   streamingOutput: boolean,
+  orchestratorMode: boolean,
 ): AppConfig {
   return {
     provider: model.provider,
@@ -123,6 +137,7 @@ export function modelConfigToAppConfig(
     apiKey: model.apiKey,
     enableThinking,
     streamingOutput,
+    orchestratorMode,
     modelId: model.id,
     nickname: model.nickname,
     contextSize: model.contextSize,
@@ -141,17 +156,24 @@ export function initializeAppConfig(): void {
       ...currentConfig,
       enableThinking: omxConfig.enableThinking,
       streamingOutput: omxConfig.streamingOutput,
+      orchestratorMode: omxConfig.orchestratorMode,
     };
     return;
   }
 
   const defaultModel = getDefaultModel(omxConfig);
   currentConfig = defaultModel
-    ? modelConfigToAppConfig(defaultModel, omxConfig.enableThinking, omxConfig.streamingOutput)
+    ? modelConfigToAppConfig(
+      defaultModel,
+      omxConfig.enableThinking,
+      omxConfig.streamingOutput,
+      omxConfig.orchestratorMode,
+    )
     : {
       ...DEFAULT_CONFIG,
       enableThinking: omxConfig.enableThinking,
       streamingOutput: omxConfig.streamingOutput,
+      orchestratorMode: omxConfig.orchestratorMode,
     };
 }
 
@@ -159,9 +181,10 @@ export function updateAppConfig(
   model: ModelConfig,
   enableThinking: boolean,
   streamingOutput: boolean,
+  orchestratorMode: boolean,
 ): void {
   const previousProvider = currentConfig.provider;
-  currentConfig = modelConfigToAppConfig(model, enableThinking, streamingOutput);
+  currentConfig = modelConfigToAppConfig(model, enableThinking, streamingOutput, orchestratorMode);
   if (previousProvider !== currentConfig.provider) {
     const {useChatStore} = require('../store/chatStore');
     useChatStore.getState().createNewSession();
