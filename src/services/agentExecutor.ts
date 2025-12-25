@@ -1,3 +1,4 @@
+import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolHandlerResult } from '../types/tool';
@@ -6,11 +7,8 @@ import { getAgentModel, loadOmxConfig, modelConfigToAppConfig } from './configMa
 import { addUserMessage, createSession } from './sessionManager';
 
 function interpolatePrompt(template: string, params: Record<string, any>): string {
-  let result = template;
-  Object.keys(params).forEach(key => {
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), String(params[key]));
-  });
-  return result;
+  const compiled = Handlebars.compile(template);
+  return compiled(params);
 }
 
 export async function executeAgent(
