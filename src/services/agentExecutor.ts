@@ -31,7 +31,7 @@ export async function executeAgent(
     sessionWithMessage,
     callbacks,
     signal,
-    {includeAgents: false, includeMcp: true, allowedTools: agent.allowedTools || null},
+    {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},
     appConfig,
     true,
   );

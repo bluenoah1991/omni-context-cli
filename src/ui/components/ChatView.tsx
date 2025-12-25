@@ -75,9 +75,12 @@ export function ChatView(): React.ReactElement {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    const toolFilter = config.specialistMode
-      ? {includeAgents: true, includeMcp: false, allowedTools: []}
-      : undefined;
+    const toolFilter = {
+      excludeAgents: !config.specialistMode,
+      excludeMcp: config.specialistMode,
+      allowedTools: config.specialistMode ? [] : null,
+      additionalTools: config.specialistMode ? null : ['agent_explore'],
+    };
 
     try {
       const finalSession = await runConversation(

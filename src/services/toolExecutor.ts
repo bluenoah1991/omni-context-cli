@@ -10,18 +10,21 @@ export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[
 
   if (!toolFilter) return allTools;
 
-  if (toolFilter.includeAgents === false) {
-    allTools = allTools.filter(t => !t.name.startsWith('agent_'));
+  const additionalSet = new Set(toolFilter.additionalTools || []);
+
+  if (toolFilter.excludeAgents) {
+    allTools = allTools.filter(t => !t.name.startsWith('agent_') || additionalSet.has(t.name));
   }
 
-  if (toolFilter.includeMcp === false) {
-    allTools = allTools.filter(t => !t.name.startsWith('mcp_'));
+  if (toolFilter.excludeMcp) {
+    allTools = allTools.filter(t => !t.name.startsWith('mcp_') || additionalSet.has(t.name));
   }
 
   if (toolFilter.allowedTools) {
     allTools = allTools.filter(t =>
       t.name.startsWith('agent_') || t.name.startsWith('mcp_')
       || toolFilter.allowedTools!.includes(t.name)
+      || additionalSet.has(t.name)
     );
   }
 
