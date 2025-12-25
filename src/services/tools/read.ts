@@ -9,23 +9,23 @@ export function registerReadTool(): void {
   registerTool({
     name: 'read',
     description:
-      `Read file contents with line numbers. Good for previewing files, reviewing code before edits, or checking specific sections of big files. Returns numbered lines for easy reference. Use offset and limit for large files—start at the top, then read more as needed. Format: line number prefix like "00001| content".`,
+      `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content".`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
         filePath: {
           type: 'string',
-          description: 'File path. Relative (from current dir) or absolute',
+          description: 'File path. Can be relative (from current directory) or absolute.',
         },
         offset: {
           type: 'number',
           description:
-            'Start line (0-based). Skips to a section. Like, offset=100 starts at line 101',
+            'Start line (0-based). Skips to a specific section. For example, offset=100 starts at line 101.',
         },
         limit: {
           type: 'number',
           description:
-            'Max lines to read. Default: 50. Bump it for big files, drop it for quick peeks',
+            'Max lines to read. Default: 50. Increase this for larger files or decrease for quick previews.',
         },
       },
       required: ['filePath'],
@@ -34,7 +34,7 @@ export function registerReadTool(): void {
     const {filePath, offset = 0, limit = DEFAULT_READ_LIMIT} = args;
 
     if (!filePath) {
-      throw new Error('Need a filePath. Which file do you want to read?');
+      throw new Error('You need to provide a filePath. Which file do you want to read?');
     }
 
     const absolutePath = path.isAbsolute(filePath)
@@ -62,7 +62,9 @@ export function registerReadTool(): void {
       } catch {
       }
 
-      throw new Error(`File not found: ${absolutePath}. Check the path or use glob to find files.`);
+      throw new Error(
+        `File not found: ${absolutePath}. Check the path or use 'glob' to find files.`,
+      );
     }
 
     const content = await fs.readFile(absolutePath, 'utf-8');

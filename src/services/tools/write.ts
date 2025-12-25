@@ -7,19 +7,23 @@ export function registerWriteTool(): void {
     {
       name: 'write',
       description:
-        `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful. Good for new config files, writing complete contents, or initializing project files. To avoid accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content.`,
+        `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful! Great for creating new config files, writing complete file contents, or initializing project files. To prevent accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
           filePath: {
             type: 'string',
             description:
-              'Destination path. Relative or absolute. Creates parent directories automatically',
+              'Destination path. Can be relative or absolute. Parent directories are created automatically.',
           },
-          content: {type: 'string', description: 'Complete file content. Replaces everything'},
+          content: {
+            type: 'string',
+            description: 'Complete file content. This replaces everything in the file.',
+          },
           createOnly: {
             type: 'boolean',
-            description: 'Only create new files? Refuses to overwrite. Default: false',
+            description:
+              'Only create new files? If true, refuses to overwrite existing files. Default: false.',
           },
         },
         required: ['filePath', 'content'],
@@ -32,10 +36,10 @@ export function registerWriteTool(): void {
       const {content, filePath, createOnly = false} = args;
 
       if (!filePath) {
-        throw new Error('Need a filePath. Where do you want to save this?');
+        throw new Error('You need to provide a filePath. Where do you want to save this?');
       }
       if (content === undefined) {
-        throw new Error('Need content. What do you want to write?');
+        throw new Error('You need to provide content. What do you want to write?');
       }
 
       const absolutePath = path.isAbsolute(filePath)

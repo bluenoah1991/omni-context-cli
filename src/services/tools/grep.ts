@@ -63,7 +63,7 @@ export function registerGrepTool(): void {
     {
       name: 'grep',
       description:
-        `Search for text patterns with regex. Good for finding function definitions, tracking variable usage, hunting specific patterns, or code audits. Returns matches with file paths and line numbers. Respects .gitignore. Searches hidden files. Output shows match counts and can filter by type, path, or glob.`,
+        `Search for text patterns using regex. Great for finding function definitions, tracking variable usage, hunting down specific patterns, or doing code audits. Returns matches with file paths and line numbers. Respects .gitignore and searches hidden files. Output shows match counts and can be filtered by type, path, or glob pattern.`,
       formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
       parameters: {
         properties: {
@@ -72,11 +72,11 @@ export function registerGrepTool(): void {
             type: 'string',
             description: 'Directory or file to search. Default: current directory.',
           },
-          glob: {type: 'string', description: 'File glob pattern. Like: "*.ts", "*.{js,jsx}"'},
+          glob: {type: 'string', description: 'File glob pattern, like "*.ts" or "*.{js,jsx}"'},
           outputMode: {
             type: 'string',
             description:
-              'Output: "content" (default, show matches), "files_with_matches" (paths only), "count" (counts).',
+              'Output format: "content" (default, show matches), "files_with_matches" (paths only), or "count" (match counts)',
           },
           ignoreCase: {type: 'boolean', description: 'Case-insensitive?'},
           linesContext: {type: 'number', description: 'Context lines before and after matches.'},
@@ -85,7 +85,7 @@ export function registerGrepTool(): void {
           showLineNumbers: {type: 'boolean', description: 'Show line numbers? Default: true.'},
           maxDepth: {type: 'number', description: 'Max directory depth.'},
           multiline: {type: 'boolean', description: 'Multiline matching?'},
-          fileType: {type: 'string', description: 'File type filter. Like: "ts", "py", "js"'},
+          fileType: {type: 'string', description: 'File type filter, like "ts", "py", or "js"'},
         },
         required: ['pattern'],
       },
@@ -123,7 +123,7 @@ export function registerGrepTool(): void {
       } = args;
 
       if (!pattern) {
-        throw new Error('Need a pattern to search for');
+        throw new Error('You need to provide a pattern to search for');
       }
 
       const rootDir = process.cwd();

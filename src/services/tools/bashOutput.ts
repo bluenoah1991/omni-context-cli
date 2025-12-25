@@ -7,7 +7,7 @@ export function registerBashOutputTool(): void {
   registerTool({
     name: 'bashOutput',
     description:
-      'Check on a background task by its ID. Returns current stdout, stderr, and exit code if done. Good for monitoring long-runners and verifying completion.',
+      'Check on a background task by its ID. Returns the current stdout, stderr, and exit code if finished. Great for monitoring long-running tasks and verifying completion.',
     formatCall: (args: Record<string, unknown>) => String(args.taskId || ''),
     parameters: {
       properties: {
@@ -23,7 +23,7 @@ export function registerBashOutputTool(): void {
     const {taskId} = args;
 
     if (!taskId) {
-      throw new Error('Need a taskId. Which background task do you want to check?');
+      throw new Error('You need to provide a taskId. Which background task do you want to check?');
     }
 
     const taskData = getTask(taskId);

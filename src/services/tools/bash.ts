@@ -33,24 +33,24 @@ export function registerBashTool(): void {
     {
       name: 'bash',
       description:
-        `Run bash commands in your terminal. Good for builds, installs, CLI tools, and system stuff. Save it for when specialized tools won't cut it—prefer read, write, edit, glob, or grep when you can. Windows users get WSL bash automatically if it's around. Output comes back to you. Long-runners get cut off at timeout.`,
+        `Run bash commands in your terminal. Great for builds, installs, CLI tools, and system tasks. Save this for when specialized tools won't work—prefer read, write, edit, glob, or grep when you can. Windows users automatically get WSL bash if it's available. Output is returned to you, and long-running commands get cut off at the timeout.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),
       parameters: {
         properties: {
           command: {
             type: 'string',
             description:
-              'Bash command to run. Pipes, redirects, chains—all good. Like: "npm install", "git status", "ls -la | grep .ts"',
+              'Bash command to run. Pipes, redirects, and chains all work. For example: "npm install", "git status", or "ls -la | grep .ts"',
           },
           timeout: {
             type: 'number',
             description:
-              'Max runtime in milliseconds. Default: 120000 (2 min). Bump it up for builds or installs',
+              'Max runtime in milliseconds. Default: 120000 (2 min). Increase this for builds or installs.',
           },
           workdir: {
             type: 'string',
             description:
-              'Where to run the command. Relative or absolute path. Defaults to current directory',
+              'Where to run the command. Can be a relative or absolute path. Defaults to the current directory.',
           },
           background: {
             type: 'boolean',
@@ -68,11 +68,11 @@ export function registerBashTool(): void {
       const {command, timeout = DEFAULT_TIMEOUT, workdir, background = false} = args;
 
       if (!command) {
-        throw new Error('Need a command here. What do you want to run?');
+        throw new Error('You need to provide a command. What do you want to run?');
       }
       if (timeout !== undefined && timeout < 0) {
         throw new Error(
-          `Timeout can't be negative (got ${timeout}ms). Try something positive, like 60000 for a minute.`,
+          `Timeout can't be negative (got ${timeout}ms). Try a positive value, like 60000 for a minute.`,
         );
       }
 
@@ -165,7 +165,7 @@ export function registerBashTool(): void {
 
           if (output.length > MAX_OUTPUT_LENGTH) {
             output = output.substring(0, MAX_OUTPUT_LENGTH)
-              + `\n\n[Truncated at ${MAX_OUTPUT_LENGTH} chars of ${output.length}]`;
+              + `\n\n[Output truncated at ${MAX_OUTPUT_LENGTH} chars out of ${output.length} total]`;
           }
 
           if (code !== 0) {
@@ -175,9 +175,9 @@ export function registerBashTool(): void {
               ),
             );
           } else {
-            const result = output.trim() || 'Done—no output';
+            const result = output.trim() || 'Finished with no output';
             const lines = result.split('\n').length;
-            resolve({result: result, displayText: `Done (${lines} lines)`});
+            resolve({result: result, displayText: `Finished (${lines} lines)`});
           }
         });
       });

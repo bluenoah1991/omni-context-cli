@@ -140,7 +140,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
 
   const {lines, cursorLine, cursorCol, isPlaceholder} = useMemo(() => {
     const isPlaceholder = !state.value;
-    const text = state.value || (disabled ? 'Waiting for response...' : 'Type your message...');
+    const text = state.value || (disabled ? 'Waiting for a response...' : 'Type your message...');
     const lines = text.split('\n');
     let currentPos = 0;
     let cursorLine = 0;
