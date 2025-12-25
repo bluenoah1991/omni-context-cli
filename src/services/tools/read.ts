@@ -85,8 +85,7 @@ export function registerReadTool(): void {
     const lastReadLine = offset + linesRead;
     const hasMoreLines = totalLines > lastReadLine;
 
-    let output = '<file>\n';
-    output += formattedContent.join('\n');
+    let output = formattedContent.join('\n');
     if (hasMoreLines) {
       output += `\n\n[More content available. Read from line ${
         lastReadLine + 1
@@ -94,7 +93,6 @@ export function registerReadTool(): void {
     } else {
       output += `\n\n[End of file - ${totalLines} lines total]`;
     }
-    output += '\n</file>';
 
     return {result: output, displayText: `Got ${linesRead} lines of output`};
   });
