@@ -19,9 +19,9 @@ export function loadOmxConfig(): OmxConfig {
   if (!fs.existsSync(CONFIG_FILE)) {
     const defaultConfig: OmxConfig = {
       models: [],
-      enableThinking: false,
+      enableThinking: true,
       streamingOutput: false,
-      specialistMode: false,
+      specialistMode: true,
     };
     saveOmxConfig(defaultConfig);
     return defaultConfig;
