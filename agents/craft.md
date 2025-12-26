@@ -1,5 +1,5 @@
 ---
-name: autoBash
+name: craft
 description: Executes bash commands with automatic error recovery. If the command fails, analyzes the error and attempts to fix it, then retries. Returns output according to the expected result description.
 allowedTools: [bash, bashOutput, read, write]
 parameters:

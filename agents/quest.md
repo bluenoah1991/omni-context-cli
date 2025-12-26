@@ -1,5 +1,5 @@
 ---
-name: research
+name: quest
 description: Conducts research using available web search tools. Searches for information and returns results according to the expected result description.
 allowedTools: []
 parameters:

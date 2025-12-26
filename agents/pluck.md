@@ -1,5 +1,5 @@
 ---
-name: semanticRead
+name: pluck
 description: Semantically searches and extracts specific code segments from files. Can search across the entire project or in a specific file. Returns only the matching code with line numbers, no additional text or explanation.
 allowedTools: [read, grep, glob]
 parameters:

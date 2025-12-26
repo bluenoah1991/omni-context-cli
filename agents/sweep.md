@@ -1,5 +1,5 @@
 ---
-name: semanticSearch
+name: sweep
 description: Searches for files across the project that match the query criteria. Returns a list of relevant file paths without reading their contents.
 allowedTools: [glob, grep, read]
 parameters:
