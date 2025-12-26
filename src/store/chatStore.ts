@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getAppConfig } from '../services/configManager';
+import { getCurrentModel } from '../services/configManager';
 import { sessionMessagesToUI } from '../services/messageConverter';
 import { createSession } from '../services/sessionManager';
 import { Session } from '../types/session';
@@ -26,8 +26,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   error: null,
 
   setSession: (session: Session) => {
-    const config = getAppConfig();
-    const messages = sessionMessagesToUI(session.messages, config.provider);
+    const model = getCurrentModel();
+    if (!model) {
+      throw new Error('Cannot set session without a configured model');
+    }
+    const messages = sessionMessagesToUI(session.messages, model.provider);
     set({session, messages});
   },
 

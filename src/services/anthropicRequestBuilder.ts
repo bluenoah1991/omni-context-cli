@@ -1,19 +1,21 @@
 import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AnthropicMessage } from '../types/anthropicMessage';
-import { AppConfig } from '../types/config';
+import { ModelConfig } from '../types/config';
 import { ToolFilter } from '../types/tool';
+import { loadOmxConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
 export async function buildAnthropicRequest(
-  config: AppConfig,
+  model: ModelConfig,
   messages: AnthropicMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
+  const config = loadOmxConfig();
   const systemBlocks = [{text: buildSystemPrompt(config.specialistMode), type: 'text'}];
 
   const request: Record<string, unknown> = {
-    model: config.model,
+    model: model.name,
     messages: messages.filter(message => {
       if (message.role !== 'assistant') return true;
       return Array.isArray(message.content) ? message.content.length > 0 : Boolean(message.content);
@@ -37,11 +39,11 @@ export async function buildAnthropicRequest(
     }));
   }
 
-  const body = applyInterceptors(request, config);
+  const body = applyInterceptors(request, model);
 
   const headers = {
     'Content-Type': 'application/json',
-    'x-api-key': config.apiKey,
+    'x-api-key': model.apiKey,
     'anthropic-version': '2023-06-01',
   };
 

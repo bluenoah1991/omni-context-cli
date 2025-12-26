@@ -5,11 +5,9 @@ import dns from 'node:dns';
 import React from 'react';
 import { Agent, setGlobalDispatcher } from 'undici';
 import {
-  findFirstModelByProvider,
   findModelById,
-  getAppConfig,
-  initializeAppConfig,
-  updateAppConfig,
+  initializeCurrentModel,
+  setCurrentModel,
 } from './services/configManager.js';
 import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
@@ -38,7 +36,7 @@ const agent = new Agent({
 });
 setGlobalDispatcher(agent);
 
-initializeAppConfig();
+initializeCurrentModel();
 initializeInterceptors();
 initializeTools();
 mcpManager.initialize();
@@ -48,31 +46,13 @@ if (opts.diagnostic) {
 }
 
 if (opts.continue) {
-  const config = getAppConfig();
   const session = loadLatestSession();
-  if (session) {
-    if (session.modelId) {
-      const savedModel = findModelById(session.modelId);
-      if (savedModel) {
-        updateAppConfig(
-          savedModel,
-          config.enableThinking ?? false,
-          config.streamingOutput ?? false,
-          config.specialistMode ?? false,
-        );
-      } else {
-        const fallbackModel = findFirstModelByProvider(config.provider);
-        if (fallbackModel) {
-          updateAppConfig(
-            fallbackModel,
-            config.enableThinking ?? false,
-            config.streamingOutput ?? false,
-            config.specialistMode ?? false,
-          );
-        }
-      }
+  if (session?.modelId) {
+    const savedModel = findModelById(session.modelId);
+    if (savedModel) {
+      setCurrentModel(savedModel);
+      useChatStore.getState().setSession(session);
     }
-    useChatStore.getState().setSession(session);
   }
 }
 

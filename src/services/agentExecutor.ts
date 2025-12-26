@@ -3,7 +3,7 @@ import { AgentDefinition } from '../types/agent';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolHandlerResult } from '../types/tool';
 import { runConversation } from './chatOrchestrator';
-import { getAgentModel, loadOmxConfig, modelConfigToAppConfig } from './configManager';
+import { getAgentModel, loadOmxConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -19,29 +19,28 @@ export async function executeAgent(
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
 ): Promise<ToolHandlerResult> {
-  const session = createSession();
   const omxConfig = loadOmxConfig();
   const agentModel = getAgentModel(omxConfig);
   if (!agentModel) {
-    throw new Error('No models configured');
+    throw new Error('Cannot execute agent without a configured model');
   }
-  const appConfig = modelConfigToAppConfig(agentModel, true, false, false);
+  const session = createSession(agentModel);
   const userMessage = interpolatePrompt(agent.promptTemplate, params);
-  const sessionWithMessage = addUserMessage(session, userMessage, appConfig.provider);
+  const sessionWithMessage = addUserMessage(session, userMessage, agentModel.provider);
 
   const result = await runConversation(
     sessionWithMessage,
     callbacks,
     signal,
     {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},
-    appConfig,
+    agentModel,
     true,
   );
 
   const lastMessage = result.messages[result.messages.length - 1];
   let displayText = '';
 
-  if (appConfig.provider === 'anthropic') {
+  if (agentModel.provider === 'anthropic') {
     const content = lastMessage.content;
     if (Array.isArray(content)) {
       displayText = content.filter((block: any) => block.type === 'text').map((block: any) =>

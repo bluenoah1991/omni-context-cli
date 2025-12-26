@@ -1,12 +1,14 @@
-import { AppConfig } from '../../types/config';
+import { ModelConfig } from '../../types/config';
+import { loadOmxConfig } from '../configManager';
 import { RequestInterceptor } from '../requestInterceptor';
 
 export class ZhipuInterceptor implements RequestInterceptor {
-  shouldIntercept(config: AppConfig): boolean {
-    return config.provider === 'openai' && config.apiUrl.includes('open.bigmodel.cn');
+  shouldIntercept(model: ModelConfig): boolean {
+    return model.provider === 'openai' && model.apiUrl.includes('open.bigmodel.cn');
   }
 
-  interceptRequest(request: Record<string, unknown>, config: AppConfig): Record<string, unknown> {
+  interceptRequest(request: Record<string, unknown>, _model: ModelConfig): Record<string, unknown> {
+    const config = loadOmxConfig();
     return {...request, thinking: {type: config.enableThinking ? 'enabled' : 'disabled'}};
   }
 }

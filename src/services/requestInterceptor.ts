@@ -1,21 +1,21 @@
-import { AppConfig } from '../types/config';
+import { ModelConfig } from '../types/config';
 
 export interface RequestInterceptor {
-  shouldIntercept(config: AppConfig): boolean;
-  interceptRequest(request: Record<string, unknown>, config: AppConfig): Record<string, unknown>;
+  shouldIntercept(model: ModelConfig): boolean;
+  interceptRequest(request: Record<string, unknown>, model: ModelConfig): Record<string, unknown>;
 }
 
 const interceptors: RequestInterceptor[] = [];
 
 export function applyInterceptors(
   request: Record<string, unknown>,
-  config: AppConfig,
+  model: ModelConfig,
 ): Record<string, unknown> {
   let modifiedRequest = request;
 
   for (const interceptor of interceptors) {
-    if (interceptor.shouldIntercept(config)) {
-      modifiedRequest = interceptor.interceptRequest(modifiedRequest, config);
+    if (interceptor.shouldIntercept(model)) {
+      modifiedRequest = interceptor.interceptRequest(modifiedRequest, model);
     }
   }
 

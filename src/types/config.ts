@@ -19,25 +19,9 @@ export interface OmxConfig {
   specialistMode: boolean;
 }
 
-export interface AppConfig {
-  provider: Provider;
-  apiUrl: string;
-  model: string;
-  apiKey: string;
-  enableThinking?: boolean;
-  streamingOutput?: boolean;
-  specialistMode?: boolean;
-  modelId?: string;
-  nickname?: string;
-  contextSize?: number;
-}
-
-export const DEFAULT_CONFIG: AppConfig = {
-  provider: 'openai',
-  apiUrl: '',
-  model: '',
-  apiKey: '',
-  enableThinking: false,
+export const DEFAULT_OMX_CONFIG: OmxConfig = {
+  models: [],
+  enableThinking: true,
   streamingOutput: false,
-  specialistMode: false,
+  specialistMode: true,
 };

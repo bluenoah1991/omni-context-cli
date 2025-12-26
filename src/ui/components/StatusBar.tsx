@@ -1,6 +1,6 @@
 import { Box, Text, useApp, useInput } from 'ink';
 import React, { useState } from 'react';
-import { AppConfig } from '../../types/config';
+import { ModelConfig } from '../../types/config';
 import { Session } from '../../types/session';
 import { colors } from '../theme/colors';
 
@@ -8,12 +8,15 @@ interface StatusBarProps {
   isLoading: boolean;
   onInterrupt?: () => void;
   onOpenMenu?: () => void;
-  config: AppConfig;
+  model: ModelConfig | undefined;
   session?: Session;
+  enableThinking: boolean;
+  specialistMode: boolean;
 }
 
 export function StatusBar(
-  {isLoading, onInterrupt, onOpenMenu, config, session}: StatusBarProps,
+  {isLoading, onInterrupt, onOpenMenu, model, session, enableThinking, specialistMode}:
+    StatusBarProps,
 ): React.ReactElement {
   const [ctrlCPressed, setCtrlCPressed] = useState(false);
   const {exit} = useApp();
@@ -37,10 +40,10 @@ export function StatusBar(
     }
   });
 
-  const nickname = config.nickname || config.model || 'Not Set';
-  const thinkingText = config.enableThinking ? ' (Thinking)' : '';
-  const specialistText = config.specialistMode ? ' ♪♪' : '';
-  const contextLimit = (config.contextSize ?? 200) * 1024;
+  const nickname = model?.nickname || model?.name || 'Not Set';
+  const thinkingText = enableThinking ? ' (Thinking)' : '';
+  const specialistText = specialistMode ? ' ♪♪' : '';
+  const contextLimit = (model?.contextSize || 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
   const cachedTokens = session?.cachedTokens ?? 0;

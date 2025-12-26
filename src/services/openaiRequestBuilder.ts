@@ -1,19 +1,21 @@
 import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
-import { AppConfig } from '../types/config';
+import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ToolFilter } from '../types/tool';
+import { loadOmxConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
 export async function buildOpenAIRequest(
-  config: AppConfig,
+  model: ModelConfig,
   messages: OpenAIMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
+  const config = loadOmxConfig();
   const systemMessages = [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
 
   const request: Record<string, unknown> = {
-    model: config.model,
+    model: model.name,
     messages: [
       ...systemMessages,
       ...messages.filter(message => {
@@ -53,9 +55,9 @@ export async function buildOpenAIRequest(
     }));
   }
 
-  const body = applyInterceptors(request, config);
+  const body = applyInterceptors(request, model);
 
-  const headers = {'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}`};
+  const headers = {'Content-Type': 'application/json', Authorization: `Bearer ${model.apiKey}`};
 
   return {headers, body};
 }

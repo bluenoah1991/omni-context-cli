@@ -2,7 +2,7 @@ import { Box, useStdout } from 'ink';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
-import { getAppConfig } from '../../services/configManager';
+import { getCurrentModel, loadOmxConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 
@@ -37,7 +37,10 @@ export function ChatView(): React.ReactElement {
     })),
   );
   const [showMenu, setShowMenu] = useState(false);
-  const [config, setConfig] = useState(() => getAppConfig());
+  const [model, setModel] = useState(() => getCurrentModel());
+  const [enableThinking, setEnableThinking] = useState(() => loadOmxConfig().enableThinking);
+  const [specialistMode, setSpecialistMode] = useState(() => loadOmxConfig().specialistMode);
+  const [streamingOutput, setStreamingOutput] = useState(() => loadOmxConfig().streamingOutput);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -62,24 +65,30 @@ export function ChatView(): React.ReactElement {
 
   const handleCloseMenu = useCallback(() => {
     setShowMenu(false);
-    setConfig(getAppConfig());
+    setModel(getCurrentModel());
+    const config = loadOmxConfig();
+    setEnableThinking(config.enableThinking);
+    setSpecialistMode(config.specialistMode);
+    setStreamingOutput(config.streamingOutput);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
     if (useChatStore.getState().isLoading) return;
 
+    if (!model) return;
+
     updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(sessionRef.current, text, config.provider);
+    const updatedSession = addUserMessage(sessionRef.current, text, model.provider);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     const toolFilter = {
-      excludeAgents: !config.specialistMode,
-      excludeMcp: config.specialistMode,
-      allowedTools: config.specialistMode ? [] : null,
-      additionalTools: config.specialistMode ? null : ['agent_explore'],
+      excludeAgents: !specialistMode,
+      excludeMcp: specialistMode,
+      allowedTools: specialistMode ? [] : null,
+      additionalTools: specialistMode ? null : ['agent_explore'],
     };
 
     try {
@@ -142,11 +151,11 @@ export function ChatView(): React.ReactElement {
       );
 
       setSession(finalSession);
-      saveSession(finalSession, config.provider);
+      saveSession(finalSession, model.provider);
     } finally {
       setLoading(false);
     }
-  }, [config, updateMessages, setLoading, setSession, setError]);
+  }, [model, specialistMode, updateMessages, setLoading, setSession, setError]);
 
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
@@ -154,7 +163,7 @@ export function ChatView(): React.ReactElement {
         messages={messages}
         sessionId={session.id}
         isLoading={isLoading}
-        streamingOutput={config.streamingOutput ?? false}
+        streamingOutput={streamingOutput}
         error={error}
       />
 
@@ -168,8 +177,10 @@ export function ChatView(): React.ReactElement {
             isLoading={isLoading}
             onInterrupt={handleInterrupt}
             onOpenMenu={handleOpenMenu}
-            config={config}
+            model={model}
             session={session}
+            enableThinking={enableThinking}
+            specialistMode={specialistMode}
           />
           <InputBox onSubmit={handleSubmit} disabled={isLoading} />
         </>

@@ -1,12 +1,12 @@
 import { AnthropicMessage } from '../types/anthropicMessage';
-import { AppConfig } from '../types/config';
+import { ModelConfig, Provider } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
-import { getAppConfig } from './configManager';
+import { getCurrentModel } from './configManager';
 import { applyContextWindow, countTotalTokens } from './contextWindow';
 import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
@@ -15,33 +15,33 @@ import { addToolResultMessages, getLastAssistantToolCalls } from './sessionManag
 import { executeTool } from './toolExecutor';
 
 async function streamAIResponse(
-  config: AppConfig,
+  model: ModelConfig,
   messages: ChatMessage[],
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
   isFromAgent?: boolean,
 ): Promise<ChatMessage> {
-  const contextConfig = {maxTokens: (config.contextSize ?? 200) * 1024, usageRatio: 0.8};
+  const contextConfig = {maxTokens: (model.contextSize || 200) * 1024, usageRatio: 0.8};
   const {messages: windowedMessages} = applyContextWindow(messages, contextConfig);
 
-  const {headers, body} = config.provider === 'openai'
-    ? await buildOpenAIRequest(config, windowedMessages as OpenAIMessage[], toolFilter)
-    : await buildAnthropicRequest(config, windowedMessages as AnthropicMessage[], toolFilter);
+  const {headers, body} = model.provider === 'openai'
+    ? await buildOpenAIRequest(model, windowedMessages as OpenAIMessage[], toolFilter)
+    : await buildAnthropicRequest(model, windowedMessages as AnthropicMessage[], toolFilter);
 
-  saveRequest(config.provider, headers, body, isFromAgent);
+  saveRequest(model.provider, headers, body, isFromAgent);
 
   const previousTokens = countTotalTokens(messages);
-  const handler = config.provider === 'openai'
+  const handler = model.provider === 'openai'
     ? new OpenAIStreamHandler(callbacks, previousTokens)
     : new AnthropicStreamHandler(callbacks, previousTokens);
 
-  return handler.stream(headers, body, config.apiUrl, signal);
+  return handler.stream(headers, body, model.apiUrl, signal);
 }
 
 async function processToolCalls(
   session: Session,
-  provider: AppConfig['provider'],
+  provider: Provider,
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
 ): Promise<{session: Session; shouldContinue: boolean;}> {
@@ -80,18 +80,21 @@ export async function runConversation(
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
-  appConfig?: AppConfig,
+  preferredModel?: ModelConfig,
   isFromAgent?: boolean,
 ): Promise<Session> {
   let currentSession = session;
-  const config = appConfig ?? getAppConfig();
+  const model = preferredModel ?? getCurrentModel();
+  if (!model) {
+    throw new Error('Cannot run conversation without a configured model');
+  }
 
   while (true) {
     let message: ChatMessage;
 
     try {
       message = await streamAIResponse(
-        config,
+        model,
         currentSession.messages,
         callbacks,
         signal,
@@ -121,7 +124,7 @@ export async function runConversation(
 
     const {session: updatedSession, shouldContinue} = await processToolCalls(
       currentSession,
-      config.provider,
+      model.provider,
       callbacks,
       signal,
     );

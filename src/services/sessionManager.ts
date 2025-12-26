@@ -3,10 +3,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
 import { Provider } from '../types/config';
+import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
 import { ToolCall } from '../types/streamCallbacks';
-import { getAppConfig } from './configManager';
+import { getCurrentModel } from './configManager';
 
 const OMX_DIR = path.join(os.homedir(), '.omx');
 const PROJECTS_DIR = path.join(OMX_DIR, 'projects');
@@ -34,7 +35,7 @@ function generateSessionTitle(firstMessage: string): string {
     : firstMessage.substring(0, maxLength) + '...';
 }
 
-export function createSession(): Session {
+export function createSession(preferredModel?: ModelConfig): Session {
   const now = Date.now();
   return {
     id: generateId(),
@@ -42,7 +43,7 @@ export function createSession(): Session {
     messages: [],
     createdAt: now,
     updatedAt: now,
-    modelId: getAppConfig().modelId,
+    modelId: (preferredModel ?? getCurrentModel())?.id,
     inputTokens: 0,
     outputTokens: 0,
     cachedTokens: 0,
@@ -67,7 +68,7 @@ export function addUserMessage(session: Session, content: string, provider: Prov
     title,
     messages: [...session.messages, message],
     updatedAt: Date.now(),
-    modelId: getAppConfig().modelId,
+    modelId: getCurrentModel()?.id,
   };
 }
 

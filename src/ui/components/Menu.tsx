@@ -3,16 +3,15 @@ import React, { useState } from 'react';
 import {
   addModel,
   getAgentModel,
-  getAppConfig,
-  initializeAppConfig,
+  getCurrentModel,
   loadOmxConfig,
   removeModel,
   setAgentModel,
+  setCurrentModel,
   setDefaultModel,
-  toggleSpecialistMode,
-  toggleStreamingOutput,
-  toggleThinking,
-  updateAppConfig,
+  setSpecialistMode,
+  setStreamingOutput,
+  setThinking,
 } from '../../services/configManager';
 import { listSessions, loadSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
@@ -135,12 +134,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onSelect={setSelectIndex}
           onConfirm={i => {
             if (config.models[i]) {
-              updateAppConfig(
-                config.models[i],
-                config.enableThinking,
-                config.streamingOutput,
-                config.specialistMode,
-              );
+              setCurrentModel(config.models[i]);
               onClose();
             }
           }}
@@ -204,7 +198,6 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
               apiUrl: normalizeApiUrl(values.apiUrl, provider),
               contextSize: parseInt(values.contextSize, 10) || 200,
             });
-            initializeAppConfig();
             onClose();
           }}
           onCancel={() => setView('main')}
@@ -241,7 +234,6 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             if (config.models[i]) {
               setDefaultModel(config.models[i].id);
-              initializeAppConfig();
               onClose();
             }
           }}
@@ -309,7 +301,6 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             if (config.models[i]) {
               removeModel(config.models[i].id);
-              initializeAppConfig();
               onClose();
             }
           }}
@@ -344,8 +335,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.enableThinking) {
-              toggleThinking();
-              initializeAppConfig();
+              setThinking(shouldEnable);
             }
             onClose();
           }}
@@ -379,8 +369,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.streamingOutput) {
-              toggleStreamingOutput();
-              initializeAppConfig();
+              setStreamingOutput(shouldEnable);
             }
             onClose();
           }}
@@ -414,8 +403,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.specialistMode) {
-              toggleSpecialistMode();
-              initializeAppConfig();
+              setSpecialistMode(shouldEnable);
             }
             onClose();
           }}
@@ -426,8 +414,8 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   }
 
   if (view === 'sessions') {
-    const appConfig = getAppConfig();
-    const sessions = listSessions(appConfig.provider, 10);
+    const currentModel = getCurrentModel();
+    const sessions = currentModel ? listSessions(currentModel.provider, 10) : [];
     const items: SelectItem[] = [
       {id: 'new', label: '+ Start a fresh new session'},
       ...sessions.map(s => ({
