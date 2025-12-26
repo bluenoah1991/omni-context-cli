@@ -6,6 +6,8 @@ import { runConversation } from './chatOrchestrator';
 import { getAgentModel, loadOmxConfig, modelConfigToAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
 
+Handlebars.registerHelper('eq', (a, b) => a === b);
+
 function interpolatePrompt(template: string, params: Record<string, any>): string {
   const compiled = Handlebars.compile(template);
   return compiled(params);
