@@ -1,6 +1,6 @@
 ---
 name: sculpt
-description: Safely edits a file with automatic error recovery. If the edit fails, analyzes the error and attempts to fix issues like incorrect text matching or whitespace problems, then retries the edit operation.
+description: Edit files by replacing text. Automatically fixes matching errors and retries if the edit fails.
 allowedTools: [edit, read, grep]
 parameters:
   properties:

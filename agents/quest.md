@@ -1,6 +1,6 @@
 ---
 name: quest
-description: Conducts research using available web search tools. Searches for information and returns results according to the expected result description.
+description: Research topics using web search. Returns information matching what you need to know.
 allowedTools: []
 parameters:
   properties:

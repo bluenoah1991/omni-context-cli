@@ -1,6 +1,6 @@
 ---
 name: explore
-description: Gives you a bird's-eye view of project structure, file organization, and overall architecture. Use this to understand where features live and how the codebase is laid out. Not for deep code analysis.
+description: Survey project structure and architecture. Shows directory layout, where features live, and how the codebase is organized. For high-level mapping, not detailed code analysis.
 allowedTools: [read, glob, grep, bash, bashOutput]
 parameters:
   properties:

@@ -1,6 +1,6 @@
 ---
 name: ripple
-description: Finds all locations where a specified symbol (function, method, class, interface, etc.) is referenced. Returns code snippets of each reference site with configurable context lines.
+description: Find all references to a symbol (function, class, method, etc.). Returns code snippets showing where it's used with surrounding context.
 allowedTools: [read, grep, glob]
 parameters:
   properties:

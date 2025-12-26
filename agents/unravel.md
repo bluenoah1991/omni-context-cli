@@ -1,6 +1,6 @@
 ---
 name: unravel
-description: Finds the implementations of key functions/methods called within a specified function. Returns the implementation code of each called function with file paths and line numbers.
+description: Analyze a function to find what it calls, then retrieve the implementation of each called function. Returns the actual code of dependencies.
 allowedTools: [read, grep, glob]
 parameters:
   properties:

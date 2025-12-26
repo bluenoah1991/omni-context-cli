@@ -1,6 +1,6 @@
 ---
 name: weave
-description: Safely writes content to a file with automatic error recovery. If writing fails, analyzes the error and attempts to fix issues, then retries the write operation.
+description: Write content to files. Creates or overwrites files. Automatically fixes errors and retries if writing fails.
 allowedTools: [write, read, bash, bashOutput]
 parameters:
   properties:

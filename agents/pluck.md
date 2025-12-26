@@ -1,6 +1,6 @@
 ---
 name: pluck
-description: Semantically searches and extracts specific code segments from files. Can search across the entire project or in a specific file. Returns only the matching code with line numbers, no additional text or explanation.
+description: Find and extract specific code segments. Searches project-wide or in a single file. Returns matching code with line numbers only.
 allowedTools: [read, grep, glob]
 parameters:
   properties:

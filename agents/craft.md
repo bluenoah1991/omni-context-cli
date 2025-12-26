@@ -1,6 +1,6 @@
 ---
 name: craft
-description: Runs bash commands with automatic error recovery. If a command fails, analyzes the error, fixes it, and retries. Returns output matching your expected result.
+description: Execute bash commands. Automatically fixes errors and retries if the command fails. Returns the result you expect.
 allowedTools: [bash, bashOutput, read, write]
 parameters:
   properties:
