@@ -2,7 +2,7 @@ import { Box, useStdout } from 'ink';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
-import { getCurrentModel, loadOmxConfig } from '../../services/configManager';
+import { getCurrentModel, loadAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 
@@ -38,9 +38,9 @@ export function ChatView(): React.ReactElement {
   );
   const [showMenu, setShowMenu] = useState(false);
   const [model, setModel] = useState(() => getCurrentModel());
-  const [enableThinking, setEnableThinking] = useState(() => loadOmxConfig().enableThinking);
-  const [specialistMode, setSpecialistMode] = useState(() => loadOmxConfig().specialistMode);
-  const [streamingOutput, setStreamingOutput] = useState(() => loadOmxConfig().streamingOutput);
+  const [enableThinking, setEnableThinking] = useState(() => loadAppConfig().enableThinking);
+  const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
+  const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -66,7 +66,7 @@ export function ChatView(): React.ReactElement {
   const handleCloseMenu = useCallback(() => {
     setShowMenu(false);
     setModel(getCurrentModel());
-    const config = loadOmxConfig();
+    const config = loadAppConfig();
     setEnableThinking(config.enableThinking);
     setSpecialistMode(config.specialistMode);
     setStreamingOutput(config.streamingOutput);

@@ -10,7 +10,7 @@ export interface ModelConfig {
   contextSize: number;
 }
 
-export interface OmxConfig {
+export interface AppConfig {
   models: ModelConfig[];
   defaultModelId?: string;
   agentModelId?: string;
@@ -19,7 +19,7 @@ export interface OmxConfig {
   specialistMode: boolean;
 }
 
-export const DEFAULT_OMX_CONFIG: OmxConfig = {
+export const DEFAULT_APP_CONFIG: AppConfig = {
   models: [],
   enableThinking: true,
   streamingOutput: false,

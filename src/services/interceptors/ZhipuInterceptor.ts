@@ -1,5 +1,5 @@
 import { ModelConfig } from '../../types/config';
-import { loadOmxConfig } from '../configManager';
+import { loadAppConfig } from '../configManager';
 import { RequestInterceptor } from '../requestInterceptor';
 
 export class ZhipuInterceptor implements RequestInterceptor {
@@ -8,7 +8,7 @@ export class ZhipuInterceptor implements RequestInterceptor {
   }
 
   interceptRequest(request: Record<string, unknown>, _model: ModelConfig): Record<string, unknown> {
-    const config = loadOmxConfig();
+    const config = loadAppConfig();
     return {...request, thinking: {type: config.enableThinking ? 'enabled' : 'disabled'}};
   }
 }

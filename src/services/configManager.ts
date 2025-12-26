@@ -2,12 +2,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { useChatStore } from '../store/chatStore';
-import { DEFAULT_OMX_CONFIG, ModelConfig, OmxConfig } from '../types/config';
+import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig } from '../types/config';
 
 const CONFIG_DIR = path.join(os.homedir(), '.omx');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'omx.json');
 
-let cachedOmxConfig: OmxConfig | undefined = undefined;
+let cachedAppConfig: AppConfig | undefined = undefined;
 let currentModel: ModelConfig | undefined = undefined;
 
 function ensureConfigDir(): void {
@@ -16,31 +16,31 @@ function ensureConfigDir(): void {
   }
 }
 
-export function loadOmxConfig(): OmxConfig {
-  if (cachedOmxConfig) {
-    return cachedOmxConfig;
+export function loadAppConfig(): AppConfig {
+  if (cachedAppConfig) {
+    return cachedAppConfig;
   }
 
   ensureConfigDir();
 
   try {
     const content = fs.readFileSync(CONFIG_FILE, 'utf-8');
-    const loadedConfig: OmxConfig = JSON.parse(content);
-    cachedOmxConfig = loadedConfig;
+    const loadedConfig: AppConfig = JSON.parse(content);
+    cachedAppConfig = loadedConfig;
     return loadedConfig;
   } catch {
-    saveOmxConfig(DEFAULT_OMX_CONFIG);
-    return DEFAULT_OMX_CONFIG;
+    saveAppConfig(DEFAULT_APP_CONFIG);
+    return DEFAULT_APP_CONFIG;
   }
 }
 
-export function saveOmxConfig(config: OmxConfig): void {
+export function saveAppConfig(config: AppConfig): void {
   ensureConfigDir();
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8');
-  cachedOmxConfig = config;
+  cachedAppConfig = config;
 }
 
-export function getDefaultModel(config: OmxConfig): ModelConfig | undefined {
+export function getDefaultModel(config: AppConfig): ModelConfig | undefined {
   if (config.defaultModelId) {
     return config.models.find(m => m.id === config.defaultModelId);
   }
@@ -48,12 +48,12 @@ export function getDefaultModel(config: OmxConfig): ModelConfig | undefined {
 }
 
 export function setDefaultModel(modelId: string): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.defaultModelId = modelId;
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
-export function getAgentModel(config: OmxConfig): ModelConfig | undefined {
+export function getAgentModel(config: AppConfig): ModelConfig | undefined {
   if (config.agentModelId) {
     return config.models.find(m => m.id === config.agentModelId);
   }
@@ -61,30 +61,30 @@ export function getAgentModel(config: OmxConfig): ModelConfig | undefined {
 }
 
 export function setAgentModel(modelId: string): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.agentModelId = modelId;
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
 export function addModel(model: Omit<ModelConfig, 'id'>): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   const id = `${model.provider}-${Date.now()}`;
   config.models.push({...model, id});
   if (config.models.length === 1) {
     config.defaultModelId = id;
   }
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
 export function removeModel(modelId: string): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.models = config.models.filter(m => m.id !== modelId);
 
   if (config.defaultModelId === modelId) {
     config.defaultModelId = config.models[0]?.id;
   }
 
-  saveOmxConfig(config);
+  saveAppConfig(config);
 
   if (currentModel?.id === modelId) {
     const defaultModel = getDefaultModel(config);
@@ -93,35 +93,35 @@ export function removeModel(modelId: string): void {
 }
 
 export function setThinking(value: boolean): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.enableThinking = value;
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
 export function setStreamingOutput(value: boolean): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.streamingOutput = value;
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
 export function setSpecialistMode(value: boolean): void {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   config.specialistMode = value;
-  saveOmxConfig(config);
+  saveAppConfig(config);
 }
 
 export function initializeCurrentModel(): void {
-  const omxConfig = loadOmxConfig();
+  const appConfig = loadAppConfig();
 
   if (currentModel) {
-    const stillExists = omxConfig.models.find(m => m.id === currentModel!.id);
+    const stillExists = appConfig.models.find(m => m.id === currentModel!.id);
     if (stillExists) {
       currentModel = stillExists;
       return;
     }
   }
 
-  currentModel = getDefaultModel(omxConfig);
+  currentModel = getDefaultModel(appConfig);
 }
 
 export function getCurrentModel(): ModelConfig | undefined {
@@ -137,6 +137,6 @@ export function setCurrentModel(model: ModelConfig | undefined): void {
 }
 
 export function findModelById(modelId: string): ModelConfig | undefined {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   return config.models.find(m => m.id === modelId);
 }

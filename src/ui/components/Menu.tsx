@@ -4,7 +4,7 @@ import {
   addModel,
   getAgentModel,
   getCurrentModel,
-  loadOmxConfig,
+  loadAppConfig,
   removeModel,
   setAgentModel,
   setCurrentModel,
@@ -67,7 +67,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
 
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
 
   if (view === 'main') {
     const items: SelectItem[] = [

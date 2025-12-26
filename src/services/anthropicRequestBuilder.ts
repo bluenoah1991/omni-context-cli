@@ -2,7 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { ModelConfig } from '../types/config';
 import { ToolFilter } from '../types/tool';
-import { loadOmxConfig } from './configManager';
+import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
@@ -11,7 +11,7 @@ export async function buildAnthropicRequest(
   messages: AnthropicMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   const systemBlocks = [{text: buildSystemPrompt(config.specialistMode), type: 'text'}];
 
   const request: Record<string, unknown> = {

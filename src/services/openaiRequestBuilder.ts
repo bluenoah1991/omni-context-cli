@@ -2,7 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ToolFilter } from '../types/tool';
-import { loadOmxConfig } from './configManager';
+import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
 
@@ -11,7 +11,7 @@ export async function buildOpenAIRequest(
   messages: OpenAIMessage[],
   toolFilter?: ToolFilter,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
-  const config = loadOmxConfig();
+  const config = loadAppConfig();
   const systemMessages = [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
 
   const request: Record<string, unknown> = {

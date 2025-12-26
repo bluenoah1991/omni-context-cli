@@ -3,7 +3,7 @@ import { AgentDefinition } from '../types/agent';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolHandlerResult } from '../types/tool';
 import { runConversation } from './chatOrchestrator';
-import { getAgentModel, loadOmxConfig } from './configManager';
+import { getAgentModel, loadAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -19,11 +19,13 @@ export async function executeAgent(
   callbacks: StreamCallbacks,
   signal?: AbortSignal,
 ): Promise<ToolHandlerResult> {
-  const omxConfig = loadOmxConfig();
-  const agentModel = getAgentModel(omxConfig);
+  const appConfig = loadAppConfig();
+
+  const agentModel = getAgentModel(appConfig);
   if (!agentModel) {
     throw new Error('Cannot execute agent without a configured model');
   }
+
   const session = createSession(agentModel);
   const userMessage = interpolatePrompt(agent.promptTemplate, params);
   const sessionWithMessage = addUserMessage(session, userMessage, agentModel.provider);
