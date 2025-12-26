@@ -6,16 +6,16 @@ parameters:
   properties:
     filePath:
       type: string
-      description: File to edit. Can be relative or absolute path.
+      description: File to edit—relative or absolute path.
     oldString:
       type: string
-      description: Exact text to find and replace. Must match perfectly including whitespace and indentation.
+      description: Exact text to replace. Must match perfectly, including whitespace and indentation.
     newString:
       type: string
-      description: Replacement text. Use empty string to delete the match.
+      description: Replacement text. Use empty string to delete.
     replaceAll:
       type: boolean
-      description: Replace all occurrences? Default is false (single replacement).
+      description: Replace all occurrences? Defaults to false (single replacement).
   required: [filePath, oldString, newString]
 ---
 

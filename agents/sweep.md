@@ -6,17 +6,17 @@ parameters:
   properties:
     query:
       type: string
-      description: Description of what files to find (e.g., "configuration files", "React components", "test files for user authentication")
+      description: What files to find—like "configuration files", "React components", or "test files for user authentication".
     maxFiles:
       type: number
-      description: Maximum number of files to return. Default is 50.
+      description: Maximum number of files to return. Defaults to 50.
   required: [query]
 ---
 
 Query: {{query}}
 Max files to return: {{#if maxFiles}}{{maxFiles}}{{else}}50{{/if}}
 
-Use glob and grep to search across the entire project and identify files that match the query criteria.
+Use glob and grep to search across the project for files matching the criteria.
 
 Return ONLY the list of matching file paths in this exact format:
 

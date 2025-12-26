@@ -16,11 +16,11 @@ parameters:
 File: {{filePath}}
 Function: {{functionName}}
 
-First, read the specified file and locate the function implementation. Analyze the function body to identify all function/method calls it makes.
+Read the file and locate the function. Analyze its body to identify all function calls it makes.
 
-Then, for each significant function call found (ignore built-in functions, standard library calls, and trivial operations):
-1. Use grep and glob to locate the implementation of that function
-2. Read the file to extract the function implementation code
+For each significant function call (ignore built-ins, standard library, and trivial operations):
+1. Use grep and glob to locate the implementation
+2. Read the file to extract the implementation code
 
 Return the implementations in this exact format. For each called function found, include:
 

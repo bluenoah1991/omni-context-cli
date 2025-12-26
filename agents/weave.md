@@ -6,13 +6,13 @@ parameters:
   properties:
     filePath:
       type: string
-      description: Destination path. Can be relative or absolute. Parent directories are created automatically.
+      description: Destination path—relative or absolute. Parent directories created automatically.
     content:
       type: string
-      description: Complete file content. This replaces everything in the file.
+      description: Complete file content. Replaces everything in the file.
     createOnly:
       type: boolean
-      description: Only create new files? If true, refuses to overwrite existing files. Default is false.
+      description: Only create new files? If true, won't overwrite existing files. Defaults to false.
   required: [filePath, content]
 ---
 

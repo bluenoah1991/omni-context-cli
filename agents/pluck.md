@@ -6,10 +6,10 @@ parameters:
   properties:
     filePath:
       type: string
-      description: Optional path to the file to search in. If not provided, will search across the entire project to locate the code.
+      description: Path to search within. If not provided, searches across the entire project.
     query:
       type: string
-      description: Description of the code segment to find
+      description: What code segment to find
   required: [query]
 ---
 

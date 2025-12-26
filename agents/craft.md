@@ -1,6 +1,6 @@
 ---
 name: craft
-description: Executes bash commands with automatic error recovery. If the command fails, analyzes the error and attempts to fix it, then retries. Returns output according to the expected result description.
+description: Runs bash commands with automatic error recovery. If a command fails, analyzes the error, fixes it, and retries. Returns output matching your expected result.
 allowedTools: [bash, bashOutput, read, write]
 parameters:
   properties:
@@ -9,13 +9,13 @@ parameters:
       description: Bash command to run. Pipes, redirects, and chains all work.
     expectedResult:
       type: string
-      description: Description of what result you expect from running this command (e.g., "list of JavaScript files", "successful installation message", "version number").
+      description: What result you expect from this command—like "list of JavaScript files", "successful installation message", or "version number".
     timeout:
       type: number
-      description: Max runtime in milliseconds. Default is 120000 (2 minutes).
+      description: Max runtime in milliseconds. Defaults to 120000 (2 minutes).
     workdir:
       type: string
-      description: Where to run the command. Can be relative or absolute path. Defaults to current directory.
+      description: Where to run the command—relative or absolute path. Defaults to current directory.
   required: [command, expectedResult]
 ---
 
