@@ -111,6 +111,7 @@ class IDEWebSocketTransport implements Transport {
 class IDEIntegrationManager {
   private connection: IDEConnection | null = null;
   private tools: Map<string, {tool: Tool; originalName: string;}> = new Map();
+  private connectionTimer: NodeJS.Timeout | null = null;
 
   private getLockDir(): string {
     const claudeConfigDir = process.env.CLAUDE_CONFIG_DIR;
@@ -190,6 +191,28 @@ class IDEIntegrationManager {
   }
 
   async initialize(): Promise<void> {
+    await this.ensureConnection();
+    this.startConnectionTimer();
+  }
+
+  private startConnectionTimer(): void {
+    if (this.connectionTimer) return;
+
+    this.connectionTimer = setInterval(() => {
+      if (!this.connection) {
+        this.ensureConnection();
+      }
+    }, 10000);
+  }
+
+  private stopConnectionTimer(): void {
+    if (this.connectionTimer) {
+      clearInterval(this.connectionTimer);
+      this.connectionTimer = null;
+    }
+  }
+
+  private async ensureConnection(): Promise<void> {
     const lock = this.discoverMatchingLock();
     if (lock) {
       await this.connectToIDE(lock.port, lock.data);
@@ -308,6 +331,8 @@ class IDEIntegrationManager {
   }
 
   async shutdown(): Promise<void> {
+    this.stopConnectionTimer();
+
     if (this.connection) {
       try {
         await this.connection.client.close();
