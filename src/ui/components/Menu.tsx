@@ -9,6 +9,7 @@ import {
   setAgentModel,
   setCurrentModel,
   setDefaultModel,
+  setIDEContext,
   setSpecialistMode,
   setStreamingOutput,
   setThinking,
@@ -30,6 +31,7 @@ type View =
   | 'thinking'
   | 'streaming'
   | 'specialist'
+  | 'ide-context'
   | 'sessions';
 
 function normalizeApiUrl(url: string, provider: Provider): string {
@@ -65,6 +67,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [thinkingIndex, setThinkingIndex] = useState<number>();
   const [streamingIndex, setStreamingIndex] = useState<number>();
   const [specialistIndex, setSpecialistIndex] = useState<number>();
+  const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
 
   const config = loadAppConfig();
@@ -80,6 +83,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'thinking', label: '◉ Toggle thinking mode'},
       {id: 'streaming', label: '⇵ Toggle streaming output'},
       {id: 'specialist', label: '♪ Toggle specialist mode'},
+      {id: 'ide-context', label: '⌘ Toggle IDE context'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
@@ -107,7 +111,8 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             else if (i === 6) setView('thinking');
             else if (i === 7) setView('streaming');
             else if (i === 8) setView('specialist');
-            else if (i === 9) process.exit(0);
+            else if (i === 9) setView('ide-context');
+            else if (i === 10) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -404,6 +409,41 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.specialistMode) {
               setSpecialistMode(shouldEnable);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'ide-context') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable IDE context'}, {
+      id: 'off',
+      label: '✗ Disable IDE context',
+    }];
+    const initialIndex = config.ideContext !== false ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='ide-context-mode'
+          title='Include IDE selection context in messages?'
+          items={items}
+          selectedIndex={ideContextIndex ?? initialIndex}
+          onSelect={setIDEContextIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            const currentValue = config.ideContext !== false;
+            if (shouldEnable !== currentValue) {
+              setIDEContext(shouldEnable);
             }
             onClose();
           }}

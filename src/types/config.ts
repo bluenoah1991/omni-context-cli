@@ -17,6 +17,7 @@ export interface AppConfig {
   enableThinking: boolean;
   streamingOutput: boolean;
   specialistMode: boolean;
+  ideContext: boolean;
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -24,4 +25,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   enableThinking: true,
   streamingOutput: false,
   specialistMode: true,
+  ideContext: true,
 };

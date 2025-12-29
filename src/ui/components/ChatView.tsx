@@ -5,7 +5,9 @@ import { runConversation } from '../../services/chatOrchestrator';
 import { getCurrentModel, loadAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
+import { useIDEStore } from '../../store/ideStore';
 
+import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Menu } from './Menu';
@@ -41,6 +43,8 @@ export function ChatView(): React.ReactElement {
   const [enableThinking, setEnableThinking] = useState(() => loadAppConfig().enableThinking);
   const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
   const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
+  const [ideContextEnabled, setIDEContextEnabled] = useState(() => loadAppConfig().ideContext);
+  const ideSelection = useIDEStore(state => state.selection);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -70,6 +74,7 @@ export function ChatView(): React.ReactElement {
     setEnableThinking(config.enableThinking);
     setSpecialistMode(config.specialistMode);
     setStreamingOutput(config.streamingOutput);
+    setIDEContextEnabled(config.ideContext);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
@@ -77,10 +82,24 @@ export function ChatView(): React.ReactElement {
 
     if (!model) return;
 
+    let finalText = text;
+    const currentSelection = useIDEStore.getState().selection;
+    if (ideContextEnabled && currentSelection) {
+      if (currentSelection.text) {
+        const lineRange = currentSelection.lineStart === currentSelection.lineEnd
+          ? `${currentSelection.lineStart}`
+          : `${currentSelection.lineStart}-${currentSelection.lineEnd}`;
+        finalText =
+          `${text}\n\n<ide_context file="${currentSelection.filePath}" lines="${lineRange}">\n${currentSelection.text}\n</ide_context>`;
+      } else {
+        finalText = `${text}\n\n<ide_context file="${currentSelection.filePath}" />`;
+      }
+    }
+
     updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(sessionRef.current, text, model.provider);
+    const updatedSession = addUserMessage(sessionRef.current, finalText, model.provider);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
@@ -155,7 +174,7 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [model, specialistMode, updateMessages, setLoading, setSession, setError]);
+  }, [model, specialistMode, ideContextEnabled, updateMessages, setLoading, setSession, setError]);
 
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
@@ -183,6 +202,7 @@ export function ChatView(): React.ReactElement {
             specialistMode={specialistMode}
           />
           <InputBox onSubmit={handleSubmit} disabled={isLoading} />
+          {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
         </>
       )}
     </Box>

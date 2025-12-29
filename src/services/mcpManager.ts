@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { MCPConfig, MCPServerConfig } from '../types/mcp';
 import { ToolDefinition } from '../types/tool';
+import { ideIntegration } from './ideIntegration.js';
 
 const MCP_CONFIG_FILE = path.join(os.homedir(), '.omx', 'mcp.json');
 
@@ -16,6 +17,8 @@ class MCPManager {
   private configs: Map<string, MCPServerConfig> = new Map();
 
   async initialize(): Promise<void> {
+    await ideIntegration.initialize();
+
     const config = this.loadConfig();
     if (!config) return;
     for (const [id, serverConfig] of Object.entries(config.mcpServers)) {
@@ -42,10 +45,20 @@ class MCPManager {
         },
       });
     }
+    for (const ideTool of ideIntegration.getToolDefinitions()) {
+      tools.push({
+        name: ideTool.name,
+        description: ideTool.description,
+        parameters: ideTool.parameters,
+      });
+    }
     return tools;
   }
 
   async executeTool(toolName: string, args: any): Promise<any> {
+    if (ideIntegration.isMCPTool(toolName)) {
+      return ideIntegration.executeTool(toolName, args);
+    }
     const parts = toolName.split('_');
     if (parts.length < 3 || parts[0] !== 'mcp') {
       throw new Error('Invalid MCP tool name format');
@@ -83,6 +96,7 @@ class MCPManager {
   }
 
   async shutdown(): Promise<void> {
+    await ideIntegration.shutdown();
     for (const client of this.clients.values()) {
       try {
         await client.close();

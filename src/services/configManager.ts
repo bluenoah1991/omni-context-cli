@@ -26,8 +26,8 @@ export function loadAppConfig(): AppConfig {
   try {
     const content = fs.readFileSync(CONFIG_FILE, 'utf-8');
     const loadedConfig: AppConfig = JSON.parse(content);
-    cachedAppConfig = loadedConfig;
-    return loadedConfig;
+    cachedAppConfig = {...DEFAULT_APP_CONFIG, ...loadedConfig};
+    return cachedAppConfig;
   } catch {
     saveAppConfig(DEFAULT_APP_CONFIG);
     return DEFAULT_APP_CONFIG;
@@ -107,6 +107,12 @@ export function setStreamingOutput(value: boolean): void {
 export function setSpecialistMode(value: boolean): void {
   const config = loadAppConfig();
   config.specialistMode = value;
+  saveAppConfig(config);
+}
+
+export function setIDEContext(value: boolean): void {
+  const config = loadAppConfig();
+  config.ideContext = value;
   saveAppConfig(config);
 }
 
