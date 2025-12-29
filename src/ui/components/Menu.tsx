@@ -456,6 +456,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   if (view === 'sessions') {
     const currentModel = getCurrentModel();
     const sessions = currentModel ? listSessions(currentModel.provider, 10) : [];
+    const currentSession = useChatStore.getState().session;
     const items: SelectItem[] = [
       {id: 'new', label: '+ Start a fresh new session'},
       ...sessions.map(s => ({
@@ -485,8 +486,10 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
               onClose();
             } else {
               const session = loadSession(items[i].id);
-              process.stdout.write('\x1Bc');
-              useChatStore.getState().setSession(session);
+              if (session.id !== currentSession.id) {
+                process.stdout.write('\x1Bc');
+                useChatStore.getState().setSession(session);
+              }
               onClose();
             }
           }}
