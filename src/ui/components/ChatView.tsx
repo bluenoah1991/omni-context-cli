@@ -82,24 +82,24 @@ export function ChatView(): React.ReactElement {
 
     if (!model) return;
 
-    let finalText = text;
+    let content = text;
     const currentSelection = useIDEStore.getState().selection;
     if (ideContextEnabled && currentSelection) {
       if (currentSelection.text) {
         const lineRange = currentSelection.lineStart === currentSelection.lineEnd
           ? `${currentSelection.lineStart}`
           : `${currentSelection.lineStart}-${currentSelection.lineEnd}`;
-        finalText =
+        content =
           `${text}\n\n<ide_context file="${currentSelection.filePath}" lines="${lineRange}">\n${currentSelection.text}\n</ide_context>`;
       } else {
-        finalText = `${text}\n\n<ide_context file="${currentSelection.filePath}" />`;
+        content = `${text}\n\n<ide_context file="${currentSelection.filePath}" />`;
       }
     }
 
-    updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
+    updateMessages(messages => [...messages, {role: 'user', content, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(sessionRef.current, finalText, model.provider);
+    const updatedSession = addUserMessage(sessionRef.current, content, model.provider);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
