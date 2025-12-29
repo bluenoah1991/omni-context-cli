@@ -206,6 +206,13 @@ class IDEIntegrationManager {
         this.handleNotification(method, params);
       });
 
+      transport.onclose = () => {
+        this.connection = null;
+        this.tools.clear();
+        useIDEStore.getState().setConnected(false);
+        useIDEStore.getState().setSelection(null);
+      };
+
       await client.connect(transport);
 
       const serverId = `ide_${lockData.ideName.toLowerCase().replace(/\s+/g, '_')}`;
