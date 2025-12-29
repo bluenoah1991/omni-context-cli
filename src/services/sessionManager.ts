@@ -30,9 +30,8 @@ function generateId(): string {
 
 function generateSessionTitle(firstMessage: string): string {
   const maxLength = 30;
-  return firstMessage.length <= maxLength
-    ? firstMessage
-    : firstMessage.substring(0, maxLength) + '...';
+  const sanitized = firstMessage.replace(/\s+/g, ' ').trim();
+  return sanitized.length <= maxLength ? sanitized : sanitized.substring(0, maxLength) + '...';
 }
 
 export function createSession(preferredModel?: ModelConfig): Session {
