@@ -1,6 +1,6 @@
 ---
 name: quest
-description: Research topics using web search. Returns information matching what you need to know.
+description: Research topics using web search and external knowledge bases. Returns information matching what you need to know.
 allowedTools: []
 parameters:
   properties:
@@ -16,7 +16,7 @@ parameters:
 Query: {{query}}
 Expected result: {{expectedResult}}
 
-Use available web search tools to research the query. Gather information from multiple sources if needed for a comprehensive answer.
+Use available web search tools and external knowledge bases to research the query. Gather information from multiple sources if needed for a comprehensive answer.
 
 Extract and return the result according to the expected result description in this exact format:
 ```
