@@ -1,0 +1,1 @@
+{{#if argument}}{{argument}}{{else}}hello{{/if}}

@@ -1,9 +1,17 @@
+import Handlebars from 'handlebars';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FunctionalSlashResult, SlashCommand } from '../types/slash';
 import { functionalSlashHandlers } from './slashHandlers';
+
+Handlebars.registerHelper('eq', (a, b) => a === b);
+
+function interpolatePrompt(template: string, params: Record<string, any>): string {
+  const compiled = Handlebars.compile(template);
+  return compiled(params);
+}
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const BUILTIN_SLASH_DIR = path.join(scriptDir, 'slash');
@@ -66,7 +74,7 @@ export function parseSlashCommand(input: string): FunctionalSlashResult | null {
     return null;
   }
 
-  const prompt = command.prompt.replace(/\{\{argument\}\}/g, argument);
+  const prompt = interpolatePrompt(command.prompt, {argument});
 
   return {type: 'prompt', prompt};
 }
