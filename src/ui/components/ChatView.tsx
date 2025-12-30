@@ -4,8 +4,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
 import { getCurrentModel, loadAppConfig } from '../../services/configManager';
 import { addUserMessage, saveSession } from '../../services/sessionManager';
+import { parseSlashCommand } from '../../services/slashManager';
 import { useChatStore } from '../../store/chatStore';
 import { useIDEStore } from '../../store/ideStore';
+import { wrapDualMessage, wrapIDEContext } from '../../utils/messagePreprocessor';
 
 import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
@@ -82,24 +84,37 @@ export function ChatView(): React.ReactElement {
 
     if (!model) return;
 
-    let content = text;
-    const currentSelection = useIDEStore.getState().selection;
-    if (ideContextEnabled && currentSelection) {
-      if (currentSelection.text) {
-        const lineRange = currentSelection.lineStart === currentSelection.lineEnd
-          ? `${currentSelection.lineStart}`
-          : `${currentSelection.lineStart}-${currentSelection.lineEnd}`;
-        content =
-          `${text}\n\n<ide_context file="${currentSelection.filePath}" lines="${lineRange}">\n${currentSelection.text}\n</ide_context>`;
-      } else {
-        content = `${text}\n\n<ide_context file="${currentSelection.filePath}" />`;
+    const slashResult = parseSlashCommand(text);
+    if (slashResult) {
+      if (slashResult.type === 'functional') {
+        updateMessages(
+          messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]
+        );
+        const result = slashResult.execute();
+        if (result.message) {
+          setError(null);
+          updateMessages(
+            messages => [...messages, {
+              role: 'assistant',
+              content: result.message!,
+              timestamp: Date.now(),
+            }]
+          );
+        }
+        return;
       }
+      text = wrapDualMessage(text, slashResult.prompt);
     }
 
-    updateMessages(messages => [...messages, {role: 'user', content, timestamp: Date.now()}]);
+    const currentSelection = useIDEStore.getState().selection;
+    if (ideContextEnabled && currentSelection) {
+      text = wrapIDEContext(text, currentSelection);
+    }
+
+    updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(sessionRef.current, content, model.provider);
+    const updatedSession = addUserMessage(sessionRef.current, text, model.provider);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 

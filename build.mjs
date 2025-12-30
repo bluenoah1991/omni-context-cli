@@ -96,6 +96,7 @@ if (isWatch) {
 
   cpSync('bin', 'dist/bin', { recursive: true });
   cpSync('agents', 'dist/agents', { recursive: true });
+  cpSync('slash', 'dist/slash', { recursive: true });
 
   console.log('Build complete with obfuscation!');
 }

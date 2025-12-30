@@ -244,7 +244,7 @@ function renderTokensAsPlaintext(tokens: Token[]): string {
       return token.text;
     }
     if (isLinkToken(token)) {
-      return `${renderTokensAsPlaintext(token.tokens)} (${token.href})`;
+      return renderTokensAsPlaintext(token.tokens);
     }
     if (isImageToken(token)) {
       return `[Image: ${token.text}]`;

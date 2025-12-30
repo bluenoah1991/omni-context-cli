@@ -2,6 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ToolFilter } from '../types/tool';
+import { unwrapPromptMessage } from '../utils/messagePreprocessor';
 import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
 import { getTools } from './toolExecutor';
@@ -25,9 +26,19 @@ export async function buildOpenAIRequest(
           ? message.content.length > 0
           : Boolean(message.content);
       }).map(message => {
+        let content = message.content;
+        if (message.role === 'user') {
+          if (typeof content === 'string') {
+            content = unwrapPromptMessage(content);
+          } else if (Array.isArray(content)) {
+            content = content.map(part =>
+              part.type === 'text' ? {...part, text: unwrapPromptMessage(part.text)} : part
+            );
+          }
+        }
         return {
           role: message.role,
-          content: message.content,
+          content,
           ...(message.tool_calls && {tool_calls: message.tool_calls}),
           ...(message.tool_call_id && {tool_call_id: message.tool_call_id}),
           ...(message.reasoning_content && {reasoning_content: message.reasoning_content}),

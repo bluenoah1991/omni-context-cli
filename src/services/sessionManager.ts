@@ -7,6 +7,7 @@ import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
 import { ToolCall } from '../types/streamCallbacks';
+import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { getCurrentModel } from './configManager';
 
 const OMX_DIR = path.join(os.homedir(), '.omx');
@@ -30,7 +31,9 @@ function generateId(): string {
 
 function generateSessionTitle(firstMessage: string): string {
   const maxLength = 30;
-  const sanitized = firstMessage.replace(/\s+/g, ' ').trim();
+  let sanitized = unwrapUIMessage(firstMessage);
+  sanitized = removeIDEContext(sanitized);
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
   return sanitized.length <= maxLength ? sanitized : sanitized.substring(0, maxLength) + '...';
 }
 
