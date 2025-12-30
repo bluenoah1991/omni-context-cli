@@ -138,6 +138,7 @@ export function setCurrentModel(model: ModelConfig | undefined): void {
   const previousProvider = currentModel?.provider;
   currentModel = model;
   if (previousProvider && previousProvider !== model?.provider) {
+    process.stdout.write('\x1Bc');
     useChatStore.getState().createNewSession();
   }
 }
