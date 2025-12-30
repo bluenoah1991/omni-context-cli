@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from 'ink';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SlashCommand } from '../../types/slash';
 import { colors } from '../theme/colors';
 
@@ -15,6 +15,12 @@ export const SlashCommandPicker: React.FC<SlashCommandPickerProps> = (
   {commands, onSelectCommand, onCancel},
 ) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    if (selectedIndex >= commands.length) {
+      setSelectedIndex(0);
+    }
+  }, [commands.length, selectedIndex]);
 
   const handleSelect = useCallback((index: number) => {
     if (commands[index] && onSelectCommand) {

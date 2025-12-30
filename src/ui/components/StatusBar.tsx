@@ -12,11 +12,20 @@ interface StatusBarProps {
   session?: Session;
   enableThinking: boolean;
   specialistMode: boolean;
+  disabled?: boolean;
 }
 
 export function StatusBar(
-  {isLoading, onInterrupt, onOpenMenu, model, session, enableThinking, specialistMode}:
-    StatusBarProps,
+  {
+    isLoading,
+    onInterrupt,
+    onOpenMenu,
+    model,
+    session,
+    enableThinking,
+    specialistMode,
+    disabled = false,
+  }: StatusBarProps,
 ): React.ReactElement {
   const [ctrlCPressed, setCtrlCPressed] = useState(false);
   const {exit} = useApp();
@@ -38,7 +47,7 @@ export function StatusBar(
         onOpenMenu();
       }
     }
-  });
+  }, {isActive: !disabled});
 
   const nickname = model?.nickname || model?.name || 'Not Set';
   const thinkingText = enableThinking ? ' (Thinking)' : '';

@@ -167,9 +167,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
   const showPicker = !pickerCancelled && !hasExactMatch && filteredSlashCommands.length > 0;
 
   useEffect(() => {
-    if (!state.value.startsWith('/')) {
-      setPickerCancelled(false);
-    }
+    setPickerCancelled(false);
   }, [state.value]);
 
   const {lines, cursorLine, cursorCol, isPlaceholder} = useMemo(() => {

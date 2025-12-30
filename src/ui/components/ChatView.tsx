@@ -207,21 +207,20 @@ export function ChatView(): React.ReactElement {
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 
-      {!showMenu && (
-        <>
-          <StatusBar
-            isLoading={isLoading}
-            onInterrupt={handleInterrupt}
-            onOpenMenu={handleOpenMenu}
-            model={model}
-            session={session}
-            enableThinking={enableThinking}
-            specialistMode={specialistMode}
-          />
-          <InputBox onSubmit={handleSubmit} disabled={isLoading} />
-          {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
-        </>
-      )}
+      <Box display={showMenu ? 'none' : 'flex'} flexDirection='column'>
+        <StatusBar
+          isLoading={isLoading}
+          onInterrupt={handleInterrupt}
+          onOpenMenu={handleOpenMenu}
+          model={model}
+          session={session}
+          enableThinking={enableThinking}
+          specialistMode={specialistMode}
+          disabled={showMenu}
+        />
+        <InputBox onSubmit={handleSubmit} disabled={isLoading || showMenu} />
+        {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
+      </Box>
     </Box>
   );
 }
