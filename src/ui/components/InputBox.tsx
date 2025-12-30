@@ -55,7 +55,6 @@ const reducer = (state: State, action: Action): State => {
       const targetLine = action.type === 'move-cursor-up' ? line - 1 : line + 1;
 
       if (targetLine < 0) {
-        if (state.value.startsWith('/')) return state;
         if (inputHistory.length === 0) return state;
         const newIndex = Math.min(state.historyIndex + 1, inputHistory.length - 1);
         if (newIndex === state.historyIndex) return state;
@@ -71,7 +70,6 @@ const reducer = (state: State, action: Action): State => {
       }
 
       if (targetLine >= lines.length) {
-        if (state.value.startsWith('/')) return state;
         if (state.historyIndex < 0) return state;
         const newIndex = state.historyIndex - 1;
         if (newIndex < -1) return state;
@@ -219,8 +217,10 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
       return;
     }
     if (key.upArrow) {
+      if (showPicker) return;
       dispatch({type: 'move-cursor-up'});
     } else if (key.downArrow) {
+      if (showPicker) return;
       dispatch({type: 'move-cursor-down'});
     } else if (key.leftArrow) {
       dispatch({type: 'move-cursor-left'});
