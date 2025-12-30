@@ -1,6 +1,8 @@
 import { Box, Text, useInput } from 'ink';
-import React, { useMemo, useReducer } from 'react';
+import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import { getAllSlashCommands } from '../../services/slashManager';
 import { colors } from '../theme/colors';
+import { SlashCommandPicker } from './SlashCommandPicker';
 
 interface InputBoxProps {
   onSubmit: (text: string) => void;
@@ -27,6 +29,7 @@ type Action =
   | {type: 'insert'; text: string;}
   | {type: 'backspace';}
   | {type: 'delete';}
+  | {type: 'set-value'; value: string;}
   | {type: 'clear';};
 
 const reducer = (state: State, action: Action): State => {
@@ -118,6 +121,13 @@ const reducer = (state: State, action: Action): State => {
         previousValue: state.value,
         value: state.value.slice(0, state.cursorOffset) + state.value.slice(state.cursorOffset + 1),
       };
+    case 'set-value':
+      return {
+        ...state,
+        previousValue: state.value,
+        value: action.value,
+        cursorOffset: action.value.length,
+      };
     case 'clear':
       return {
         previousValue: state.value,
@@ -126,6 +136,8 @@ const reducer = (state: State, action: Action): State => {
         historyIndex: -1,
         savedInput: '',
       };
+    default:
+      return state;
   }
 };
 
@@ -137,6 +149,28 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     historyIndex: -1,
     savedInput: '',
   });
+  const [pickerCancelled, setPickerCancelled] = useState(false);
+
+  const filteredSlashCommands = useMemo(() => {
+    if (!state.value || !state.value.startsWith('/') || state.value.includes('\n')) return [];
+    const query = state.value.slice(1).toLowerCase();
+    if (!query) return getAllSlashCommands();
+    return getAllSlashCommands().filter(cmd => cmd.name.toLowerCase().startsWith(query));
+  }, [state.value]);
+
+  const hasExactMatch = useMemo(() => {
+    if (!state.value || !state.value.startsWith('/')) return false;
+    const query = state.value.slice(1).toLowerCase();
+    return getAllSlashCommands().some(cmd => cmd.name.toLowerCase() === query);
+  }, [state.value]);
+
+  const showPicker = !pickerCancelled && !hasExactMatch && filteredSlashCommands.length > 0;
+
+  useEffect(() => {
+    if (!state.value.startsWith('/')) {
+      setPickerCancelled(false);
+    }
+  }, [state.value]);
 
   const {lines, cursorLine, cursorCol, isPlaceholder} = useMemo(() => {
     const isPlaceholder = !state.value;
@@ -167,6 +201,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     if (key.tab) return;
     if (key.ctrl && input === 'c') return;
     if (key.return && !key.shift && !key.meta) {
+      if (showPicker) return;
       if (state.value.trim()) {
         const trimmedValue = state.value.trim();
         if (inputHistory.length === 0 || inputHistory[inputHistory.length - 1] !== trimmedValue) {
@@ -202,40 +237,57 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     }
   }, {isActive: !disabled});
 
+  const handleSelectCommand = (commandName: string) => {
+    dispatch({type: 'set-value', value: `/${commandName}`});
+  };
+
+  const handleCancelPicker = () => {
+    setPickerCancelled(true);
+  };
+
   return (
-    <Box
-      borderStyle='round'
-      borderColor={disabled ? colors.muted : colors.primary}
-      paddingLeft={1}
-      paddingRight={2}
-      flexGrow={1}
-    >
-      <Box marginRight={1} alignSelf='flex-start'>
-        <Text color={disabled ? colors.muted : colors.primary} bold>{'❯'}</Text>
-      </Box>
-      <Box flexGrow={1} flexDirection='column'>
-        {lines.map((line, i) => {
-          if (cursorLine === i && !disabled) {
-            const beforeCursor = line.slice(0, cursorCol);
-            const atCursor = line[cursorCol] || ' ';
-            const afterCursor = line.slice(cursorCol + 1);
-            const textWithCursor = beforeCursor + '\x1b[7m' + atCursor + '\x1b[27m' + afterCursor;
+    <Box flexDirection='column' flexGrow={1}>
+      {showPicker && (
+        <SlashCommandPicker
+          commands={filteredSlashCommands}
+          onSelectCommand={handleSelectCommand}
+          onCancel={handleCancelPicker}
+        />
+      )}
+      <Box
+        borderStyle='round'
+        borderColor={disabled ? colors.muted : colors.primary}
+        paddingLeft={1}
+        paddingRight={2}
+        flexGrow={1}
+      >
+        <Box marginRight={1} alignSelf='flex-start'>
+          <Text color={disabled ? colors.muted : colors.primary} bold>{'❯'}</Text>
+        </Box>
+        <Box flexGrow={1} flexDirection='column'>
+          {lines.map((line, i) => {
+            if (cursorLine === i && !disabled) {
+              const beforeCursor = line.slice(0, cursorCol);
+              const atCursor = line[cursorCol] || ' ';
+              const afterCursor = line.slice(cursorCol + 1);
+              const textWithCursor = beforeCursor + '\x1b[7m' + atCursor + '\x1b[27m' + afterCursor;
+              return (
+                <Box key={i}>
+                  <Text wrap='wrap' color={isPlaceholder ? colors.muted : undefined}>
+                    {textWithCursor}
+                  </Text>
+                </Box>
+              );
+            }
             return (
               <Box key={i}>
                 <Text wrap='wrap' color={isPlaceholder ? colors.muted : undefined}>
-                  {textWithCursor}
+                  {line || ' '}
                 </Text>
               </Box>
             );
-          }
-          return (
-            <Box key={i}>
-              <Text wrap='wrap' color={isPlaceholder ? colors.muted : undefined}>
-                {line || ' '}
-              </Text>
-            </Box>
-          );
-        })}
+          })}
+        </Box>
       </Box>
     </Box>
   );

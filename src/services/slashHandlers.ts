@@ -1,11 +1,20 @@
 import { useChatStore } from '../store/chatStore';
-import { SlashHandlerResult } from '../types/slash';
+import { SlashCommand, SlashHandlerResult } from '../types/slash';
 import { getAgentModel, getCurrentModel, getDefaultModel, loadAppConfig } from './configManager';
 
-export const functionalSlashHandlers: Record<string, () => SlashHandlerResult> = {
-  clear: handleClear,
-  status: handleStatus,
-};
+export function getFunctionalSlashCommands(): SlashCommand[] {
+  return [{
+    name: 'clear',
+    description: 'Start a fresh conversation',
+    type: 'functional',
+    execute: handleClear,
+  }, {
+    name: 'status',
+    description: 'Show session, model and configuration status',
+    type: 'functional',
+    execute: handleStatus,
+  }];
+}
 
 function handleClear(): SlashHandlerResult {
   process.stdout.write('\x1Bc');

@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FunctionalSlashResult, SlashCommand } from '../types/slash';
-import { functionalSlashHandlers } from './slashHandlers';
+import { SlashCommand } from '../types/slash';
+import { parseFrontmatter } from '../utils/frontmatter';
+import { getFunctionalSlashCommands } from './slashHandlers';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
 
@@ -26,7 +27,13 @@ function loadSlashFromDir(dir: string): SlashCommand[] {
 
   return files.map(file => {
     const content = fs.readFileSync(path.join(dir, file), 'utf-8');
-    return {name: path.basename(file, '.md'), prompt: content.trim()};
+    const {data: metadata, content: body} = parseFrontmatter(content);
+    return {
+      name: metadata.name || path.basename(file, '.md'),
+      description: metadata.description || '',
+      type: 'prompt' as const,
+      prompt: body.trim(),
+    };
   });
 }
 
@@ -53,7 +60,7 @@ function getSlashCommands(): SlashCommand[] {
   return cachedCommands;
 }
 
-export function parseSlashCommand(input: string): FunctionalSlashResult | null {
+export function parseSlashCommand(input: string): SlashCommand | null {
   const trimmed = input.trim();
   if (!trimmed.startsWith('/')) {
     return null;
@@ -63,8 +70,9 @@ export function parseSlashCommand(input: string): FunctionalSlashResult | null {
   const commandName = spaceIndex === -1 ? trimmed.slice(1) : trimmed.slice(1, spaceIndex);
   const argument = spaceIndex === -1 ? '' : trimmed.slice(spaceIndex + 1).trim();
 
-  if (functionalSlashHandlers[commandName]) {
-    return {type: 'functional', execute: functionalSlashHandlers[commandName]};
+  const functionalCommand = getFunctionalSlashCommands().find(c => c.name === commandName);
+  if (functionalCommand?.execute) {
+    return functionalCommand;
   }
 
   const commands = getSlashCommands();
@@ -74,7 +82,12 @@ export function parseSlashCommand(input: string): FunctionalSlashResult | null {
     return null;
   }
 
-  const prompt = interpolatePrompt(command.prompt, {argument});
+  const prompt = interpolatePrompt(command.prompt!, {argument});
 
-  return {type: 'prompt', prompt};
+  return {...command, prompt};
+}
+
+export function getAllSlashCommands(): SlashCommand[] {
+  const commands = getSlashCommands();
+  return [...getFunctionalSlashCommands(), ...commands];
 }

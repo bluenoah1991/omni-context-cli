@@ -1,11 +1,9 @@
 export interface SlashCommand {
   name: string;
-  prompt: string;
+  description: string;
+  type: 'functional' | 'prompt';
+  prompt?: string;
+  execute?: () => SlashHandlerResult;
 }
 
 export type SlashHandlerResult = {message?: string;};
-
-export type FunctionalSlashResult = {type: 'functional'; execute: () => SlashHandlerResult;} | {
-  type: 'prompt';
-  prompt: string;
-};

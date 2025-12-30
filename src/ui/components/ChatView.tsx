@@ -84,13 +84,13 @@ export function ChatView(): React.ReactElement {
 
     if (!model) return;
 
-    const slashResult = parseSlashCommand(text);
-    if (slashResult) {
-      if (slashResult.type === 'functional') {
+    const slashCommand = parseSlashCommand(text);
+    if (slashCommand) {
+      if (slashCommand.type === 'functional' && slashCommand.execute) {
         updateMessages(
           messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]
         );
-        const result = slashResult.execute();
+        const result = slashCommand.execute();
         if (result.message) {
           setError(null);
           updateMessages(
@@ -103,7 +103,9 @@ export function ChatView(): React.ReactElement {
         }
         return;
       }
-      text = wrapDualMessage(text, slashResult.prompt);
+      if (slashCommand.type === 'prompt' && slashCommand.prompt) {
+        text = wrapDualMessage(text, slashCommand.prompt);
+      }
     }
 
     const currentSelection = useIDEStore.getState().selection;
