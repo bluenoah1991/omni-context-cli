@@ -199,6 +199,7 @@ export function loadLatestSession(): Session | null {
 
 export function getRewindPoints(session: Session): RewindPoint[] {
   const points: RewindPoint[] = [];
+  let isFirstUserMessage = true;
   session.messages.forEach((msg, index) => {
     if (msg.role !== 'user') return;
 
@@ -220,6 +221,10 @@ export function getRewindPoints(session: Session): RewindPoint[] {
     }
 
     if (text) {
+      if (isFirstUserMessage) {
+        isFirstUserMessage = false;
+        return;
+      }
       points.push({index, label: normalizeMessageContent(text)});
     }
   });
