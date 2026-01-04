@@ -3,21 +3,26 @@ import { SlashCommand, SlashHandlerResult } from '../types/slash';
 import { getAgentModel, getCurrentModel, getDefaultModel, loadAppConfig } from './configManager';
 
 export function getFunctionalSlashCommands(): SlashCommand[] {
-  return [{
-    name: 'clear',
-    description: 'Start a fresh conversation',
-    type: 'functional',
-    execute: handleClear,
-  }, {
-    name: 'status',
-    description: 'Show session, model and configuration status',
-    type: 'functional',
-    execute: handleStatus,
-  }, {
-    name: 'compact',
-    description: 'Manually compact context and start fresh',
-    type: 'functional',
-  }];
+  return [
+    {
+      name: 'clear',
+      description: 'Start a fresh conversation',
+      type: 'functional',
+      execute: handleClear,
+    },
+    {
+      name: 'status',
+      description: 'Show session, model and configuration status',
+      type: 'functional',
+      execute: handleStatus,
+    },
+    {name: 'compact', description: 'Manually compact context and start fresh', type: 'functional'},
+    {name: 'exit', description: 'Exit Omx', type: 'functional', execute: handleExit},
+  ];
+}
+
+function handleExit(): SlashHandlerResult {
+  process.exit(0);
 }
 
 function handleClear(): SlashHandlerResult {
@@ -29,7 +34,6 @@ function handleClear(): SlashHandlerResult {
 function handleStatus(): SlashHandlerResult {
   const config = loadAppConfig();
   const currentModel = getCurrentModel();
-  const defaultModel = getDefaultModel(config);
   const agentModel = getAgentModel(config);
   const session = useChatStore.getState().session;
 
