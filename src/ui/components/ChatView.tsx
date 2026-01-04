@@ -126,8 +126,6 @@ export function ChatView(): React.ReactElement {
       text = wrapIDEContext(text, currentSelection);
     }
 
-    setLoading(true);
-
     let sessionToRun = sessionRef.current;
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -146,7 +144,6 @@ export function ChatView(): React.ReactElement {
         ]);
 
         if (abortController.signal.aborted) {
-          setLoading(false);
           return;
         }
 
@@ -163,12 +160,10 @@ export function ChatView(): React.ReactElement {
         setSession(sessionToRun);
 
         if (slashCommand?.name === 'compact') {
-          setLoading(false);
           return;
         }
       } catch (error) {
         setError(`Compaction failed: ${error}`);
-        setLoading(false);
         return;
       } finally {
         setCompacting(false);
@@ -187,6 +182,8 @@ export function ChatView(): React.ReactElement {
       allowedTools: specialistMode ? [] : null,
       additionalTools: specialistMode ? null : ['agent_explore'],
     };
+
+    setLoading(true);
 
     try {
       const finalSession = await runConversation(
