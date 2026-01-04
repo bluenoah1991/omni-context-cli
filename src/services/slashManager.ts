@@ -71,7 +71,7 @@ export function parseSlashCommand(input: string): SlashCommand | null {
   const argument = spaceIndex === -1 ? '' : trimmed.slice(spaceIndex + 1).trim();
 
   const functionalCommand = getFunctionalSlashCommands().find(c => c.name === commandName);
-  if (functionalCommand?.execute) {
+  if (functionalCommand) {
     return functionalCommand;
   }
 

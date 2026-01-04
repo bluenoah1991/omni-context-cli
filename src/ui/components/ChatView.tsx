@@ -132,7 +132,10 @@ export function ChatView(): React.ReactElement {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    if (shouldAutoCompact(model, sessionRef.current)) {
+    if (slashCommand?.name === 'compact' || shouldAutoCompact(model, sessionRef.current)) {
+      updateMessages(
+        messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]
+      );
       setCompacting(true);
       try {
         const [summary, playbook] = await Promise.all([
@@ -142,16 +145,27 @@ export function ChatView(): React.ReactElement {
             : Promise.resolve(undefined),
         ]);
 
-        if (abortController.signal.aborted) return;
+        if (abortController.signal.aborted) {
+          setLoading(false);
+          return;
+        }
 
         sessionToRun = createSession(model);
         if (playbookEnabled) {
           sessionToRun = injectPlaybook(sessionToRun, model.provider, playbook);
         }
         sessionToRun = injectSummary(sessionToRun, summary, model.provider);
-        sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+
+        if (slashCommand?.name !== 'compact') {
+          sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+        }
         process.stdout.write('\x1Bc');
         setSession(sessionToRun);
+
+        if (slashCommand?.name === 'compact') {
+          setLoading(false);
+          return;
+        }
       } catch (error) {
         setError(`Compaction failed: ${error}`);
         setLoading(false);
@@ -244,7 +258,9 @@ export function ChatView(): React.ReactElement {
     ideContextEnabled,
     playbookEnabled,
     updateMessages,
+    updateSessionTokens,
     setLoading,
+    setCompacting,
     setSession,
     setError,
   ]);

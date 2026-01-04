@@ -96,7 +96,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'streaming', label: '⇵ Toggle streaming output'},
       {id: 'specialist', label: '♪ Toggle specialist mode'},
       {id: 'ide-context', label: '⌘ Toggle IDE context'},
-      {id: 'playbook', label: '📓 Toggle playbook memory'},
+      {id: 'playbook', label: '≡ Toggle playbook memory'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
