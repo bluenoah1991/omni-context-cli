@@ -55,7 +55,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setLoading: isLoading => set(isLoading ? {isLoading, error: null} : {isLoading}),
 
-  setCompacting: isCompacting => set({isCompacting}),
+  setCompacting: isCompacting => set(isCompacting ? {isCompacting, error: null} : {isCompacting}),
 
   setError: error => set({error}),
 

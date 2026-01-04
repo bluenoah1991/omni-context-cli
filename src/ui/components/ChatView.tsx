@@ -144,6 +144,7 @@ export function ChatView(): React.ReactElement {
         ]);
 
         if (abortController.signal.aborted) {
+          setError('Compaction cancelled');
           return;
         }
 
