@@ -14,7 +14,13 @@ import {
   setStreamingOutput,
   setThinking,
 } from '../../services/configManager';
-import { listSessions, loadSession } from '../../services/sessionManager';
+import {
+  getRewindPoints,
+  listSessions,
+  loadSession,
+  saveSession,
+  truncateSession,
+} from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { Provider } from '../../types/config';
 import { colors } from '../theme/colors';
@@ -32,7 +38,8 @@ type View =
   | 'streaming'
   | 'specialist'
   | 'ide-context'
-  | 'sessions';
+  | 'sessions'
+  | 'rewind';
 
 function normalizeApiUrl(url: string, provider: Provider): string {
   let apiUrl = url.trim();
@@ -69,6 +76,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
+  const [rewindIndex, setRewindIndex] = useState(0);
 
   const config = loadAppConfig();
 
@@ -76,6 +84,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
     const items: SelectItem[] = [
       {id: 'select', label: '⤭ Switch to a different model'},
       {id: 'sessions', label: '↻ Load a previous session'},
+      {id: 'rewind', label: '↩ Rewind to a previous message'},
       {id: 'add', label: '+ Add a new model'},
       {id: 'default', label: '★ Change the default model'},
       {id: 'agent-model', label: '◈ Change the agent model'},
@@ -104,15 +113,16 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           onConfirm={i => {
             if (i === 0) setView('select');
             else if (i === 1) setView('sessions');
-            else if (i === 2) setView('add');
-            else if (i === 3) setView('set-default');
-            else if (i === 4) setView('agent-model');
-            else if (i === 5) setView('delete');
-            else if (i === 6) setView('thinking');
-            else if (i === 7) setView('streaming');
-            else if (i === 8) setView('specialist');
-            else if (i === 9) setView('ide-context');
-            else if (i === 10) process.exit(0);
+            else if (i === 2) setView('rewind');
+            else if (i === 3) setView('add');
+            else if (i === 4) setView('set-default');
+            else if (i === 5) setView('agent-model');
+            else if (i === 6) setView('delete');
+            else if (i === 7) setView('thinking');
+            else if (i === 8) setView('streaming');
+            else if (i === 9) setView('specialist');
+            else if (i === 10) setView('ide-context');
+            else if (i === 11) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -495,6 +505,46 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
           }}
           onCancel={() => setView('main')}
           emptyMessage='No previous sessions found'
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'rewind') {
+    const currentModel = getCurrentModel();
+    const session = useChatStore.getState().session;
+    const rewindPoints = getRewindPoints(session);
+    const items: SelectItem[] = rewindPoints.map((entry, i) => ({
+      id: String(entry.index),
+      label: `${rewindPoints.length - i}. ${entry.label}`,
+    }));
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='rewind-session'
+          title='Rewind to which message?'
+          items={items}
+          selectedIndex={rewindIndex}
+          onSelect={setRewindIndex}
+          onConfirm={i => {
+            if (currentModel && rewindPoints[i]) {
+              const truncated = truncateSession(session, rewindPoints[i].index);
+              process.stdout.write('\x1Bc');
+              useChatStore.getState().setSession(truncated);
+              saveSession(truncated, currentModel.provider);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+          emptyMessage='No messages to rewind to'
+          maxVisible={8}
         />
       </Box>
     );

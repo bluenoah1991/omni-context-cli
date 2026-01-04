@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from 'ink';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { colors } from '../theme/colors';
 
 export interface SelectItem {
@@ -16,11 +16,20 @@ interface SelectListProps {
   onConfirm: (index: number) => void;
   onCancel: () => void;
   emptyMessage?: string;
+  maxVisible?: number;
 }
 
 export function SelectList(
-  {title, items, selectedIndex, onSelect, onConfirm, onCancel, emptyMessage = 'No items'}:
-    SelectListProps,
+  {
+    title,
+    items,
+    selectedIndex,
+    onSelect,
+    onConfirm,
+    onCancel,
+    emptyMessage = 'No items',
+    maxVisible,
+  }: SelectListProps,
 ): React.ReactElement {
   useInput((input, key) => {
     if (key.escape) {
@@ -37,6 +46,16 @@ export function SelectList(
     }
   }, {isActive: true});
 
+  const visibleItems = useMemo(() => {
+    if (!maxVisible || items.length <= maxVisible) {
+      return {list: items, startIndex: 0};
+    }
+    let start = selectedIndex - Math.floor(maxVisible / 2);
+    if (start < 0) start = 0;
+    if (start + maxVisible > items.length) start = items.length - maxVisible;
+    return {list: items.slice(start, start + maxVisible), startIndex: start};
+  }, [items, selectedIndex, maxVisible]);
+
   return (
     <Box flexDirection='column'>
       <Box marginBottom={1}>
@@ -44,15 +63,18 @@ export function SelectList(
       </Box>
       {items.length === 0
         ? <Text color={colors.muted}>{emptyMessage}</Text>
-        : items.map((item, index) => (
-          <Box key={item.id}>
-            <Text color={index === selectedIndex ? colors.primary : colors.muted}>
-              {index === selectedIndex ? '❯ ' : '  '}
-              {item.label}
-              {item.hint && <Text color={colors.muted}>{item.hint}</Text>}
-            </Text>
-          </Box>
-        ))}
+        : visibleItems.list.map((item, i) => {
+          const actualIndex = visibleItems.startIndex + i;
+          return (
+            <Box key={item.id}>
+              <Text color={actualIndex === selectedIndex ? colors.primary : colors.muted}>
+                {actualIndex === selectedIndex ? '❯ ' : '  '}
+                {item.label}
+                {item.hint && <Text color={colors.muted}>{item.hint}</Text>}
+              </Text>
+            </Box>
+          );
+        })}
       <Box marginTop={1}>
         <Text color={colors.muted}>(Enter to confirm, ESC to go back)</Text>
       </Box>

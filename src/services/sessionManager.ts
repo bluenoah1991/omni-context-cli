@@ -5,7 +5,7 @@ import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessa
 import { Provider } from '../types/config';
 import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
-import { ChatMessage, Session } from '../types/session';
+import { ChatMessage, RewindPoint, Session } from '../types/session';
 import { ToolCall } from '../types/streamCallbacks';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { getCurrentModel } from './configManager';
@@ -29,12 +29,14 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-function generateSessionTitle(firstMessage: string): string {
-  const maxLength = 30;
-  let sanitized = unwrapUIMessage(firstMessage);
-  sanitized = removeIDEContext(sanitized);
-  sanitized = sanitized.replace(/\s+/g, ' ').trim();
-  return sanitized.length <= maxLength ? sanitized : sanitized.substring(0, maxLength) + '...';
+function normalizeMessageContent(text: string, maxLength = 50): string {
+  let normalized = unwrapUIMessage(text);
+  normalized = removeIDEContext(normalized);
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  if (normalized.length > maxLength) {
+    normalized = normalized.substring(0, maxLength) + '...';
+  }
+  return normalized;
 }
 
 export function createSession(preferredModel?: ModelConfig): Session {
@@ -64,7 +66,7 @@ export function addUserMessage(session: Session, content: string, provider: Prov
   }
 
   const isFirstMessage = session.messages.length === 0;
-  const title = isFirstMessage ? generateSessionTitle(content) : session.title;
+  const title = isFirstMessage ? normalizeMessageContent(content) : session.title;
   return {
     ...session,
     title,
@@ -193,4 +195,47 @@ export function loadLatestSession(): Session | null {
 
   if (allFiles.length === 0) return null;
   return loadSession(allFiles[0].path);
+}
+
+export function getRewindPoints(session: Session): RewindPoint[] {
+  const points: RewindPoint[] = [];
+  session.messages.forEach((msg, index) => {
+    if (msg.role !== 'user') return;
+
+    const openaiMsg = msg as OpenAIMessage;
+    if (openaiMsg.tool_call_id) return;
+
+    let text = '';
+    if (typeof msg.content === 'string') {
+      text = msg.content;
+    } else if (Array.isArray(msg.content)) {
+      const anthropicContent = msg.content as AnthropicContentBlock[];
+      const hasToolResult = anthropicContent.some(block => block.type === 'tool_result');
+      if (hasToolResult) return;
+
+      const textBlock = anthropicContent.find(block => block.type === 'text');
+      if (textBlock && textBlock.type === 'text') {
+        text = textBlock.text;
+      }
+    }
+
+    if (text) {
+      points.push({index, label: normalizeMessageContent(text)});
+    }
+  });
+  return points.reverse();
+}
+
+export function truncateSession(session: Session, messageIndex: number): Session {
+  const now = Date.now();
+  return {
+    ...session,
+    id: generateId(),
+    messages: session.messages.slice(0, messageIndex),
+    createdAt: now,
+    updatedAt: now,
+    inputTokens: 0,
+    outputTokens: 0,
+    cachedTokens: 0,
+  };
 }

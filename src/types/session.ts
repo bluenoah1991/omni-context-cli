@@ -14,3 +14,8 @@ export interface Session {
   outputTokens?: number;
   cachedTokens?: number;
 }
+
+export interface RewindPoint {
+  index: number;
+  label: string;
+}
