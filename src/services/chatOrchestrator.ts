@@ -7,7 +7,6 @@ import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getCurrentModel } from './configManager';
-import { applyContextWindow, countTotalTokens } from './contextWindow';
 import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
@@ -21,20 +20,22 @@ async function streamAIResponse(
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
   isFromAgent?: boolean,
+  skipSystemPrompt?: boolean,
 ): Promise<ChatMessage> {
-  const contextConfig = {maxTokens: (model.contextSize || 200) * 1024, usageRatio: 0.8};
-  const {messages: windowedMessages} = applyContextWindow(messages, contextConfig);
-
   const {headers, body} = model.provider === 'openai'
-    ? await buildOpenAIRequest(model, windowedMessages as OpenAIMessage[], toolFilter)
-    : await buildAnthropicRequest(model, windowedMessages as AnthropicMessage[], toolFilter);
+    ? await buildOpenAIRequest(model, messages as OpenAIMessage[], toolFilter, skipSystemPrompt)
+    : await buildAnthropicRequest(
+      model,
+      messages as AnthropicMessage[],
+      toolFilter,
+      skipSystemPrompt,
+    );
 
   saveRequest(model.provider, headers, body, isFromAgent);
 
-  const previousTokens = countTotalTokens(messages);
   const handler = model.provider === 'openai'
-    ? new OpenAIStreamHandler(callbacks, previousTokens)
-    : new AnthropicStreamHandler(callbacks, previousTokens);
+    ? new OpenAIStreamHandler(callbacks)
+    : new AnthropicStreamHandler(callbacks);
 
   return handler.stream(headers, body, model.apiUrl, signal);
 }
@@ -75,15 +76,24 @@ async function processToolCalls(
   };
 }
 
+const noopCallbacks: StreamCallbacks = {
+  onContent: () => {},
+  onThinking: () => {},
+  onToolCall: () => {},
+  onToolResult: () => {},
+};
+
 export async function runConversation(
   session: Session,
-  callbacks: StreamCallbacks,
+  callbacks?: StreamCallbacks,
   signal?: AbortSignal,
   toolFilter?: ToolFilter,
   preferredModel?: ModelConfig,
   isFromAgent?: boolean,
+  skipSystemPrompt?: boolean,
 ): Promise<Session> {
   let currentSession = session;
+  const finalCallbacks = callbacks ?? noopCallbacks;
   const model = preferredModel ?? getCurrentModel();
   if (!model) {
     throw new Error('Cannot run conversation without a configured model');
@@ -96,14 +106,15 @@ export async function runConversation(
       message = await streamAIResponse(
         model,
         currentSession.messages,
-        callbacks,
+        finalCallbacks,
         signal,
         toolFilter,
         isFromAgent,
+        skipSystemPrompt,
       );
     } catch (error) {
       const errorText = `${error}`;
-      callbacks.onError?.(errorText);
+      finalCallbacks.onError?.(errorText);
       return currentSession;
     }
 
@@ -120,12 +131,12 @@ export async function runConversation(
       cachedTokens: messageCachedTokens,
     };
 
-    callbacks.onSessionUpdate?.(currentSession);
+    finalCallbacks.onSessionUpdate?.(currentSession);
 
     const {session: updatedSession, shouldContinue} = await processToolCalls(
       currentSession,
       model.provider,
-      callbacks,
+      finalCallbacks,
       signal,
     );
     currentSession = updatedSession;

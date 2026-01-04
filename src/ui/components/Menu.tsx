@@ -10,6 +10,7 @@ import {
   setCurrentModel,
   setDefaultModel,
   setIDEContext,
+  setPlaybookEnabled,
   setSpecialistMode,
   setStreamingOutput,
   setThinking,
@@ -38,6 +39,7 @@ type View =
   | 'streaming'
   | 'specialist'
   | 'ide-context'
+  | 'playbook'
   | 'sessions'
   | 'rewind';
 
@@ -75,6 +77,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
   const [streamingIndex, setStreamingIndex] = useState<number>();
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
+  const [playbookIndex, setPlaybookIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
 
@@ -93,6 +96,7 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
       {id: 'streaming', label: '⇵ Toggle streaming output'},
       {id: 'specialist', label: '♪ Toggle specialist mode'},
       {id: 'ide-context', label: '⌘ Toggle IDE context'},
+      {id: 'playbook', label: '📓 Toggle playbook memory'},
       {id: 'exit', label: '× Quit Omx'},
     ];
 
@@ -122,7 +126,8 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             else if (i === 8) setView('streaming');
             else if (i === 9) setView('specialist');
             else if (i === 10) setView('ide-context');
-            else if (i === 11) process.exit(0);
+            else if (i === 11) setView('playbook');
+            else if (i === 12) process.exit(0);
           }}
           onCancel={onClose}
         />
@@ -454,6 +459,40 @@ export function Menu({onClose}: MenuProps): React.ReactElement {
             const currentValue = config.ideContext !== false;
             if (shouldEnable !== currentValue) {
               setIDEContext(shouldEnable);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'playbook') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable playbook memory'}, {
+      id: 'off',
+      label: '✗ Disable playbook memory',
+    }];
+    const initialIndex = config.playbookEnabled ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='playbook-mode'
+          title='Enable playbook memory for cross-session learning?'
+          items={items}
+          selectedIndex={playbookIndex ?? initialIndex}
+          onSelect={setPlaybookIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            if (shouldEnable !== config.playbookEnabled) {
+              setPlaybookEnabled(shouldEnable);
             }
             onClose();
           }}

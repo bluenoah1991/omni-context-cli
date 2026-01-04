@@ -143,13 +143,10 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
     }
 
     const inputTokens = this.inputTokens + this.cachedTokens;
-    const totalTokens = inputTokens + this.outputTokens;
-    const tokenUsage = totalTokens - this.previousTokens;
 
     return {
       role: 'assistant' as const,
       content,
-      ...(tokenUsage > 0 && {tokenUsage}),
       ...(inputTokens > 0 && {inputTokens}),
       ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
       ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),

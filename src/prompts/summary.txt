@@ -1,0 +1,36 @@
+# Task
+Summarize the conversation history below into a compact reference for continuing work.
+
+# Conversation History
+{{CONVERSATION_HISTORY}}
+
+# Instructions
+Create a technical summary that captures everything needed to resume this conversation.
+
+# Output Format
+<summary>
+## Goal
+[The user's request in their words]
+
+## Completed
+[Actions taken, files changed, commands run - with outcomes]
+
+## Technical Details
+- Decisions made and why
+- Patterns/libraries in use
+- Commands that worked (with output)
+- Commands that failed (with errors)
+
+## Files
+- **[file]**: [what changed, current state]
+
+## Still In Progress
+[What's incomplete - specific files, states, next steps]
+
+## Blockers
+- Unresolved errors
+- Pending requests
+
+## To Resume
+[Key context for picking up where this left off]
+</summary>

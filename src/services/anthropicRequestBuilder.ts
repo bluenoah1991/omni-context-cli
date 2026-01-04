@@ -11,9 +11,12 @@ export async function buildAnthropicRequest(
   model: ModelConfig,
   messages: AnthropicMessage[],
   toolFilter?: ToolFilter,
+  skipSystemPrompt?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
-  const systemBlocks = [{text: buildSystemPrompt(config.specialistMode), type: 'text'}];
+  const systemBlocks = skipSystemPrompt
+    ? []
+    : [{text: buildSystemPrompt(config.specialistMode), type: 'text'}];
 
   const request: Record<string, unknown> = {
     model: model.name,

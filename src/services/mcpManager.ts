@@ -3,13 +3,12 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { MCPConfig, MCPServerConfig } from '../types/mcp';
 import { ToolDefinition } from '../types/tool';
+import { getOmxFilePath } from '../utils/omxPaths';
 import { ideIntegration } from './ideIntegration.js';
 
-const MCP_CONFIG_FILE = path.join(os.homedir(), '.omx', 'mcp.json');
+const MCP_CONFIG_FILE = getOmxFilePath('mcp.json');
 
 class MCPManager {
   private clients: Map<string, Client> = new Map();

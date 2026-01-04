@@ -1,30 +1,20 @@
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { useChatStore } from '../store/chatStore';
 import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig } from '../types/config';
-
-const CONFIG_DIR = path.join(os.homedir(), '.omx');
-const CONFIG_FILE = path.join(CONFIG_DIR, 'omx.json');
+import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
 
 let cachedAppConfig: AppConfig | undefined = undefined;
 let currentModel: ModelConfig | undefined = undefined;
-
-function ensureConfigDir(): void {
-  if (!fs.existsSync(CONFIG_DIR)) {
-    fs.mkdirSync(CONFIG_DIR, {recursive: true});
-  }
-}
 
 export function loadAppConfig(): AppConfig {
   if (cachedAppConfig) {
     return cachedAppConfig;
   }
 
-  ensureConfigDir();
+  ensureDir(getOmxDir());
 
   try {
-    const content = fs.readFileSync(CONFIG_FILE, 'utf-8');
+    const content = fs.readFileSync(getOmxFilePath('omx.json'), 'utf-8');
     const loadedConfig: AppConfig = JSON.parse(content);
     cachedAppConfig = {...DEFAULT_APP_CONFIG, ...loadedConfig};
     return cachedAppConfig;
@@ -35,8 +25,8 @@ export function loadAppConfig(): AppConfig {
 }
 
 export function saveAppConfig(config: AppConfig): void {
-  ensureConfigDir();
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8');
+  ensureDir(getOmxDir());
+  fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
   cachedAppConfig = config;
 }
 
@@ -113,6 +103,12 @@ export function setSpecialistMode(value: boolean): void {
 export function setIDEContext(value: boolean): void {
   const config = loadAppConfig();
   config.ideContext = value;
+  saveAppConfig(config);
+}
+
+export function setPlaybookEnabled(value: boolean): void {
+  const config = loadAppConfig();
+  config.playbookEnabled = value;
   saveAppConfig(config);
 }
 

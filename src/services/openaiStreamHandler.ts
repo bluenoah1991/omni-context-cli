@@ -119,9 +119,6 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       }
     }
 
-    const totalTokens = this.inputTokens + this.outputTokens;
-    const tokenUsage = totalTokens - this.previousTokens;
-
     return {
       role: 'assistant' as const,
       content: this.accumulatedContent,
@@ -134,7 +131,6 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
             function: {name: tc.name, arguments: JSON.stringify(tc.input)},
           })),
         }),
-      ...(tokenUsage > 0 && {tokenUsage}),
       ...(this.inputTokens > 0 && {inputTokens: this.inputTokens}),
       ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
       ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),

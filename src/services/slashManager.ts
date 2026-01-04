@@ -1,10 +1,10 @@
 import Handlebars from 'handlebars';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SlashCommand } from '../types/slash';
 import { parseFrontmatter } from '../utils/frontmatter';
+import { getOmxDir } from '../utils/omxPaths';
 import { getFunctionalSlashCommands } from './slashHandlers';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -16,7 +16,7 @@ function interpolatePrompt(template: string, params: Record<string, any>): strin
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const BUILTIN_SLASH_DIR = path.join(scriptDir, 'slash');
-const USER_SLASH_DIR = path.join(os.homedir(), '.omx', 'slash');
+const USER_SLASH_DIR = path.join(getOmxDir(), 'slash');
 
 function loadSlashFromDir(dir: string): SlashCommand[] {
   if (!fs.existsSync(dir)) {

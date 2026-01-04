@@ -7,14 +7,12 @@ export abstract class BaseStreamHandler {
   protected accumulatedThinking = '';
   protected accumulatedThinkingSignature = '';
   protected completedToolCalls: ToolCall[] = [];
-  protected previousTokens = 0;
   protected inputTokens = 0;
   protected outputTokens = 0;
   protected cachedTokens = 0;
 
-  constructor(callbacks: StreamCallbacks, previousTokens: number = 0) {
+  constructor(callbacks: StreamCallbacks) {
     this.callbacks = callbacks;
-    this.previousTokens = previousTokens;
   }
 
   async stream(

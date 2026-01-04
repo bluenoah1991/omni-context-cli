@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
 import { Provider } from '../types/config';
@@ -8,22 +7,8 @@ import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, RewindPoint, Session } from '../types/session';
 import { ToolCall } from '../types/streamCallbacks';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
+import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
-
-const OMX_DIR = path.join(os.homedir(), '.omx');
-const PROJECTS_DIR = path.join(OMX_DIR, 'projects');
-
-function getProjectDir(): string {
-  const encoded = Buffer.from(process.cwd()).toString('base64url');
-  return path.join(PROJECTS_DIR, encoded);
-}
-
-function ensureProjectDir(): void {
-  const dir = getProjectDir();
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, {recursive: true});
-  }
-}
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

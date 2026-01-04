@@ -1,8 +1,8 @@
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { ensureDir, getOmxDir } from '../utils/omxPaths';
 
-const DIAGNOSTIC_DIR = path.join(os.homedir(), '.omx', 'diagnostic');
+const DIAGNOSTIC_DIR = path.join(getOmxDir(), 'diagnostic');
 
 let diagnosticEnabled = false;
 
@@ -14,12 +14,6 @@ export function isDiagnosticEnabled(): boolean {
   return diagnosticEnabled;
 }
 
-function ensureDiagnosticDir(): void {
-  if (!fs.existsSync(DIAGNOSTIC_DIR)) {
-    fs.mkdirSync(DIAGNOSTIC_DIR, {recursive: true});
-  }
-}
-
 export function saveRequest(
   provider: string,
   headers: Record<string, string>,
@@ -28,7 +22,7 @@ export function saveRequest(
 ): void {
   if (!diagnosticEnabled) return;
 
-  ensureDiagnosticDir();
+  ensureDir(DIAGNOSTIC_DIR);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `${isFromAgent ? '_' : ''}${provider}-${timestamp}.json`;
   const filepath = path.join(DIAGNOSTIC_DIR, filename);

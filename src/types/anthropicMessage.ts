@@ -9,7 +9,6 @@ export type AnthropicContentBlock =
 export interface AnthropicMessage {
   role: AnthropicMessageRole;
   content: string | AnthropicContentBlock[];
-  tokenUsage?: number;
   inputTokens?: number;
   outputTokens?: number;
   cachedTokens?: number;

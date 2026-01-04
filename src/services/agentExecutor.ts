@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
-import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolHandlerResult } from '../types/tool';
+import { extractTextContent } from '../utils/messageUtils';
 import { runConversation } from './chatOrchestrator';
 import { getAgentModel, loadAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
@@ -16,7 +16,6 @@ function interpolatePrompt(template: string, params: Record<string, any>): strin
 export async function executeAgent(
   agent: AgentDefinition,
   params: Record<string, any>,
-  callbacks: StreamCallbacks,
   signal?: AbortSignal,
 ): Promise<ToolHandlerResult> {
   const appConfig = loadAppConfig();
@@ -32,7 +31,7 @@ export async function executeAgent(
 
   const result = await runConversation(
     sessionWithMessage,
-    callbacks,
+    undefined,
     signal,
     {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},
     agentModel,
@@ -40,18 +39,7 @@ export async function executeAgent(
   );
 
   const lastMessage = result.messages[result.messages.length - 1];
-  let displayText = '';
-
-  if (agentModel.provider === 'anthropic') {
-    const content = lastMessage.content;
-    if (Array.isArray(content)) {
-      displayText = content.filter((block: any) => block.type === 'text').map((block: any) =>
-        block.text
-      ).join('\n');
-    }
-  } else {
-    displayText = String(lastMessage.content || '');
-  }
+  const displayText = extractTextContent(lastMessage);
 
   if (signal?.aborted) {
     throw new Error(`Agent ${agent.name} was interrupted`);

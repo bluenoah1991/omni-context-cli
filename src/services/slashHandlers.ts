@@ -53,6 +53,7 @@ function handleStatus(): SlashHandlerResult {
   lines.push(`Streaming output: ${config.streamingOutput ? '√' : '✗'}`);
   lines.push(`Specialist mode: ${config.specialistMode ? '√' : '✗'}`);
   lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
+  lines.push(`Playbook memory: ${config.playbookEnabled ? '√' : '✗'}`);
 
   return {message: lines.join('\n')};
 }

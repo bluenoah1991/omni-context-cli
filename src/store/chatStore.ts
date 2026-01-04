@@ -9,12 +9,14 @@ interface ChatState {
   session: Session;
   messages: UIMessage[];
   isLoading: boolean;
+  isCompacting: boolean;
   error: string | null;
   setSession: (session: Session) => void;
   updateSessionTokens: (inputTokens: number, outputTokens: number, cachedTokens: number) => void;
   createNewSession: () => void;
   updateMessages: (updater: (messages: UIMessage[]) => UIMessage[]) => void;
   setLoading: (loading: boolean) => void;
+  setCompacting: (compacting: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
 }
@@ -23,6 +25,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   session: createSession(),
   messages: [],
   isLoading: false,
+  isCompacting: false,
   error: null,
 
   setSession: (session: Session) => {
@@ -40,13 +43,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   createNewSession: () =>
-    set({session: createSession(), messages: [], isLoading: false, error: null}),
+    set({
+      session: createSession(),
+      messages: [],
+      isLoading: false,
+      isCompacting: false,
+      error: null,
+    }),
 
   updateMessages: updater => set(state => ({messages: updater(state.messages)})),
 
   setLoading: isLoading => set(isLoading ? {isLoading, error: null} : {isLoading}),
 
+  setCompacting: isCompacting => set({isCompacting}),
+
   setError: error => set({error}),
 
-  reset: () => set({session: createSession(), messages: [], isLoading: false, error: null}),
+  reset: () =>
+    set({
+      session: createSession(),
+      messages: [],
+      isLoading: false,
+      isCompacting: false,
+      error: null,
+    }),
 }));

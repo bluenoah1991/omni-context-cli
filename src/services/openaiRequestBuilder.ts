@@ -11,9 +11,12 @@ export async function buildOpenAIRequest(
   model: ModelConfig,
   messages: OpenAIMessage[],
   toolFilter?: ToolFilter,
+  skipSystemPrompt?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
-  const systemMessages = [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
+  const systemMessages = skipSystemPrompt
+    ? []
+    : [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
 
   const request: Record<string, unknown> = {
     model: model.name,

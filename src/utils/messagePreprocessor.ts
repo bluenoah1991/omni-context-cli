@@ -2,20 +2,20 @@ import { IDESelection } from '../types/ide';
 
 export function unwrapUIMessage(text: string): string {
   const match = text.match(
-    /<dual_message>\s*<ui>(.*?)<\/ui>\s*<prompt>.*?<\/prompt>\s*<\/dual_message>/s,
+    /<dual_message>\s*<ui>([\s\S]*?)<\/ui>\s*<prompt>[\s\S]*?<\/prompt>\s*<\/dual_message>/,
   );
   if (match) {
-    return text.replace(match[0], match[1]);
+    return match[1].trim();
   }
   return text;
 }
 
 export function unwrapPromptMessage(text: string): string {
   const match = text.match(
-    /<dual_message>\s*<ui>.*?<\/ui>\s*<prompt>(.*?)<\/prompt>\s*<\/dual_message>/s,
+    /<dual_message>\s*<ui>[\s\S]*?<\/ui>\s*<prompt>([\s\S]*?)<\/prompt>\s*<\/dual_message>/,
   );
   if (match) {
-    return text.replace(match[0], match[1]);
+    return match[1].trim();
   }
   return text;
 }

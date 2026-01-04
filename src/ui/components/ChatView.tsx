@@ -2,13 +2,20 @@ import { Box, useStdout } from 'ink';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
+import {
+  generateSummary,
+  injectSummary,
+  shouldAutoCompact,
+} from '../../services/compactionManager';
 import { getCurrentModel, loadAppConfig } from '../../services/configManager';
-import { addUserMessage, saveSession } from '../../services/sessionManager';
+import { generatePlaybook, injectPlaybook } from '../../services/playbookManager';
+import { addUserMessage, createSession, saveSession } from '../../services/sessionManager';
 import { parseSlashCommand } from '../../services/slashManager';
 import { useChatStore } from '../../store/chatStore';
 import { useIDEStore } from '../../store/ideStore';
 import { wrapDualMessage, wrapIDEContext } from '../../utils/messagePreprocessor';
 
+import { CompactingIndicator } from './CompactingIndicator';
 import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
@@ -21,22 +28,26 @@ export function ChatView(): React.ReactElement {
     session,
     messages,
     isLoading,
+    isCompacting,
     error,
     setSession,
     updateSessionTokens,
     updateMessages,
     setLoading,
+    setCompacting,
     setError,
   } = useChatStore(
     useShallow(state => ({
       session: state.session,
       messages: state.messages,
       isLoading: state.isLoading,
+      isCompacting: state.isCompacting,
       error: state.error,
       setSession: state.setSession,
       updateSessionTokens: state.updateSessionTokens,
       updateMessages: state.updateMessages,
       setLoading: state.setLoading,
+      setCompacting: state.setCompacting,
       setError: state.setError,
     })),
   );
@@ -46,6 +57,7 @@ export function ChatView(): React.ReactElement {
   const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
   const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
   const [ideContextEnabled, setIDEContextEnabled] = useState(() => loadAppConfig().ideContext);
+  const [playbookEnabled, setPlaybookEnabled] = useState(() => loadAppConfig().playbookEnabled);
   const ideSelection = useIDEStore(state => state.selection);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
@@ -77,6 +89,7 @@ export function ChatView(): React.ReactElement {
     setSpecialistMode(config.specialistMode);
     setStreamingOutput(config.streamingOutput);
     setIDEContextEnabled(config.ideContext);
+    setPlaybookEnabled(config.playbookEnabled);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
@@ -113,12 +126,46 @@ export function ChatView(): React.ReactElement {
       text = wrapIDEContext(text, currentSelection);
     }
 
-    updateMessages(messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]);
     setLoading(true);
 
-    const updatedSession = addUserMessage(sessionRef.current, text, model.provider);
+    let sessionToRun = sessionRef.current;
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
+
+    if (shouldAutoCompact(model, sessionRef.current)) {
+      setCompacting(true);
+      try {
+        const [summary, playbook] = await Promise.all([
+          generateSummary(model, sessionRef.current.messages, abortController.signal),
+          playbookEnabled
+            ? generatePlaybook(model, sessionRef.current, abortController.signal)
+            : Promise.resolve(undefined),
+        ]);
+
+        if (abortController.signal.aborted) return;
+
+        sessionToRun = createSession(model);
+        if (playbookEnabled) {
+          sessionToRun = injectPlaybook(sessionToRun, model.provider, playbook);
+        }
+        sessionToRun = injectSummary(sessionToRun, summary, model.provider);
+        sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+        process.stdout.write('\x1Bc');
+        setSession(sessionToRun);
+      } catch (error) {
+        setError(`Compaction failed: ${error}`);
+        setLoading(false);
+        return;
+      } finally {
+        setCompacting(false);
+      }
+    } else {
+      if (sessionRef.current.messages.length === 0 && playbookEnabled) {
+        sessionToRun = injectPlaybook(sessionToRun, model.provider);
+      }
+      sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+      setSession(sessionToRun);
+    }
 
     const toolFilter = {
       excludeAgents: !specialistMode,
@@ -129,7 +176,7 @@ export function ChatView(): React.ReactElement {
 
     try {
       const finalSession = await runConversation(
-        updatedSession,
+        sessionToRun,
         {
           onSessionUpdate: session => {
             updateSessionTokens(
@@ -191,7 +238,16 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [model, specialistMode, ideContextEnabled, updateMessages, setLoading, setSession, setError]);
+  }, [
+    model,
+    specialistMode,
+    ideContextEnabled,
+    playbookEnabled,
+    updateMessages,
+    setLoading,
+    setSession,
+    setError,
+  ]);
 
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
@@ -203,7 +259,9 @@ export function ChatView(): React.ReactElement {
         error={error}
       />
 
-      <Box height={1} marginBottom={1}>{isLoading && <LoadingIndicator />}</Box>
+      <Box height={2}>
+        {isCompacting ? <CompactingIndicator /> : isLoading && <LoadingIndicator />}
+      </Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} />}
 

@@ -1,10 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
-import path from 'node:path';
+import { getOmxFilePath } from '../utils/omxPaths';
 import specialistPrompt from './specialist.txt';
 import systemPrompt from './system.txt';
-
-const USER_SPECIALIST_PATH = path.join(os.homedir(), '.omx', 'specialist.txt');
 
 export function buildSystemPrompt(specialistMode?: boolean): string {
   let result = specialistMode ? getSpecialistPrompt() : systemPrompt;
@@ -16,8 +14,9 @@ export function buildSystemPrompt(specialistMode?: boolean): string {
 
 function getSpecialistPrompt(): string {
   try {
-    if (fs.existsSync(USER_SPECIALIST_PATH)) {
-      return fs.readFileSync(USER_SPECIALIST_PATH, 'utf-8');
+    const userPath = getOmxFilePath('specialist.txt');
+    if (fs.existsSync(userPath)) {
+      return fs.readFileSync(userPath, 'utf-8');
     }
   } catch {}
   return specialistPrompt;

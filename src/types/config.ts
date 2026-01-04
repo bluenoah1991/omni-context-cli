@@ -18,6 +18,7 @@ export interface AppConfig {
   streamingOutput: boolean;
   specialistMode: boolean;
   ideContext: boolean;
+  playbookEnabled: boolean;
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -26,4 +27,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   streamingOutput: false,
   specialistMode: true,
   ideContext: true,
+  playbookEnabled: false,
 };
