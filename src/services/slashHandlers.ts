@@ -13,7 +13,11 @@ export function getFunctionalSlashCommands(): SlashCommand[] {
     description: 'Show session, model and configuration status',
     type: 'functional',
     execute: handleStatus,
-  }, {name: 'compact', description: 'Manually compact context and start fresh', type: 'other'}];
+  }, {
+    name: 'compact',
+    description: 'Manually compact context and start fresh',
+    type: 'functional',
+  }];
 }
 
 function handleClear(): SlashHandlerResult {
