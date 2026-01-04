@@ -280,7 +280,7 @@ export function ChatView(): React.ReactElement {
 
       <Box display={showMenu ? 'none' : 'flex'} flexDirection='column'>
         <StatusBar
-          isLoading={isLoading}
+          isLoading={isLoading || isCompacting}
           onInterrupt={handleInterrupt}
           onOpenMenu={handleOpenMenu}
           model={model}
