@@ -75,14 +75,12 @@ function updatePlaybook(playbook: Playbook, reflectionResult: ReflectionResult):
     }
   }
 
-  const ratingDelta: Record<string, number> = {helpful: 1, harmful: -3, neutral: -1};
-  const nameToKp = new Map(playbook.keyPoints.map(kp => [kp.name, kp]));
+  const ratingDelta: Record<string, number> = {helpful: 1, harmful: -3, neutral: -2};
+  const evalMap = new Map(evaluations.map(e => [e.name, e.rating]));
 
-  for (const evalItem of evaluations) {
-    const kp = nameToKp.get(evalItem.name);
-    if (kp) {
-      kp.score += ratingDelta[evalItem.rating] ?? 0;
-    }
+  for (const kp of playbook.keyPoints) {
+    const rating = evalMap.get(kp.name);
+    kp.score += rating ? (ratingDelta[rating] ?? 0) : -1;
   }
 
   playbook.keyPoints = playbook.keyPoints.filter(kp => kp.score > -5);
