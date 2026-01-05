@@ -12,9 +12,11 @@ export function buildSystemPrompt(specialistMode?: boolean): string {
   result = result.replace('{{PLATFORM}}', os.platform());
   result = result.replace('{{ARCH}}', os.arch());
 
-  const skillsPrompt = buildSkillsPrompt(getSkills());
-  if (skillsPrompt) {
-    result += '\n\n' + skillsPrompt;
+  if (!specialistMode) {
+    const skillsPrompt = buildSkillsPrompt(getSkills());
+    if (skillsPrompt) {
+      result += '\n\n' + skillsPrompt;
+    }
   }
 
   return result;
