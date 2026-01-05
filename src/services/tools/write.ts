@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 
 export function registerWriteTool(): void {
@@ -42,9 +43,7 @@ export function registerWriteTool(): void {
         throw new Error('You need to provide content. What do you want to write?');
       }
 
-      const absolutePath = path.isAbsolute(filePath)
-        ? filePath
-        : path.resolve(process.cwd(), filePath);
+      const absolutePath = path.resolve(await normalizePath(filePath));
 
       if (createOnly) {
         try {

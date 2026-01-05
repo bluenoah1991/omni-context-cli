@@ -1,6 +1,7 @@
 import { existsSync } from 'fs';
 import { glob } from 'glob';
 import * as path from 'path';
+import { normalizePath } from '../../utils/wsl';
 import { isIgnored } from '../gitignoreParser';
 import { registerTool } from '../toolExecutor';
 import { getGlobExcludes } from './ignorePatterns';
@@ -36,10 +37,7 @@ export function registerGlobTool(): void {
       throw new Error('You need to provide a pattern. Try something like "**/*.ts" or "*.json".');
     }
 
-    const rootDir = process.cwd();
-    const searchDir = searchPath
-      ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
-      : rootDir;
+    const searchDir = searchPath ? path.resolve(await normalizePath(searchPath)) : process.cwd();
 
     let searchPattern = pattern;
     const fullPath = path.join(searchDir, pattern);

@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 
 const DEFAULT_READ_LIMIT = 50;
@@ -37,9 +38,7 @@ export function registerReadTool(): void {
       throw new Error('You need to provide a filePath. Which file do you want to read?');
     }
 
-    const absolutePath = path.isAbsolute(filePath)
-      ? filePath
-      : path.resolve(process.cwd(), filePath);
+    const absolutePath = path.resolve(await normalizePath(filePath));
 
     try {
       await fs.access(absolutePath, fs.constants.R_OK);

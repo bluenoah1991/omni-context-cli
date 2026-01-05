@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 
 function normalizeLineEndings(text: string): string {
@@ -81,9 +82,7 @@ export function registerEditTool(): void {
         );
       }
 
-      const absolutePath = path.isAbsolute(filePath)
-        ? filePath
-        : path.resolve(process.cwd(), filePath);
+      const absolutePath = path.resolve(await normalizePath(filePath));
 
       let content: string;
       try {

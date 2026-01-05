@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 import { getGrepExcludes } from './ignorePatterns';
 
@@ -126,10 +127,7 @@ export function registerGrepTool(): void {
         throw new Error('You need to provide a pattern to search for');
       }
 
-      const rootDir = process.cwd();
-      const targetPath = searchPath
-        ? path.isAbsolute(searchPath) ? searchPath : path.resolve(rootDir, searchPath)
-        : rootDir;
+      const targetPath = searchPath ? path.resolve(await normalizePath(searchPath)) : process.cwd();
 
       const rgPath = getRipgrepPath();
 
@@ -193,7 +191,7 @@ export function registerGrepTool(): void {
 
       return new Promise((resolve, reject) => {
         const child = spawn(rgPath, rgArgs, {
-          cwd: rootDir,
+          cwd: process.cwd(),
           stdio: ['ignore', 'pipe', 'pipe'],
           windowsHide: true,
         });

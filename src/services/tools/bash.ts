@@ -1,32 +1,11 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { checkWSL, normalizePath } from '../../utils/wsl';
 import { createTask } from '../taskManager';
 import { registerTool } from '../toolExecutor';
 
 const MAX_OUTPUT_LENGTH = 30000;
 const DEFAULT_TIMEOUT = 120000;
-
-let wslAvailable: boolean | null = null;
-
-async function checkWSL(): Promise<boolean> {
-  if (wslAvailable !== null) return wslAvailable;
-  if (process.platform !== 'win32') {
-    wslAvailable = false;
-    return false;
-  }
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const child = spawn('wsl.exe', ['--status'], {stdio: 'ignore', windowsHide: true});
-      child.on('error', reject);
-      child.on('close', code => (code === 0 ? resolve() : reject()));
-    });
-    wslAvailable = true;
-    return true;
-  } catch {
-    wslAvailable = false;
-    return false;
-  }
-}
 
 export function registerBashTool(): void {
   registerTool(
@@ -76,7 +55,7 @@ export function registerBashTool(): void {
         );
       }
 
-      const cwd = workdir ? path.resolve(process.cwd(), workdir) : process.cwd();
+      const cwd = workdir ? path.resolve(await normalizePath(workdir)) : process.cwd();
 
       const useWSL = await checkWSL();
       const shell = useWSL
