@@ -98,14 +98,16 @@ const reducer = (state: State, action: Action): State => {
       }
       return state;
     }
-    case 'insert':
+    case 'insert': {
+      const normalizedText = action.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
       return {
         ...state,
         previousValue: state.value,
-        value: state.value.slice(0, state.cursorOffset) + action.text
+        value: state.value.slice(0, state.cursorOffset) + normalizedText
           + state.value.slice(state.cursorOffset),
-        cursorOffset: state.cursorOffset + action.text.length,
+        cursorOffset: state.cursorOffset + normalizedText.length,
       };
+    }
     case 'backspace': {
       const newCursorOffset = Math.max(0, state.cursorOffset - 1);
       return {
