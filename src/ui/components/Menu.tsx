@@ -28,7 +28,7 @@ import { colors } from '../theme/colors';
 import { SelectItem, SelectList } from './SelectList';
 import { FormStep, StepForm } from './StepForm';
 
-type View =
+export type View =
   | 'main'
   | 'select'
   | 'add'
@@ -64,10 +64,11 @@ function normalizeApiUrl(url: string, provider: Provider): string {
 
 interface MenuProps {
   onClose: () => void;
+  initialView?: View;
 }
 
-export function Menu({onClose}: MenuProps): React.ReactElement {
-  const [view, setView] = useState<View>('main');
+export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
+  const [view, setView] = useState<View>(initialView ?? 'main');
   const [mainIndex, setMainIndex] = useState(0);
   const [selectIndex, setSelectIndex] = useState(0);
   const [setDefaultIndex, setSetDefaultIndex] = useState<number>();

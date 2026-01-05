@@ -19,7 +19,7 @@ import { CompactingIndicator } from './CompactingIndicator';
 import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
-import { Menu } from './Menu';
+import { Menu, View } from './Menu';
 import { MessageList } from './MessageList';
 import { StatusBar } from './StatusBar';
 
@@ -52,6 +52,7 @@ export function ChatView(): React.ReactElement {
     })),
   );
   const [showMenu, setShowMenu] = useState(false);
+  const [menuInitialView, setMenuInitialView] = useState<View | undefined>();
   const [model, setModel] = useState(() => getCurrentModel());
   const [enableThinking, setEnableThinking] = useState(() => loadAppConfig().enableThinking);
   const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
@@ -83,6 +84,7 @@ export function ChatView(): React.ReactElement {
 
   const handleCloseMenu = useCallback(() => {
     setShowMenu(false);
+    setMenuInitialView(undefined);
     setModel(getCurrentModel());
     const config = loadAppConfig();
     setEnableThinking(config.enableThinking);
@@ -119,6 +121,18 @@ export function ChatView(): React.ReactElement {
       if (slashCommand.type === 'prompt' && slashCommand.prompt) {
         text = wrapDualMessage(text, slashCommand.prompt);
       }
+    }
+
+    const menuCommands: Record<string, View> = {
+      rewind: 'rewind',
+      model: 'select',
+      session: 'sessions',
+    };
+    const menuView = slashCommand?.name ? menuCommands[slashCommand.name] : undefined;
+    if (menuView) {
+      setMenuInitialView(menuView);
+      setShowMenu(true);
+      return;
     }
 
     const currentSelection = useIDEStore.getState().selection;
@@ -277,7 +291,7 @@ export function ChatView(): React.ReactElement {
         {isCompacting ? <CompactingIndicator /> : isLoading && <LoadingIndicator />}
       </Box>
 
-      {showMenu && <Menu onClose={handleCloseMenu} />}
+      {showMenu && <Menu onClose={handleCloseMenu} initialView={menuInitialView} />}
 
       <Box display={showMenu ? 'none' : 'flex'} flexDirection='column'>
         <StatusBar

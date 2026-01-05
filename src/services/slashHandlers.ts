@@ -17,6 +17,9 @@ export function getFunctionalSlashCommands(): SlashCommand[] {
       execute: handleStatus,
     },
     {name: 'compact', description: 'Manually compact context and start fresh', type: 'functional'},
+    {name: 'rewind', description: 'Rewind to a previous message', type: 'functional'},
+    {name: 'model', description: 'Switch to a different model', type: 'functional'},
+    {name: 'session', description: 'Load a previous session', type: 'functional'},
     {name: 'exit', description: 'Exit Omx', type: 'functional', execute: handleExit},
   ];
 }
