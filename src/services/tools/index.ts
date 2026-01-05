@@ -1,4 +1,5 @@
 import { registerAgents } from '../agentManager';
+import { registerSkillTool } from '../skillManager';
 import { registerBashTool } from './bash';
 import { registerBashOutputTool } from './bashOutput';
 import { registerEditTool } from './edit';
@@ -16,4 +17,5 @@ export function initializeTools(): void {
   registerReadTool();
   registerWriteTool();
   registerAgents();
+  registerSkillTool();
 }
