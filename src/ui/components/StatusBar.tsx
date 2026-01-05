@@ -64,7 +64,7 @@ export function StatusBar(
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
-          : `| ${nickname}${thinkingText}${specialistText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
+          : `${nickname}${thinkingText}${specialistText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
       </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}

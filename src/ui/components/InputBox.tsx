@@ -255,9 +255,10 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
         />
       )}
       <Box
-        borderStyle='round'
+        borderStyle='single'
+        borderLeft={false}
+        borderRight={false}
         borderColor={disabled ? colors.muted : colors.primary}
-        paddingLeft={1}
         paddingRight={2}
         flexGrow={1}
       >

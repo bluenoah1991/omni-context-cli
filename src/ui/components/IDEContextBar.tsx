@@ -23,9 +23,5 @@ export function IDEContextBar({selection}: IDEContextBarProps): React.ReactEleme
     label = `${fileName}:${selection.lineStart}-${selection.lineEnd}`;
   }
 
-  return (
-    <Box paddingLeft={1}>
-      <Text color={colors.info} dimColor>{'⌘ '}{label}</Text>
-    </Box>
-  );
+  return <Text color={colors.info} dimColor>{'⌘ '}{label}</Text>;
 }
