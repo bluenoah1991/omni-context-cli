@@ -124,9 +124,9 @@ export function ChatView(): React.ReactElement {
     }
 
     const menuCommands: Record<string, View> = {
-      rewind: 'rewind',
-      model: 'select',
-      session: 'sessions',
+      rewind: 'rewind-session',
+      model: 'pick-model',
+      session: 'browse-sessions',
     };
     const menuView = slashCommand?.name ? menuCommands[slashCommand.name] : undefined;
     if (menuView) {

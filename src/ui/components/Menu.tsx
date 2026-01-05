@@ -30,18 +30,20 @@ import { FormStep, StepForm } from './StepForm';
 
 export type View =
   | 'main'
-  | 'select'
-  | 'add'
-  | 'set-default'
+  | 'pick-model'
+  | 'model-ops'
+  | 'add-model'
+  | 'default-model'
   | 'agent-model'
-  | 'delete'
-  | 'thinking'
-  | 'streaming'
-  | 'specialist'
-  | 'ide-context'
-  | 'playbook'
-  | 'sessions'
-  | 'rewind';
+  | 'remove-model'
+  | 'prefs'
+  | 'pref-thinking'
+  | 'pref-streaming'
+  | 'pref-specialist'
+  | 'pref-ide-context'
+  | 'pref-playbook'
+  | 'browse-sessions'
+  | 'rewind-session';
 
 function normalizeApiUrl(url: string, provider: Provider): string {
   let apiUrl = url.trim();
@@ -81,6 +83,8 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [playbookIndex, setPlaybookIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
+  const [modelsIndex, setModelsIndex] = useState(0);
+  const [settingsIndex, setSettingsIndex] = useState(0);
 
   const config = loadAppConfig();
 
@@ -89,16 +93,19 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'select', label: '⤭ Switch to a different model'},
       {id: 'sessions', label: '↻ Load a previous session'},
       {id: 'rewind', label: '↩ Rewind to a previous message'},
-      {id: 'add', label: '+ Add a new model'},
-      {id: 'default', label: '★ Change the default model'},
-      {id: 'agent-model', label: '◈ Change the agent model'},
-      {id: 'delete', label: '− Remove a model'},
-      {id: 'thinking', label: '◉ Toggle thinking mode'},
-      {id: 'streaming', label: '⇵ Toggle streaming output'},
-      {id: 'specialist', label: '♪ Toggle specialist mode'},
-      {id: 'ide-context', label: '⌘ Toggle IDE context'},
-      {id: 'playbook', label: '≡ Toggle playbook memory'},
+      {id: 'specialist', label: '♪ Specialist mode on/off'},
+      {id: 'models', label: '◈ Manage your model list →'},
+      {id: 'settings', label: '⚙ Change your preferences →'},
       {id: 'exit', label: '× Quit Omx'},
+    ];
+
+    const viewMap: View[] = [
+      'pick-model',
+      'browse-sessions',
+      'rewind-session',
+      'pref-specialist',
+      'model-ops',
+      'prefs',
     ];
 
     return (
@@ -116,19 +123,8 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           selectedIndex={mainIndex}
           onSelect={setMainIndex}
           onConfirm={i => {
-            if (i === 0) setView('select');
-            else if (i === 1) setView('sessions');
-            else if (i === 2) setView('rewind');
-            else if (i === 3) setView('add');
-            else if (i === 4) setView('set-default');
-            else if (i === 5) setView('agent-model');
-            else if (i === 6) setView('delete');
-            else if (i === 7) setView('thinking');
-            else if (i === 8) setView('streaming');
-            else if (i === 9) setView('specialist');
-            else if (i === 10) setView('ide-context');
-            else if (i === 11) setView('playbook');
-            else if (i === 12) process.exit(0);
+            if (i === 6) process.exit(0);
+            else setView(viewMap[i]);
           }}
           onCancel={onClose}
         />
@@ -136,7 +132,74 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'select') {
+  if (view === 'model-ops') {
+    const items: SelectItem[] = [
+      {id: 'add', label: '+ Add a new model'},
+      {id: 'default', label: '★ Change the default model'},
+      {id: 'agent-model', label: '◈ Change the agent model'},
+      {id: 'delete', label: '− Remove a model'},
+    ];
+
+    const viewMap: View[] = ['add-model', 'default-model', 'agent-model', 'remove-model'];
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='models-menu'
+          title='What would you like to change about your models?'
+          items={items}
+          selectedIndex={modelsIndex}
+          onSelect={setModelsIndex}
+          onConfirm={i => setView(viewMap[i])}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'prefs') {
+    const items: SelectItem[] = [
+      {id: 'thinking', label: '◉ Extended thinking'},
+      {id: 'streaming', label: '⇵ Streaming output'},
+      {id: 'ide-context', label: '⌘ IDE context'},
+      {id: 'playbook', label: '≡ Playbook memory'},
+    ];
+
+    const viewMap: View[] = [
+      'pref-thinking',
+      'pref-streaming',
+      'pref-ide-context',
+      'pref-playbook',
+    ];
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='settings-menu'
+          title='Anything to tweak?'
+          items={items}
+          selectedIndex={settingsIndex}
+          onSelect={setSettingsIndex}
+          onConfirm={i => setView(viewMap[i])}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pick-model') {
     const items: SelectItem[] = config.models.map(m => ({id: m.id, label: m.nickname}));
 
     return (
@@ -166,7 +229,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'add') {
+  if (view === 'add-model') {
     const steps: FormStep[] = [
       {
         type: 'select',
@@ -221,13 +284,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             });
             onClose();
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('model-ops')}
         />
       </Box>
     );
   }
 
-  if (view === 'set-default') {
+  if (view === 'default-model') {
     const items: SelectItem[] = config.models.map(m => ({
       id: m.id,
       label: m.nickname,
@@ -258,7 +321,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
               onClose();
             }
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('model-ops')}
           emptyMessage='No models configured yet. Add one first!'
         />
       </Box>
@@ -295,14 +358,14 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
               onClose();
             }
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('model-ops')}
           emptyMessage='No models configured yet. Add one first!'
         />
       </Box>
     );
   }
 
-  if (view === 'delete') {
+  if (view === 'remove-model') {
     const items: SelectItem[] = config.models.map(m => ({id: m.id, label: m.nickname}));
 
     return (
@@ -325,14 +388,14 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
               onClose();
             }
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('model-ops')}
           emptyMessage='No models to remove'
         />
       </Box>
     );
   }
 
-  if (view === 'thinking') {
+  if (view === 'pref-thinking') {
     const items: SelectItem[] = [{id: 'on', label: '✓ Enable thinking mode'}, {
       id: 'off',
       label: '✗ Disable thinking mode',
@@ -360,13 +423,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             }
             onClose();
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('prefs')}
         />
       </Box>
     );
   }
 
-  if (view === 'streaming') {
+  if (view === 'pref-streaming') {
     const items: SelectItem[] = [{id: 'on', label: '✓ Enable streaming output'}, {
       id: 'off',
       label: '✗ Disable streaming output',
@@ -394,13 +457,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             }
             onClose();
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('prefs')}
         />
       </Box>
     );
   }
 
-  if (view === 'specialist') {
+  if (view === 'pref-specialist') {
     const items: SelectItem[] = [{id: 'on', label: '✓ Enable specialist mode'}, {
       id: 'off',
       label: '✗ Disable specialist mode',
@@ -434,7 +497,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'ide-context') {
+  if (view === 'pref-ide-context') {
     const items: SelectItem[] = [{id: 'on', label: '✓ Enable IDE context'}, {
       id: 'off',
       label: '✗ Disable IDE context',
@@ -463,13 +526,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             }
             onClose();
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('prefs')}
         />
       </Box>
     );
   }
 
-  if (view === 'playbook') {
+  if (view === 'pref-playbook') {
     const items: SelectItem[] = [{id: 'on', label: '✓ Enable playbook memory'}, {
       id: 'off',
       label: '✗ Disable playbook memory',
@@ -497,13 +560,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             }
             onClose();
           }}
-          onCancel={() => setView('main')}
+          onCancel={() => setView('prefs')}
         />
       </Box>
     );
   }
 
-  if (view === 'sessions') {
+  if (view === 'browse-sessions') {
     const currentModel = getCurrentModel();
     const sessions = currentModel ? listSessions(currentModel.provider, 10) : [];
     const currentSession = useChatStore.getState().session;
@@ -550,7 +613,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'rewind') {
+  if (view === 'rewind-session') {
     const currentModel = getCurrentModel();
     const session = useChatStore.getState().session;
     const rewindPoints = getRewindPoints(session);
