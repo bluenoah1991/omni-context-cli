@@ -9,6 +9,7 @@ import {
 } from '../../services/compactionManager';
 import { getCurrentModel, loadAppConfig } from '../../services/configManager';
 import { generatePlaybook, injectPlaybook } from '../../services/playbookManager';
+import { injectProjectInstructions } from '../../services/projectInstructionsManager';
 import { addUserMessage, createSession, saveSession } from '../../services/sessionManager';
 import { parseSlashCommand } from '../../services/slashManager';
 import { useChatStore } from '../../store/chatStore';
@@ -166,6 +167,7 @@ export function ChatView(): React.ReactElement {
         if (playbookEnabled) {
           sessionToRun = injectPlaybook(sessionToRun, model.provider, playbook);
         }
+        sessionToRun = injectProjectInstructions(sessionToRun, model.provider);
         sessionToRun = injectSummary(sessionToRun, summary, model.provider);
 
         if (slashCommand?.name !== 'compact') {
@@ -184,8 +186,11 @@ export function ChatView(): React.ReactElement {
         setCompacting(false);
       }
     } else {
-      if (sessionRef.current.messages.length === 0 && playbookEnabled) {
-        sessionToRun = injectPlaybook(sessionToRun, model.provider);
+      if (sessionRef.current.messages.length === 0) {
+        if (playbookEnabled) {
+          sessionToRun = injectPlaybook(sessionToRun, model.provider);
+        }
+        sessionToRun = injectProjectInstructions(sessionToRun, model.provider);
       }
       sessionToRun = addUserMessage(sessionToRun, text, model.provider);
       setSession(sessionToRun);

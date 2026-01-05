@@ -1,0 +1,7 @@
+# Project Instructions
+
+The following project-specific instructions were found in the project root:
+
+{{PROJECT_INSTRUCTIONS}}
+
+Follow these instructions when working on this project.
