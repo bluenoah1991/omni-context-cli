@@ -304,7 +304,7 @@ export function ChatView(): React.ReactElement {
           specialistMode={specialistMode}
           disabled={showMenu}
         />
-        <InputBox onSubmit={handleSubmit} disabled={isLoading || showMenu} />
+        <InputBox onSubmit={handleSubmit} disabled={isLoading || isCompacting || showMenu} />
         {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
       </Box>
     </Box>
