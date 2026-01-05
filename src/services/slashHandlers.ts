@@ -1,6 +1,6 @@
 import { useChatStore } from '../store/chatStore';
 import { SlashCommand, SlashHandlerResult } from '../types/slash';
-import { getAgentModel, getCurrentModel, getDefaultModel, loadAppConfig } from './configManager';
+import { getAgentModel, getCurrentModel, loadAppConfig } from './configManager';
 
 export function getFunctionalSlashCommands(): SlashCommand[] {
   return [
