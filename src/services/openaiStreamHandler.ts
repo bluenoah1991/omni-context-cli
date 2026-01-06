@@ -1,5 +1,5 @@
 import { ChatMessage } from '../types/session';
-import { ToolCall } from '../types/streamCallbacks';
+import { StreamResult, ToolCall } from '../types/streamCallbacks';
 import { BaseStreamHandler } from './baseStreamHandler';
 
 interface ToolCallAccumulator {
@@ -103,7 +103,7 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     }
   }
 
-  protected finish(): ChatMessage {
+  protected finish(): StreamResult<ChatMessage> {
     for (const toolCall of this.activeToolCalls.values()) {
       if (toolCall.id && toolCall.name) {
         let input: any = {};
@@ -120,20 +120,24 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     }
 
     return {
-      role: 'assistant' as const,
-      content: this.accumulatedContent,
-      ...(this.accumulatedThinking && {reasoning_content: this.accumulatedThinking}),
-      ...(this.completedToolCalls.length > 0
-        && {
-          tool_calls: this.completedToolCalls.map(tc => ({
-            id: tc.id,
-            type: 'function' as const,
-            function: {name: tc.name, arguments: JSON.stringify(tc.input)},
-          })),
-        }),
-      ...(this.inputTokens > 0 && {inputTokens: this.inputTokens}),
-      ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
-      ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),
+      message: {
+        role: 'assistant' as const,
+        content: this.accumulatedContent,
+        ...(this.accumulatedThinking && {reasoning_content: this.accumulatedThinking}),
+        ...(this.completedToolCalls.length > 0
+          && {
+            tool_calls: this.completedToolCalls.map(tc => ({
+              id: tc.id,
+              type: 'function' as const,
+              function: {name: tc.name, arguments: JSON.stringify(tc.input)},
+            })),
+          }),
+      },
+      tokenUsage: {
+        inputTokens: this.inputTokens,
+        outputTokens: this.outputTokens,
+        cachedTokens: this.cachedTokens,
+      },
     };
   }
 }

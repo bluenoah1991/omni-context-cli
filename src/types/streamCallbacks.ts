@@ -20,3 +20,14 @@ export interface ToolResult {
   name: string;
   content: string;
 }
+
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cachedTokens: number;
+}
+
+export interface StreamResult<T> {
+  message: T;
+  tokenUsage: TokenUsage;
+}

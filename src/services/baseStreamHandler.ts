@@ -1,5 +1,5 @@
 import { ChatMessage } from '../types/session';
-import { StreamCallbacks, ToolCall } from '../types/streamCallbacks';
+import { StreamCallbacks, StreamResult, ToolCall } from '../types/streamCallbacks';
 
 export abstract class BaseStreamHandler {
   protected callbacks: StreamCallbacks;
@@ -20,7 +20,7 @@ export abstract class BaseStreamHandler {
     body: Record<string, unknown>,
     endpoint: string,
     signal?: AbortSignal,
-  ): Promise<ChatMessage> {
+  ): Promise<StreamResult<ChatMessage>> {
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {...headers, 'Accept-Encoding': 'gzip, deflate, br'},
@@ -72,5 +72,5 @@ export abstract class BaseStreamHandler {
 
   protected abstract processChunk(chunk: any): void;
 
-  protected abstract finish(): ChatMessage;
+  protected abstract finish(): StreamResult<ChatMessage>;
 }

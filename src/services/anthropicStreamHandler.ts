@@ -26,6 +26,9 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
         if (data?.message?.usage?.input_tokens) {
           this.inputTokens = data.message.usage.input_tokens;
         }
+        if (data?.message?.usage?.cache_creation_input_tokens) {
+          this.inputTokens += data.message.usage.cache_creation_input_tokens;
+        }
         break;
 
       case 'message_delta':
@@ -37,6 +40,9 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
         }
         if (data?.usage?.input_tokens && data.usage.input_tokens > 0) {
           this.inputTokens = data.usage.input_tokens;
+        }
+        if (data?.usage?.cache_creation_input_tokens) {
+          this.inputTokens += data.usage.cache_creation_input_tokens;
         }
         if (data?.usage?.cache_read_input_tokens) {
           this.cachedTokens = data.usage.cache_read_input_tokens;
@@ -142,14 +148,13 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       content.push({type: 'tool_use', id: toolCall.id, name: toolCall.name, input: toolCall.input});
     }
 
-    const inputTokens = this.inputTokens + this.cachedTokens;
-
     return {
-      role: 'assistant' as const,
-      content,
-      ...(inputTokens > 0 && {inputTokens}),
-      ...(this.outputTokens > 0 && {outputTokens: this.outputTokens}),
-      ...(this.cachedTokens > 0 && {cachedTokens: this.cachedTokens}),
+      message: {role: 'assistant' as const, content},
+      tokenUsage: {
+        inputTokens: this.inputTokens + this.cachedTokens,
+        outputTokens: this.outputTokens,
+        cachedTokens: this.cachedTokens,
+      },
     };
   }
 }

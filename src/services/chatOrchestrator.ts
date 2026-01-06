@@ -2,7 +2,7 @@ import { AnthropicMessage } from '../types/anthropicMessage';
 import { ModelConfig, Provider } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
-import { StreamCallbacks } from '../types/streamCallbacks';
+import { StreamCallbacks, StreamResult } from '../types/streamCallbacks';
 import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
@@ -21,7 +21,7 @@ async function streamAIResponse(
   toolFilter?: ToolFilter,
   isFromAgent?: boolean,
   skipSystemPrompt?: boolean,
-): Promise<ChatMessage> {
+): Promise<StreamResult<ChatMessage>> {
   const {headers, body} = model.provider === 'openai'
     ? await buildOpenAIRequest(model, messages as OpenAIMessage[], toolFilter, skipSystemPrompt)
     : await buildAnthropicRequest(
@@ -100,10 +100,10 @@ export async function runConversation(
   }
 
   while (true) {
-    let message: ChatMessage;
+    let result: StreamResult<ChatMessage>;
 
     try {
-      message = await streamAIResponse(
+      result = await streamAIResponse(
         model,
         currentSession.messages,
         finalCallbacks,
@@ -118,17 +118,13 @@ export async function runConversation(
       return currentSession;
     }
 
-    const messageInputTokens = 'inputTokens' in message ? (message.inputTokens ?? 0) : 0;
-    const messageOutputTokens = 'outputTokens' in message ? (message.outputTokens ?? 0) : 0;
-    const messageCachedTokens = 'cachedTokens' in message ? (message.cachedTokens ?? 0) : 0;
-
     currentSession = {
       ...currentSession,
-      messages: [...currentSession.messages, message],
+      messages: [...currentSession.messages, result.message],
       updatedAt: Date.now(),
-      inputTokens: messageInputTokens,
-      outputTokens: messageOutputTokens,
-      cachedTokens: messageCachedTokens,
+      inputTokens: result.tokenUsage.inputTokens,
+      outputTokens: result.tokenUsage.outputTokens,
+      cachedTokens: result.tokenUsage.cachedTokens,
     };
 
     finalCallbacks.onSessionUpdate?.(currentSession);

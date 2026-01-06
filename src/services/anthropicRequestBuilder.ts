@@ -16,29 +16,49 @@ export async function buildAnthropicRequest(
   const config = loadAppConfig();
   const systemBlocks = skipSystemPrompt
     ? []
-    : [{text: buildSystemPrompt(config.specialistMode), type: 'text'}];
+    : [{
+      text: buildSystemPrompt(config.specialistMode),
+      type: 'text',
+      cache_control: {type: 'ephemeral'},
+    }];
+
+  const preprocessedMessages = messages.filter(message => {
+    if (message.role !== 'assistant') return true;
+    return Array.isArray(message.content) ? message.content.length > 0 : Boolean(message.content);
+  }).map(message => {
+    if (message.role === 'user') {
+      if (typeof message.content === 'string') {
+        return {role: message.role, content: unwrapPromptMessage(message.content)};
+      }
+      if (Array.isArray(message.content)) {
+        return {
+          role: message.role,
+          content: message.content.map(block =>
+            block.type === 'text' ? {...block, text: unwrapPromptMessage(block.text)} : block
+          ),
+        };
+      }
+    }
+    return {role: message.role, content: message.content};
+  });
+
+  const lastMessage = preprocessedMessages.at(-1)!;
+  if (typeof lastMessage.content === 'string') {
+    lastMessage.content = [{
+      type: 'text',
+      text: lastMessage.content,
+      cache_control: {type: 'ephemeral'},
+    }] as any;
+  } else if (Array.isArray(lastMessage.content)) {
+    const block = lastMessage.content.findLast(b => b.type !== 'thinking');
+    if (block) {
+      (block as any).cache_control = {type: 'ephemeral'};
+    }
+  }
 
   const request: Record<string, unknown> = {
     model: model.name,
-    messages: messages.filter(message => {
-      if (message.role !== 'assistant') return true;
-      return Array.isArray(message.content) ? message.content.length > 0 : Boolean(message.content);
-    }).map(message => {
-      if (message.role === 'user') {
-        if (typeof message.content === 'string') {
-          return {role: message.role, content: unwrapPromptMessage(message.content)};
-        }
-        if (Array.isArray(message.content)) {
-          return {
-            role: message.role,
-            content: message.content.map(block =>
-              block.type === 'text' ? {...block, text: unwrapPromptMessage(block.text)} : block
-            ),
-          };
-        }
-      }
-      return {role: message.role, content: message.content};
-    }),
+    messages: preprocessedMessages,
     stream: true,
     max_tokens: config.enableThinking ? 16000 : 4096,
     system: systemBlocks,
