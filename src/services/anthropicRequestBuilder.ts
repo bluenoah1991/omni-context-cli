@@ -34,10 +34,13 @@ export async function buildAnthropicRequest(
         return {
           role: message.role,
           content: message.content.map(block =>
-            block.type === 'text' ? {...block, text: unwrapPromptMessage(block.text)} : block
+            block.type === 'text' ? {...block, text: unwrapPromptMessage(block.text)} : {...block}
           ),
         };
       }
+    }
+    if (Array.isArray(message.content)) {
+      return {role: message.role, content: message.content.map(block => ({...block}))};
     }
     return {role: message.role, content: message.content};
   });

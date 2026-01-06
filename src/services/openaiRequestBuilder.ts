@@ -35,9 +35,12 @@ export async function buildOpenAIRequest(
             content = unwrapPromptMessage(content);
           } else if (Array.isArray(content)) {
             content = content.map(part =>
-              part.type === 'text' ? {...part, text: unwrapPromptMessage(part.text)} : part
+              part.type === 'text' ? {...part, text: unwrapPromptMessage(part.text)} : {...part}
             );
           }
+        }
+        if (Array.isArray(content)) {
+          content = content.map(part => ({...part}));
         }
         return {
           role: message.role,
