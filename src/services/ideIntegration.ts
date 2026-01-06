@@ -321,15 +321,6 @@ class IDEIntegrationManager {
     });
   }
 
-  getConnection(): {ideName: string; workspaceFolders: string[]; port: number;} | null {
-    if (!this.connection) return null;
-    return {
-      ideName: this.connection.lockData.ideName,
-      workspaceFolders: this.connection.lockData.workspaceFolders,
-      port: this.connection.port,
-    };
-  }
-
   async shutdown(): Promise<void> {
     this.stopConnectionTimer();
 
