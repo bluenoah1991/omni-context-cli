@@ -45,17 +45,18 @@ export async function buildAnthropicRequest(
     return {role: message.role, content: message.content};
   });
 
-  const lastMessage = preprocessedMessages.at(-1)!;
-  if (typeof lastMessage.content === 'string') {
-    lastMessage.content = [{
-      type: 'text',
-      text: lastMessage.content,
-      cache_control: {type: 'ephemeral'},
-    }] as any;
-  } else if (Array.isArray(lastMessage.content)) {
-    const block = lastMessage.content.findLast(b => b.type !== 'thinking');
-    if (block) {
-      (block as any).cache_control = {type: 'ephemeral'};
+  for (const message of preprocessedMessages.slice(-2)) {
+    if (typeof message.content === 'string') {
+      message.content = [{
+        type: 'text',
+        text: message.content,
+        cache_control: {type: 'ephemeral'},
+      }] as any;
+    } else if (Array.isArray(message.content)) {
+      const block = message.content.findLast(b => b.type !== 'thinking') ?? message.content.at(-1);
+      if (block) {
+        (block as any).cache_control = {type: 'ephemeral'};
+      }
     }
   }
 
@@ -79,6 +80,8 @@ export async function buildAnthropicRequest(
       description: tool.description,
       input_schema: {type: 'object', ...tool.parameters},
     }));
+    const lastTool = (request.tools as any[]).at(-1);
+    if (lastTool) lastTool.cache_control = {type: 'ephemeral'};
   }
 
   const body = applyInterceptors(request, model);
