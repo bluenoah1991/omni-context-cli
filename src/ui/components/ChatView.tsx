@@ -293,7 +293,9 @@ export function ChatView(): React.ReactElement {
       />
 
       <Box height={2}>
-        {isCompacting ? <CompactingIndicator /> : isLoading && <LoadingIndicator />}
+        {isCompacting
+          ? <CompactingIndicator />
+          : isLoading && <LoadingIndicator specialistMode={specialistMode} />}
       </Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} initialView={menuInitialView} />}
@@ -306,7 +308,6 @@ export function ChatView(): React.ReactElement {
           model={model}
           session={session}
           enableThinking={enableThinking}
-          specialistMode={specialistMode}
           disabled={showMenu}
         />
         <InputBox onSubmit={handleSubmit} disabled={isLoading || isCompacting || showMenu} />

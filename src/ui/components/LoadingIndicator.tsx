@@ -1,6 +1,7 @@
-import { Box, Text } from 'ink';
+import { Text } from 'ink';
 import React, { useEffect, useState } from 'react';
 import { colors } from '../theme/colors';
+import { ShimmerText } from './ShimmerText';
 import { Spinner } from './Spinner';
 
 const verbs = [
@@ -18,7 +19,13 @@ const verbs = [
 
 const getRandomText = () => verbs[Math.floor(Math.random() * verbs.length)];
 
-export function LoadingIndicator(): React.ReactElement {
+interface LoadingIndicatorProps {
+  specialistMode?: boolean;
+}
+
+export function LoadingIndicator(
+  {specialistMode = false}: LoadingIndicatorProps,
+): React.ReactElement {
   const [text, setText] = useState(getRandomText);
 
   useEffect(() => {
@@ -35,7 +42,9 @@ export function LoadingIndicator(): React.ReactElement {
         <Spinner type='dots' />
         {' '}
       </Text>
-      <Text color={colors.muted}>{text}...</Text>
+      {specialistMode
+        ? <ShimmerText text={text + '...'} />
+        : <Text color={colors.muted}>{text}...</Text>}
     </>
   );
 }

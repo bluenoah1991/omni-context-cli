@@ -11,21 +11,12 @@ interface StatusBarProps {
   model: ModelConfig | undefined;
   session?: Session;
   enableThinking: boolean;
-  specialistMode: boolean;
   disabled?: boolean;
 }
 
 export function StatusBar(
-  {
-    isLoading,
-    onInterrupt,
-    onOpenMenu,
-    model,
-    session,
-    enableThinking,
-    specialistMode,
-    disabled = false,
-  }: StatusBarProps,
+  {isLoading, onInterrupt, onOpenMenu, model, session, enableThinking, disabled = false}:
+    StatusBarProps,
 ): React.ReactElement {
   const [ctrlCPressed, setCtrlCPressed] = useState(false);
   const {exit} = useApp();
@@ -51,7 +42,6 @@ export function StatusBar(
 
   const nickname = model?.nickname || model?.name || 'Not Set';
   const thinkingText = enableThinking ? ' (Thinking)' : '';
-  const specialistText = specialistMode ? ' ♪♪' : '';
   const contextLimit = (model?.contextSize || 200) * 1024;
   const inputTokens = session?.inputTokens ?? 0;
   const outputTokens = session?.outputTokens ?? 0;
@@ -64,7 +54,7 @@ export function StatusBar(
       <Text color={colors.muted}>
         {ctrlCPressed
           ? '(Press Ctrl+C again to exit)'
-          : `${nickname}${thinkingText}${specialistText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
+          : `${nickname}${thinkingText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
       </Text>
       <Text color={colors.muted}>
         {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
