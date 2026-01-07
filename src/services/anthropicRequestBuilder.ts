@@ -89,11 +89,15 @@ export async function buildAnthropicRequest(
 
   const body = applyInterceptors(request, model);
 
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'x-api-key': model.apiKey,
     'anthropic-version': '2023-06-01',
   };
+
+  if (config.enableThinking) {
+    headers['anthropic-beta'] = 'interleaved-thinking-2025-05-14';
+  }
 
   return {headers, body};
 }
