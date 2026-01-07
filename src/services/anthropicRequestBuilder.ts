@@ -85,8 +85,6 @@ export async function buildAnthropicRequest(
       description: tool.description,
       input_schema: {type: 'object', ...tool.parameters},
     }));
-    const lastTool = (request.tools as any[]).at(-1);
-    if (lastTool) lastTool.cache_control = {type: 'ephemeral'};
   }
 
   const body = applyInterceptors(request, model);
