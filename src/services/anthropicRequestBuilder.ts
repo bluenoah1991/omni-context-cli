@@ -65,7 +65,7 @@ export async function buildAnthropicRequest(
     model: model.name,
     messages: preprocessedMessages,
     stream: true,
-    max_tokens: config.enableThinking ? 16000 : 4096,
+    max_tokens: 32000,
     system: systemBlocks,
   };
 
@@ -74,7 +74,7 @@ export async function buildAnthropicRequest(
   }
 
   if (config.enableThinking) {
-    request.thinking = {type: 'enabled', budget_tokens: 10000};
+    request.thinking = {type: 'enabled', budget_tokens: 31999};
   }
 
   const tools = await getTools(toolFilter);
