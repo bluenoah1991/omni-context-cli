@@ -4,6 +4,7 @@ import { render } from 'ink';
 import dns from 'node:dns';
 import React from 'react';
 import { Agent, setGlobalDispatcher } from 'undici';
+import packageJson from '../package.json';
 import {
   findModelById,
   initializeCurrentModel,
@@ -18,13 +19,13 @@ import { initializeTools } from './services/tools/index.js';
 import { useChatStore } from './store/chatStore.js';
 import { ChatView } from './ui/components/ChatView.js';
 
-const program = new Command().name('omx').description('Omni Context CLI').option(
-  '-c, --continue',
-  'Continue from last session',
-).option('-d, --diagnostic', 'Enable diagnostic mode to save request/response JSON').option(
-  '-a, --cost-analysis',
-  'Record token usage to CSV for cost analysis',
-).parse();
+const program = new Command().name('omx').description('Omni Context CLI').version(
+  packageJson.version,
+  '-v, --version',
+).option('-c, --continue', 'Continue from last session').option(
+  '-d, --diagnostic',
+  'Enable diagnostic mode to save request/response JSON',
+).option('-a, --cost-analysis', 'Record token usage to CSV for cost analysis').parse();
 
 const opts = program.opts();
 
