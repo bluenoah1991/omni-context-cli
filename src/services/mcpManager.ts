@@ -64,30 +64,11 @@ class MCPManager {
     }
     const serverId = parts[1];
     const originalToolName = parts.slice(2).join('_');
-    return this.callToolWithRetry(serverId, originalToolName, args);
-  }
-
-  private async callToolWithRetry(
-    serverId: string,
-    toolName: string,
-    args: any,
-    retry = 1,
-  ): Promise<any> {
-    let client = this.clients.get(serverId);
+    const client = this.clients.get(serverId);
     if (!client) {
-      const config = this.configs.get(serverId);
-      if (!config) throw new Error(`MCP server config not found: ${serverId}`);
-      await this.connectServer(serverId, config);
-      client = this.clients.get(serverId);
-      if (!client) throw new Error(`Failed to connect to MCP server: ${serverId}`);
+      throw new Error(`MCP server not connected: ${serverId}`);
     }
-    try {
-      return await client.callTool({name: toolName, arguments: args || {}});
-    } catch (error) {
-      if (retry <= 0) throw error;
-      this.clients.delete(serverId);
-      return this.callToolWithRetry(serverId, toolName, args, retry - 1);
-    }
+    return client.callTool({name: originalToolName, arguments: args || {}});
   }
 
   isMCPTool(toolName: string): boolean {
