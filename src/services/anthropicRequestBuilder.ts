@@ -12,6 +12,7 @@ export async function buildAnthropicRequest(
   messages: AnthropicMessage[],
   toolFilter?: ToolFilter,
   skipSystemPrompt?: boolean,
+  sessionId?: string,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
   const systemBlocks = skipSystemPrompt
@@ -67,6 +68,10 @@ export async function buildAnthropicRequest(
     max_tokens: config.enableThinking ? 16000 : 4096,
     system: systemBlocks,
   };
+
+  if (config.clientId && sessionId) {
+    request.metadata = {user_id: `${config.clientId}_${sessionId}`};
+  }
 
   if (config.enableThinking) {
     request.thinking = {type: 'enabled', budget_tokens: 10000};

@@ -21,6 +21,7 @@ async function streamAIResponse(
   toolFilter?: ToolFilter,
   isFromAgent?: boolean,
   skipSystemPrompt?: boolean,
+  sessionId?: string,
 ): Promise<StreamResult<ChatMessage>> {
   const {headers, body} = model.provider === 'openai'
     ? await buildOpenAIRequest(model, messages as OpenAIMessage[], toolFilter, skipSystemPrompt)
@@ -29,6 +30,7 @@ async function streamAIResponse(
       messages as AnthropicMessage[],
       toolFilter,
       skipSystemPrompt,
+      sessionId,
     );
 
   saveRequest(model.provider, headers, body, isFromAgent);
@@ -111,6 +113,7 @@ export async function runConversation(
         toolFilter,
         isFromAgent,
         skipSystemPrompt,
+        currentSession.id,
       );
     } catch (error) {
       const errorText = `${error}`;

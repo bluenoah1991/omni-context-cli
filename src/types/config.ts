@@ -19,6 +19,7 @@ export interface AppConfig {
   specialistMode: boolean;
   ideContext: boolean;
   playbookEnabled: boolean;
+  clientId?: string;
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {

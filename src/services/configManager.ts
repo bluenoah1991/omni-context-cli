@@ -1,7 +1,12 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { useChatStore } from '../store/chatStore';
 import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig } from '../types/config';
 import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
+
+function generateClientId(): string {
+  return crypto.randomUUID();
+}
 
 let cachedAppConfig: AppConfig | undefined = undefined;
 let currentModel: ModelConfig | undefined = undefined;
@@ -17,10 +22,15 @@ export function loadAppConfig(): AppConfig {
     const content = fs.readFileSync(getOmxFilePath('omx.json'), 'utf-8');
     const loadedConfig: AppConfig = JSON.parse(content);
     cachedAppConfig = {...DEFAULT_APP_CONFIG, ...loadedConfig};
+    if (!cachedAppConfig.clientId) {
+      cachedAppConfig.clientId = generateClientId();
+      saveAppConfig(cachedAppConfig);
+    }
     return cachedAppConfig;
   } catch {
-    saveAppConfig(DEFAULT_APP_CONFIG);
-    return DEFAULT_APP_CONFIG;
+    const config = {...DEFAULT_APP_CONFIG, clientId: generateClientId()};
+    saveAppConfig(config);
+    return config;
   }
 }
 
