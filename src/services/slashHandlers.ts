@@ -1,6 +1,7 @@
 import { useChatStore } from '../store/chatStore';
 import { SlashCommand, SlashHandlerResult } from '../types/slash';
 import { getAgentModel, getCurrentModel, loadAppConfig } from './configManager';
+import { executeGitCommit } from './gitService';
 
 export function getFunctionalSlashCommands(): SlashCommand[] {
   return [
@@ -21,6 +22,12 @@ export function getFunctionalSlashCommands(): SlashCommand[] {
     {name: 'model', description: 'Switch to a different model', type: 'functional'},
     {name: 'session', description: 'Load a previous session', type: 'functional'},
     {name: 'exit', description: 'Exit Omx', type: 'functional', execute: handleExit},
+    {
+      name: 'git-commit',
+      description: 'Generate a commit message for staged changes and commit',
+      type: 'functional',
+      execute: executeGitCommit,
+    },
   ];
 }
 

@@ -106,7 +106,9 @@ export function ChatView(): React.ReactElement {
         updateMessages(
           messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]
         );
-        const result = slashCommand.execute();
+        setLoading(true);
+        const result = await slashCommand.execute();
+        setLoading(false);
         if (result.message) {
           setError(null);
           updateMessages(

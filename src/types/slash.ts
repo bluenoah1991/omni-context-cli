@@ -3,7 +3,7 @@ export interface SlashCommand {
   description: string;
   type: 'functional' | 'prompt';
   prompt?: string;
-  execute?: () => SlashHandlerResult;
+  execute?: () => SlashHandlerResult | Promise<SlashHandlerResult>;
 }
 
 export type SlashHandlerResult = {message?: string;};

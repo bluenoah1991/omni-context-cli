@@ -1,0 +1,18 @@
+Generate a concise git commit message for the following staged changes.
+
+Files changed:
+{{FILES}}
+
+Diff:
+```
+{{DIFF}}
+```
+
+Rules:
+- Use conventional commit format (feat:, fix:, refactor:, docs:, chore:, etc.)
+- Keep the subject line under 72 characters
+- Be specific but concise
+- No period at the end of the subject line
+- Focus on WHAT changed and WHY, not HOW
+
+Return ONLY the commit message, nothing else.
