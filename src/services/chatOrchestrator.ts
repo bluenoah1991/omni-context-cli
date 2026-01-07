@@ -7,6 +7,7 @@ import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getCurrentModel } from './configManager';
+import { appendTokenUsage } from './costAnalysis';
 import { saveRequest } from './diagnostic';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
@@ -127,8 +128,10 @@ export async function runConversation(
       updatedAt: Date.now(),
       inputTokens: result.tokenUsage.inputTokens,
       outputTokens: result.tokenUsage.outputTokens,
-      cachedTokens: result.tokenUsage.cachedTokens,
+      cachedTokens: result.tokenUsage.cacheReadTokens,
     };
+
+    appendTokenUsage(currentSession.id, model.id, result.tokenUsage);
 
     finalCallbacks.onSessionUpdate?.(currentSession);
 

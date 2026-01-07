@@ -27,7 +27,12 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
           this.inputTokens = data.message.usage.input_tokens;
         }
         if (data?.message?.usage?.cache_creation_input_tokens) {
+          this.cacheCreationTokens = data.message.usage.cache_creation_input_tokens;
           this.inputTokens += data.message.usage.cache_creation_input_tokens;
+        }
+        if (data?.message?.usage?.cache_read_input_tokens) {
+          this.cacheReadTokens = data.message.usage.cache_read_input_tokens;
+          this.inputTokens += data.message.usage.cache_read_input_tokens;
         }
         break;
 
@@ -42,10 +47,12 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
           this.inputTokens = data.usage.input_tokens;
         }
         if (data?.usage?.cache_creation_input_tokens) {
+          this.cacheCreationTokens = data.usage.cache_creation_input_tokens;
           this.inputTokens += data.usage.cache_creation_input_tokens;
         }
         if (data?.usage?.cache_read_input_tokens) {
-          this.cachedTokens = data.usage.cache_read_input_tokens;
+          this.cacheReadTokens = data.usage.cache_read_input_tokens;
+          this.inputTokens += data.usage.cache_read_input_tokens;
         }
         break;
 
@@ -151,9 +158,10 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
     return {
       message: {role: 'assistant' as const, content},
       tokenUsage: {
-        inputTokens: this.inputTokens + this.cachedTokens,
+        inputTokens: this.inputTokens,
         outputTokens: this.outputTokens,
-        cachedTokens: this.cachedTokens,
+        cacheCreationTokens: this.cacheCreationTokens,
+        cacheReadTokens: this.cacheReadTokens,
       },
     };
   }

@@ -27,7 +27,7 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       this.inputTokens = data.usage.prompt_tokens || 0;
       this.outputTokens = data.usage.completion_tokens || 0;
       if (data.usage.prompt_tokens_details?.cached_tokens) {
-        this.cachedTokens = data.usage.prompt_tokens_details.cached_tokens;
+        this.cacheReadTokens = data.usage.prompt_tokens_details.cached_tokens;
       }
     }
 
@@ -136,7 +136,8 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       tokenUsage: {
         inputTokens: this.inputTokens,
         outputTokens: this.outputTokens,
-        cachedTokens: this.cachedTokens,
+        cacheCreationTokens: this.cacheCreationTokens,
+        cacheReadTokens: this.cacheReadTokens,
       },
     };
   }

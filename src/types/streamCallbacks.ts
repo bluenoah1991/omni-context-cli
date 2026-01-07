@@ -24,7 +24,8 @@ export interface ToolResult {
 export interface TokenUsage {
   inputTokens: number;
   outputTokens: number;
-  cachedTokens: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
 }
 
 export interface StreamResult<T> {

@@ -9,6 +9,7 @@ import {
   initializeCurrentModel,
   setCurrentModel,
 } from './services/configManager.js';
+import { enableCostAnalysis } from './services/costAnalysis.js';
 import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
 import { mcpManager } from './services/mcpManager.js';
@@ -20,7 +21,10 @@ import { ChatView } from './ui/components/ChatView.js';
 const program = new Command().name('omx').description('Omni Context CLI').option(
   '-c, --continue',
   'Continue from last session',
-).option('-d, --diagnostic', 'Enable diagnostic mode to save request/response JSON').parse();
+).option('-d, --diagnostic', 'Enable diagnostic mode to save request/response JSON').option(
+  '-a, --cost-analysis',
+  'Record token usage to CSV for cost analysis',
+).parse();
 
 const opts = program.opts();
 
@@ -43,6 +47,10 @@ mcpManager.initialize();
 
 if (opts.diagnostic) {
   enableDiagnostic();
+}
+
+if (opts.costAnalysis) {
+  enableCostAnalysis();
 }
 
 if (opts.continue) {

@@ -15,13 +15,12 @@ export async function buildAnthropicRequest(
   sessionId?: string,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
+  const cacheControl = config.cacheTtl === '1h'
+    ? {type: 'ephemeral', ttl: '1h'}
+    : {type: 'ephemeral'};
   const systemBlocks = skipSystemPrompt
     ? []
-    : [{
-      text: buildSystemPrompt(config.specialistMode),
-      type: 'text',
-      cache_control: {type: 'ephemeral'},
-    }];
+    : [{text: buildSystemPrompt(config.specialistMode), type: 'text', cache_control: cacheControl}];
 
   const preprocessedMessages = messages.filter(message => {
     if (message.role !== 'assistant') return true;
@@ -48,15 +47,11 @@ export async function buildAnthropicRequest(
 
   for (const message of preprocessedMessages.slice(-2)) {
     if (typeof message.content === 'string') {
-      message.content = [{
-        type: 'text',
-        text: message.content,
-        cache_control: {type: 'ephemeral'},
-      }] as any;
+      message.content = [{type: 'text', text: message.content, cache_control: cacheControl}] as any;
     } else if (Array.isArray(message.content)) {
       const block = message.content.findLast(b => b.type !== 'thinking') ?? message.content.at(-1);
       if (block) {
-        (block as any).cache_control = {type: 'ephemeral'};
+        (block as any).cache_control = cacheControl;
       }
     }
   }

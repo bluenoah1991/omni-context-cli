@@ -7,6 +7,7 @@ import {
   loadAppConfig,
   removeModel,
   setAgentModel,
+  setCacheTtl,
   setCurrentModel,
   setDefaultModel,
   setIDEContext,
@@ -42,6 +43,7 @@ export type View =
   | 'pref-specialist'
   | 'pref-ide-context'
   | 'pref-playbook'
+  | 'pref-cache-ttl'
   | 'browse-sessions'
   | 'rewind-session';
 
@@ -81,6 +83,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [playbookIndex, setPlaybookIndex] = useState<number>();
+  const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
   const [modelsIndex, setModelsIndex] = useState(0);
@@ -169,6 +172,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'streaming', label: '⇵ Streaming output'},
       {id: 'ide-context', label: '⌘ IDE context'},
       {id: 'playbook', label: '≡ Playbook memory'},
+      {id: 'cache-ttl', label: '⏱ Cache duration'},
     ];
 
     const viewMap: View[] = [
@@ -176,6 +180,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'pref-streaming',
       'pref-ide-context',
       'pref-playbook',
+      'pref-cache-ttl',
     ];
 
     return (
@@ -557,6 +562,37 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.playbookEnabled) {
               setPlaybookEnabled(shouldEnable);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('prefs')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pref-cache-ttl') {
+    const items: SelectItem[] = [{id: '5m', label: '5 minutes'}, {id: '1h', label: '1 hour'}];
+    const initialIndex = config.cacheTtl === '1h' ? 1 : 0;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='cache-ttl-mode'
+          title='How long should Anthropic cache your prompts?'
+          items={items}
+          selectedIndex={cacheTtlIndex ?? initialIndex}
+          onSelect={setCacheTtlIndex}
+          onConfirm={i => {
+            const newValue = i === 0 ? '5m' : '1h';
+            if (newValue !== (config.cacheTtl ?? '5m')) {
+              setCacheTtl(newValue);
             }
             onClose();
           }}

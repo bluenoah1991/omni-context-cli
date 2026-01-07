@@ -122,6 +122,12 @@ export function setPlaybookEnabled(value: boolean): void {
   saveAppConfig(config);
 }
 
+export function setCacheTtl(value: '5m' | '1h'): void {
+  const config = loadAppConfig();
+  config.cacheTtl = value;
+  saveAppConfig(config);
+}
+
 export function initializeCurrentModel(): void {
   const appConfig = loadAppConfig();
 

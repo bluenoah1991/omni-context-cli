@@ -9,7 +9,8 @@ export abstract class BaseStreamHandler {
   protected completedToolCalls: ToolCall[] = [];
   protected inputTokens = 0;
   protected outputTokens = 0;
-  protected cachedTokens = 0;
+  protected cacheCreationTokens = 0;
+  protected cacheReadTokens = 0;
 
   constructor(callbacks: StreamCallbacks) {
     this.callbacks = callbacks;

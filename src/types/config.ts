@@ -19,6 +19,7 @@ export interface AppConfig {
   specialistMode: boolean;
   ideContext: boolean;
   playbookEnabled: boolean;
+  cacheTtl?: '5m' | '1h';
   clientId?: string;
 }
 
