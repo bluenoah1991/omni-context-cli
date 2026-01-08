@@ -1,5 +1,10 @@
 import { Box, Text, useInput } from 'ink';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import {
+  addToInputHistory,
+  getInputHistory,
+  getInputHistoryLength,
+} from '../../services/inputHistoryManager';
 import { getAllSlashCommands } from '../../services/slashManager';
 import { colors } from '../theme/colors';
 import { SlashCommandPicker } from './SlashCommandPicker';
@@ -8,8 +13,6 @@ interface InputBoxProps {
   onSubmit: (text: string) => void;
   disabled?: boolean;
 }
-
-const inputHistory: string[] = [];
 
 type State = {
   previousValue: string;
@@ -55,11 +58,12 @@ const reducer = (state: State, action: Action): State => {
       const targetLine = action.type === 'move-cursor-up' ? line - 1 : line + 1;
 
       if (targetLine < 0) {
-        if (inputHistory.length === 0) return state;
-        const newIndex = Math.min(state.historyIndex + 1, inputHistory.length - 1);
+        const historyLength = getInputHistoryLength();
+        if (historyLength === 0) return state;
+        const newIndex = Math.min(state.historyIndex + 1, historyLength - 1);
         if (newIndex === state.historyIndex) return state;
         const savedInput = state.historyIndex === -1 ? state.value : state.savedInput;
-        const historyValue = inputHistory[inputHistory.length - 1 - newIndex];
+        const historyValue = getInputHistory()[historyLength - 1 - newIndex];
         return {
           ...state,
           savedInput,
@@ -75,7 +79,7 @@ const reducer = (state: State, action: Action): State => {
         if (newIndex < -1) return state;
         const newValue = newIndex === -1
           ? state.savedInput
-          : inputHistory[inputHistory.length - 1 - newIndex];
+          : getInputHistory()[getInputHistoryLength() - 1 - newIndex];
         return {...state, historyIndex: newIndex, value: newValue, cursorOffset: newValue.length};
       }
 
@@ -203,11 +207,8 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     if (key.return && !key.shift && !key.meta) {
       if (showPicker) return;
       if (state.value.trim()) {
-        const trimmedValue = state.value.trim();
-        if (inputHistory.length === 0 || inputHistory[inputHistory.length - 1] !== trimmedValue) {
-          inputHistory.push(trimmedValue);
-        }
-        onSubmit(trimmedValue);
+        addToInputHistory(state.value);
+        onSubmit(state.value);
         dispatch({type: 'clear'});
       }
       return;
