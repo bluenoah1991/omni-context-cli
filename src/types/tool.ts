@@ -3,6 +3,7 @@ export interface ToolDefinition {
   description: string;
   parameters: {properties: Record<string, unknown>; required?: string[];};
   formatCall?: (args: Record<string, unknown>) => string;
+  builtin?: boolean;
 }
 
 export interface ToolHandlerResult {

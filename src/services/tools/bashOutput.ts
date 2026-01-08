@@ -6,6 +6,7 @@ const MAX_OUTPUT_LENGTH = 30000;
 export function registerBashOutputTool(): void {
   registerTool({
     name: 'bashOutput',
+    builtin: true,
     description:
       'Check on a background task by its ID. Returns the current stdout, stderr, and exit code if finished. Great for monitoring long-running tasks and verifying completion.',
     formatCall: (args: Record<string, unknown>) => String(args.taskId || ''),

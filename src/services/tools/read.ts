@@ -9,6 +9,7 @@ const MAX_LINE_LENGTH = 1000;
 export function registerReadTool(): void {
   registerTool({
     name: 'read',
+    builtin: true,
     description:
       `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content".`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),

@@ -7,6 +7,7 @@ export function registerWriteTool(): void {
   registerTool(
     {
       name: 'write',
+      builtin: true,
       description:
         `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful! Great for creating new config files, writing complete file contents, or initializing project files. To prevent accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),

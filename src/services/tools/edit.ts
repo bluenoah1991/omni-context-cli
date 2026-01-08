@@ -42,6 +42,7 @@ export function registerEditTool(): void {
   registerTool(
     {
       name: 'edit',
+      builtin: true,
       description:
         `Make surgical text replacements in files. Great for bug fixes, updating functions, renaming variables, or tweaking specific code sections. Provide the exact text to find (oldString) and what to replace it with (newString). The match must be unique—if it appears multiple times, add more context or use replaceAll=true. Line endings are handled automatically.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),

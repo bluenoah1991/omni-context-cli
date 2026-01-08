@@ -11,6 +11,7 @@ export function registerBashTool(): void {
   registerTool(
     {
       name: 'bash',
+      builtin: true,
       description:
         `Run bash commands in your terminal. Great for builds, installs, CLI tools, and system tasks. Save this for when specialized tools won't work. Prefer read, write, edit, glob, or grep when you can. Windows users automatically get WSL bash if it's available. Output is returned to you, and long-running commands get cut off at the timeout. Commands run without a PTY, so interactive commands (vim, nano, less, etc.) will hang. Use non-interactive flags or ask the user to run them manually.`,
       formatCall: (args: Record<string, unknown>) => String(args.command || ''),

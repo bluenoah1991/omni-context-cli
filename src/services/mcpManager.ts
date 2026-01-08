@@ -5,10 +5,11 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'node:fs';
 import { MCPConfig, MCPServerConfig } from '../types/mcp';
 import { ToolDefinition } from '../types/tool';
-import { getOmxFilePath } from '../utils/omxPaths';
+import { getLocalOmxFilePath, getOmxFilePath } from '../utils/omxPaths';
 import { ideIntegration } from './ideIntegration.js';
 
-const MCP_CONFIG_FILE = getOmxFilePath('mcp.json');
+const USER_MCP_CONFIG = getOmxFilePath('mcp.json');
+const LOCAL_MCP_CONFIG = getLocalOmxFilePath('mcp.json');
 
 class MCPManager {
   private clients: Map<string, Client> = new Map();
@@ -27,9 +28,19 @@ class MCPManager {
   }
 
   private loadConfig(): MCPConfig | null {
-    if (!fs.existsSync(MCP_CONFIG_FILE)) return null;
-    const content = fs.readFileSync(MCP_CONFIG_FILE, 'utf-8');
-    return JSON.parse(content);
+    const finalConfig: MCPConfig = {mcpServers: {}};
+
+    for (const file of [USER_MCP_CONFIG, LOCAL_MCP_CONFIG]) {
+      if (fs.existsSync(file)) {
+        try {
+          const content = fs.readFileSync(file, 'utf-8');
+          const config: MCPConfig = JSON.parse(content);
+          Object.assign(finalConfig.mcpServers, config.mcpServers);
+        } catch {}
+      }
+    }
+
+    return Object.keys(finalConfig.mcpServers).length > 0 ? finalConfig : null;
   }
 
   getAllToolDefinitions(): ToolDefinition[] {

@@ -8,6 +8,10 @@ export function getOmxDir(): string {
   return OMX_DIR;
 }
 
+export function getLocalOmxDir(): string {
+  return path.join(process.cwd(), '.omx');
+}
+
 export function getProjectDir(): string {
   const encoded = Buffer.from(process.cwd()).toString('base64url');
   return path.join(OMX_DIR, 'projects', encoded);
@@ -29,4 +33,8 @@ export function getProjectFilePath(filename: string): string {
 
 export function getOmxFilePath(filename: string): string {
   return path.join(OMX_DIR, filename);
+}
+
+export function getLocalOmxFilePath(filename: string): string {
+  return path.join(process.cwd(), '.omx', filename);
 }

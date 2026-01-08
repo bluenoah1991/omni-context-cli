@@ -13,7 +13,9 @@ export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[
   const additionalSet = new Set(toolFilter.additionalTools || []);
 
   if (toolFilter.excludeAgents) {
-    allTools = allTools.filter(t => !t.name.startsWith('agent_') || additionalSet.has(t.name));
+    allTools = allTools.filter(t =>
+      !t.name.startsWith('agent_') || !t.builtin || additionalSet.has(t.name)
+    );
   }
 
   if (toolFilter.excludeMcp) {

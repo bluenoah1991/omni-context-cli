@@ -3,6 +3,7 @@ import path from 'node:path';
 import { buildProjectInstructionsPrompt } from '../prompts/projectInstructionsPromptBuilder';
 import { Provider } from '../types/config';
 import { Session } from '../types/session';
+import { getOmxFilePath } from '../utils/omxPaths';
 import { addUserMessage } from './sessionManager';
 
 const INSTRUCTION_FILES = ['OMX.md', 'CLAUDE.md'] as const;
@@ -22,6 +23,16 @@ function findProjectInstructions(): ProjectInstructions {
         }
       } catch {}
     }
+  }
+
+  const userOmxPath = getOmxFilePath('OMX.md');
+  if (fs.existsSync(userOmxPath)) {
+    try {
+      const content = fs.readFileSync(userOmxPath, 'utf-8');
+      if (content.trim()) {
+        return {content, filename: 'OMX.md'};
+      }
+    } catch {}
   }
 
   return null;

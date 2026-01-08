@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SlashCommand } from '../types/slash';
 import { parseFrontmatter } from '../utils/frontmatter';
-import { getOmxDir } from '../utils/omxPaths';
+import { getLocalOmxFilePath, getOmxFilePath } from '../utils/omxPaths';
 import { getFunctionalSlashCommands } from './slashHandlers';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -16,7 +16,8 @@ function interpolatePrompt(template: string, params: Record<string, any>): strin
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const BUILTIN_SLASH_DIR = path.join(scriptDir, 'slash');
-const USER_SLASH_DIR = path.join(getOmxDir(), 'slash');
+const USER_SLASH_DIR = getOmxFilePath('slash');
+const LOCAL_SLASH_DIR = getLocalOmxFilePath('slash');
 
 function loadSlashFromDir(dir: string): SlashCommand[] {
   if (!fs.existsSync(dir)) {
@@ -39,16 +40,30 @@ function loadSlashFromDir(dir: string): SlashCommand[] {
 
 function loadSlashCommands(): SlashCommand[] {
   const builtinSlash = loadSlashFromDir(BUILTIN_SLASH_DIR);
-
-  if (!fs.existsSync(USER_SLASH_DIR)) {
-    fs.mkdirSync(USER_SLASH_DIR, {recursive: true});
-  }
   const userSlash = loadSlashFromDir(USER_SLASH_DIR);
+  const localSlash = loadSlashFromDir(LOCAL_SLASH_DIR);
 
-  const builtinNames = new Set(builtinSlash.map(s => s.name));
-  const filtered = userSlash.filter(s => !builtinNames.has(s.name));
+  const seen = new Set<string>();
+  const result: SlashCommand[] = [];
 
-  return [...builtinSlash, ...filtered];
+  for (const cmd of builtinSlash) {
+    seen.add(cmd.name);
+    result.push(cmd);
+  }
+  for (const cmd of localSlash) {
+    if (!seen.has(cmd.name)) {
+      seen.add(cmd.name);
+      result.push(cmd);
+    }
+  }
+  for (const cmd of userSlash) {
+    if (!seen.has(cmd.name)) {
+      seen.add(cmd.name);
+      result.push(cmd);
+    }
+  }
+
+  return result;
 }
 
 let cachedCommands: SlashCommand[] | null = null;
