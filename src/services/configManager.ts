@@ -84,6 +84,10 @@ export function removeModel(modelId: string): void {
     config.defaultModelId = config.models[0]?.id;
   }
 
+  if (config.agentModelId === modelId) {
+    config.agentModelId = undefined;
+  }
+
   saveAppConfig(config);
 
   if (currentModel?.id === modelId) {
