@@ -1,4 +1,5 @@
 import { AnthropicMessage } from '../types/anthropicMessage';
+import { GeminiMessage } from '../types/geminiMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { PendingToolCall } from '../types/tool';
 import { UIMessage } from '../types/uiMessage';
@@ -171,9 +172,68 @@ function anthropicMessageToUI(
   return uiMessages;
 }
 
+function geminiMessageToUI(
+  message: GeminiMessage,
+  timestamp: number,
+  pendingToolCalls: Map<string, PendingToolCall>,
+): UIMessage[] {
+  const uiMessages: UIMessage[] = [];
+
+  const thinkingParts = message.parts.filter(part => part.thought === true);
+  if (thinkingParts.length > 0) {
+    const content = thinkingParts.map(part => part.text || '').join('\n');
+    if (content.trim()) {
+      uiMessages.push({role: 'thinking', content, timestamp});
+    }
+  }
+
+  const textParts = message.parts.filter(part => part.text !== undefined && !part.thought);
+  if (textParts.length > 0) {
+    const content = textParts.map(part => part.text || '').join('\n');
+    if (content.trim()) {
+      uiMessages.push({role: message.role === 'user' ? 'user' : 'assistant', content, timestamp});
+    }
+  }
+
+  message.parts.forEach(part => {
+    if (part.functionCall) {
+      const functionCall = part.functionCall;
+      const id = functionCall.id || functionCall.name;
+      pendingToolCalls.set(id, {
+        content: JSON.stringify(functionCall.args),
+        timestamp,
+        toolName: functionCall.name,
+      });
+    } else if (part.functionResponse) {
+      const functionResponse = part.functionResponse;
+      const id = functionResponse.id || functionResponse.name;
+      const pending = pendingToolCalls.get(id);
+      if (pending) {
+        pendingToolCalls.delete(id);
+        uiMessages.push({
+          role: 'tool_call',
+          content: pending.content,
+          timestamp: pending.timestamp,
+          toolName: pending.toolName,
+          toolCallId: id,
+        });
+        uiMessages.push({
+          role: 'tool_result',
+          content: JSON.stringify(functionResponse.response),
+          timestamp,
+          toolName: pending.toolName,
+          toolCallId: id,
+        });
+      }
+    }
+  });
+
+  return uiMessages;
+}
+
 export function sessionMessagesToUI(
-  messages: (OpenAIMessage | AnthropicMessage)[],
-  provider: 'openai' | 'anthropic',
+  messages: (OpenAIMessage | AnthropicMessage | GeminiMessage)[],
+  provider: 'openai' | 'anthropic' | 'gemini',
 ): UIMessage[] {
   const uiMessages: UIMessage[] = [];
   const pendingToolCalls = new Map<string, PendingToolCall>();
@@ -183,6 +243,8 @@ export function sessionMessagesToUI(
 
     if (provider === 'openai') {
       uiMessages.push(...openAIMessageToUI(message as OpenAIMessage, timestamp, pendingToolCalls));
+    } else if (provider === 'gemini') {
+      uiMessages.push(...geminiMessageToUI(message as GeminiMessage, timestamp, pendingToolCalls));
     } else {
       uiMessages.push(
         ...anthropicMessageToUI(message as AnthropicMessage, timestamp, pendingToolCalls),

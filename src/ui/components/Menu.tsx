@@ -240,7 +240,10 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
         type: 'select',
         key: 'provider',
         label: 'API Type',
-        options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}],
+        options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}, {
+          value: 'gemini',
+          label: 'Gemini',
+        }],
       },
       {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. deepseek-chat'},
       {type: 'text', key: 'apiKey', label: 'API Key', mask: true},

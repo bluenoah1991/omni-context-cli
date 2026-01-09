@@ -18,9 +18,6 @@ export async function buildAnthropicRequest(
   const cacheControl = config.cacheTtl === '1h'
     ? {type: 'ephemeral', ttl: '1h'}
     : {type: 'ephemeral'};
-  const systemBlocks = skipSystemPrompt
-    ? []
-    : [{text: buildSystemPrompt(config.specialistMode), type: 'text', cache_control: cacheControl}];
 
   const preprocessedMessages = messages.filter(message => {
     if (message.role !== 'assistant') return true;
@@ -61,8 +58,15 @@ export async function buildAnthropicRequest(
     messages: preprocessedMessages,
     stream: true,
     max_tokens: 32000,
-    system: systemBlocks,
   };
+
+  if (!skipSystemPrompt) {
+    request.system = [{
+      text: buildSystemPrompt(config.specialistMode),
+      type: 'text',
+      cache_control: cacheControl,
+    }];
+  }
 
   if (config.clientId && sessionId) {
     request.metadata = {user_id: `${config.clientId}_${sessionId}`};

@@ -1,3 +1,4 @@
+import { ModelConfig } from '../types/config';
 import { ChatMessage } from '../types/session';
 import { StreamCallbacks, StreamResult, ToolCall } from '../types/streamCallbacks';
 
@@ -16,12 +17,17 @@ export abstract class BaseStreamHandler {
     this.callbacks = callbacks;
   }
 
+  protected getEndpoint(model: ModelConfig): string {
+    return model.apiUrl;
+  }
+
   async stream(
     headers: Record<string, string>,
     body: Record<string, unknown>,
-    endpoint: string,
+    model: ModelConfig,
     signal?: AbortSignal,
   ): Promise<StreamResult<ChatMessage>> {
+    const endpoint = this.getEndpoint(model);
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {...headers, 'Accept-Encoding': 'gzip, deflate, br'},

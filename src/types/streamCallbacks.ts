@@ -10,13 +10,13 @@ export interface StreamCallbacks {
 }
 
 export interface ToolCall {
-  id: string;
+  id?: string;
   name: string;
   input: any;
 }
 
 export interface ToolResult {
-  id: string;
+  id?: string;
   name: string;
   content: string;
 }

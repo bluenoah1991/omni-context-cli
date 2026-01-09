@@ -1,14 +1,17 @@
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { ModelConfig, Provider } from '../types/config';
+import { GeminiMessage } from '../types/geminiMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, Session } from '../types/session';
-import { StreamCallbacks, StreamResult } from '../types/streamCallbacks';
+import { StreamCallbacks, StreamResult, ToolResult } from '../types/streamCallbacks';
 import { ToolFilter } from '../types/tool';
 import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getCurrentModel } from './configManager';
 import { appendTokenUsage } from './costAnalysis';
 import { saveRequest } from './diagnostic';
+import { buildGeminiRequest } from './geminiRequestBuilder';
+import { GeminiStreamHandler } from './geminiStreamHandler';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
 import { addToolResultMessages, getLastAssistantToolCalls } from './sessionManager';
@@ -24,23 +27,51 @@ async function streamAIResponse(
   skipSystemPrompt?: boolean,
   sessionId?: string,
 ): Promise<StreamResult<ChatMessage>> {
-  const {headers, body} = model.provider === 'openai'
-    ? await buildOpenAIRequest(model, messages as OpenAIMessage[], toolFilter, skipSystemPrompt)
-    : await buildAnthropicRequest(
+  let headers: Record<string, string>;
+  let body: Record<string, unknown>;
+
+  if (model.provider === 'gemini') {
+    const result = await buildGeminiRequest(
+      model,
+      messages as GeminiMessage[],
+      toolFilter,
+      skipSystemPrompt,
+    );
+    headers = result.headers;
+    body = result.body;
+  } else if (model.provider === 'openai') {
+    const result = await buildOpenAIRequest(
+      model,
+      messages as OpenAIMessage[],
+      toolFilter,
+      skipSystemPrompt,
+    );
+    headers = result.headers;
+    body = result.body;
+  } else {
+    const result = await buildAnthropicRequest(
       model,
       messages as AnthropicMessage[],
       toolFilter,
       skipSystemPrompt,
       sessionId,
     );
+    headers = result.headers;
+    body = result.body;
+  }
 
   saveRequest(model.provider, headers, body, isFromAgent);
 
-  const handler = model.provider === 'openai'
-    ? new OpenAIStreamHandler(callbacks)
-    : new AnthropicStreamHandler(callbacks);
+  let handler;
+  if (model.provider === 'gemini') {
+    handler = new GeminiStreamHandler(callbacks);
+  } else if (model.provider === 'openai') {
+    handler = new OpenAIStreamHandler(callbacks);
+  } else {
+    handler = new AnthropicStreamHandler(callbacks);
+  }
 
-  return handler.stream(headers, body, model.apiUrl, signal);
+  return handler.stream(headers, body, model, signal);
 }
 
 async function processToolCalls(
@@ -55,7 +86,7 @@ async function processToolCalls(
     return {session, shouldContinue: false};
   }
 
-  const toolResults: {toolCallId: string; content: string;}[] = [];
+  const toolResults: ToolResult[] = [];
 
   for (const toolCall of toolCalls) {
     if (signal?.aborted) {
@@ -67,7 +98,7 @@ async function processToolCalls(
     const result = await executeTool(toolCall.name, toolCall.input, signal);
     const content = JSON.stringify(result);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
-    toolResults.push({toolCallId: toolCall.id, content});
+    toolResults.push({id: toolCall.id, name: toolCall.name, content});
   }
 
   if (signal?.aborted) {

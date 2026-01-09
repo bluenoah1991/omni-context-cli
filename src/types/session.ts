@@ -1,7 +1,8 @@
 import { AnthropicMessage } from './anthropicMessage.js';
+import { GeminiMessage } from './geminiMessage.js';
 import { OpenAIMessage } from './openaiMessage.js';
 
-export type ChatMessage = OpenAIMessage | AnthropicMessage;
+export type ChatMessage = OpenAIMessage | AnthropicMessage | GeminiMessage;
 
 export interface Session {
   id: string;

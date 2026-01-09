@@ -3,9 +3,10 @@ import path from 'node:path';
 import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
 import { Provider } from '../types/config';
 import { ModelConfig } from '../types/config';
+import { GeminiMessage, GeminiPart } from '../types/geminiMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ChatMessage, RewindPoint, Session } from '../types/session';
-import { ToolCall } from '../types/streamCallbacks';
+import { ToolCall, ToolResult } from '../types/streamCallbacks';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
@@ -44,6 +45,10 @@ export function addUserMessage(session: Session, content: string, provider: Prov
 
   if (provider === 'openai') {
     message = {role: 'user', content} as OpenAIMessage;
+  } else if (provider === 'gemini') {
+    const parts: GeminiPart[] = [];
+    if (content) parts.push({text: content});
+    message = {role: 'user', parts} as GeminiMessage;
   } else {
     const contentBlocks: AnthropicContentBlock[] = [];
     if (content) contentBlocks.push({type: 'text', text: content});
@@ -61,20 +66,9 @@ export function addUserMessage(session: Session, content: string, provider: Prov
   };
 }
 
-export function addAssistantMessage(
-  session: Session,
-  content: string,
-  provider: Provider,
-): Session {
-  const message: ChatMessage = provider === 'openai'
-    ? ({role: 'assistant', content} as OpenAIMessage)
-    : ({role: 'assistant', content: [{type: 'text', text: content}]} as AnthropicMessage);
-  return {...session, messages: [...session.messages, message], updatedAt: Date.now()};
-}
-
 export function getLastAssistantToolCalls(session: Session, provider: Provider): ToolCall[] {
   const lastMessage = session.messages[session.messages.length - 1];
-  if (lastMessage.role !== 'assistant') return [];
+  if (lastMessage.role !== 'assistant' && lastMessage.role !== 'model') return [];
 
   if (provider === 'openai') {
     const openaiMessage = lastMessage as OpenAIMessage;
@@ -83,6 +77,15 @@ export function getLastAssistantToolCalls(session: Session, provider: Provider):
       id: tc.id,
       name: tc.function.name,
       input: JSON.parse(tc.function.arguments),
+    }));
+  }
+
+  if (provider === 'gemini') {
+    const geminiMessage = lastMessage as GeminiMessage;
+    return geminiMessage.parts.filter(part => part.functionCall).map(part => ({
+      id: part.functionCall!.id,
+      name: part.functionCall!.name,
+      input: part.functionCall!.args,
     }));
   }
 
@@ -97,26 +100,35 @@ export function getLastAssistantToolCalls(session: Session, provider: Provider):
 
 export function addToolResultMessages(
   session: Session,
-  toolResults: Array<{toolCallId: string; content: string;}>,
+  toolResults: ToolResult[],
   provider: Provider,
 ): Session {
   let toolResultMessages: ChatMessage[];
 
   if (provider === 'openai') {
     toolResultMessages = toolResults.map(
-      result => ({
-        role: 'tool',
-        content: result.content,
-        tool_call_id: result.toolCallId,
-      } as OpenAIMessage)
+      result => ({role: 'tool', content: result.content, tool_call_id: result.id} as OpenAIMessage)
     );
+  } else if (provider === 'gemini') {
+    toolResultMessages = [{
+      role: 'user',
+      parts: toolResults.map(result => {
+        let response: Record<string, unknown>;
+        try {
+          response = JSON.parse(result.content);
+        } catch {
+          response = {output: result.content};
+        }
+        return {functionResponse: {id: result.id, name: result.name, response}};
+      }),
+    } as GeminiMessage];
   } else {
     toolResultMessages = [
       {
         role: 'user',
         content: toolResults.map(result => ({
           type: 'tool_result' as const,
-          tool_use_id: result.toolCallId,
+          tool_use_id: result.id,
           content: result.content,
         })),
       } as AnthropicMessage,
@@ -185,23 +197,34 @@ export function loadLatestSession(): Session | null {
 export function getRewindPoints(session: Session): RewindPoint[] {
   const points: RewindPoint[] = [];
   let isFirstUserMessage = true;
-  session.messages.forEach((msg, index) => {
-    if (msg.role !== 'user') return;
+  session.messages.forEach((message, index) => {
+    if (message.role !== 'user') return;
 
-    const openaiMsg = msg as OpenAIMessage;
-    if (openaiMsg.tool_call_id) return;
+    const openaiMessage = message as OpenAIMessage;
+    if (openaiMessage.tool_call_id) return;
 
     let text = '';
-    if (typeof msg.content === 'string') {
-      text = msg.content;
-    } else if (Array.isArray(msg.content)) {
-      const anthropicContent = msg.content as AnthropicContentBlock[];
-      const hasToolResult = anthropicContent.some(block => block.type === 'tool_result');
-      if (hasToolResult) return;
+    if ('content' in message) {
+      if (typeof message.content === 'string') {
+        text = message.content;
+      } else if (Array.isArray(message.content)) {
+        const anthropicContent = message.content as AnthropicContentBlock[];
+        const hasToolResult = anthropicContent.some(block => block.type === 'tool_result');
+        if (hasToolResult) return;
 
-      const textBlock = anthropicContent.find(block => block.type === 'text');
-      if (textBlock && textBlock.type === 'text') {
-        text = textBlock.text;
+        const textBlock = anthropicContent.find(block => block.type === 'text');
+        if (textBlock && textBlock.type === 'text') {
+          text = textBlock.text;
+        }
+      }
+    } else if ('parts' in message) {
+      const geminiMessage = message as GeminiMessage;
+      const hasFunctionResponse = geminiMessage.parts.some(part => part.functionResponse);
+      if (hasFunctionResponse) return;
+
+      const textPart = geminiMessage.parts.find(part => part.text !== undefined && !part.thought);
+      if (textPart) {
+        text = textPart.text || '';
       }
     }
 
