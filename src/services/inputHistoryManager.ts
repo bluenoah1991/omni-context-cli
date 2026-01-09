@@ -1,21 +1,29 @@
 import fs from 'node:fs';
-import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
+import { ensureProjectDir, getProjectFilePath } from '../utils/omxPaths';
 
-const HISTORY_FILE = 'input-history.json';
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 100;
+const HISTORY_FILENAME = 'input-history.json';
 
 let history: string[] = [];
+let historyFile: string | null = null;
+
+export function initializeInputHistory(): void {
+  ensureProjectDir();
+  historyFile = getProjectFilePath(HISTORY_FILENAME);
+  loadHistory();
+}
 
 function loadHistory(): void {
-  ensureDir(getOmxDir());
-  const filePath = getOmxFilePath(HISTORY_FILE);
+  if (!historyFile) return;
   try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8');
+    if (fs.existsSync(historyFile)) {
+      const content = fs.readFileSync(historyFile, 'utf-8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed)) {
         history = parsed.slice(-MAX_HISTORY);
       }
+    } else {
+      history = [];
     }
   } catch {
     history = [];
@@ -23,8 +31,9 @@ function loadHistory(): void {
 }
 
 function saveHistory(): void {
-  ensureDir(getOmxDir());
-  fs.writeFileSync(getOmxFilePath(HISTORY_FILE), JSON.stringify(history), 'utf-8');
+  if (!historyFile) return;
+  ensureProjectDir();
+  fs.writeFileSync(historyFile, JSON.stringify(history), 'utf-8');
 }
 
 export function getInputHistory(): string[] {
@@ -45,5 +54,3 @@ export function addToInputHistory(input: string): void {
 export function getInputHistoryLength(): number {
   return history.length;
 }
-
-loadHistory();

@@ -12,6 +12,7 @@ import {
 } from './services/configManager.js';
 import { enableCostAnalysis } from './services/costAnalysis.js';
 import { enableDiagnostic } from './services/diagnostic.js';
+import { initializeInputHistory } from './services/inputHistoryManager.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
 import { mcpManager } from './services/mcpManager.js';
 import { loadLatestSession } from './services/sessionManager.js';
@@ -64,6 +65,8 @@ if (opts.continue) {
     }
   }
 }
+
+initializeInputHistory();
 
 process.stdout.write('\x1Bc');
 
