@@ -3,7 +3,7 @@ import { Command } from '@commander-js/extra-typings';
 import { render } from 'ink';
 import dns from 'node:dns';
 import React from 'react';
-import { Agent, setGlobalDispatcher } from 'undici';
+import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
 import {
   findModelById,
@@ -32,7 +32,7 @@ const opts = program.opts();
 
 dns.setDefaultResultOrder('ipv4first');
 
-const agent = new Agent({
+const agent = new EnvHttpProxyAgent({
   connections: 100,
   pipelining: 10,
   keepAliveTimeout: 60000,

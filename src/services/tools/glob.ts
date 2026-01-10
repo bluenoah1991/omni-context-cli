@@ -10,7 +10,7 @@ const MAX_FILES = 100;
 
 export function registerGlobTool(): void {
   registerTool({
-    name: 'glob',
+    name: 'Glob',
     builtin: true,
     description:
       `Find files by pattern. Great for locating files when you know the name pattern but not the location, finding all files of a certain type, or exploring directory structure. Standard glob syntax: * (matches anything), ** (matches any path), ? (matches one char). Capped at ${MAX_FILES} results. Respects .gitignore. For directories: "path/*" (direct children) or "path/**/*" (recursive, everything).`,

@@ -67,7 +67,7 @@ export function getSkill(name: string): SkillInfo | undefined {
 
 export function registerSkillTool(): void {
   registerTool({
-    name: 'skill',
+    name: 'Skill',
     builtin: true,
     description: 'Load a skill from <available_skills> to get detailed instructions.',
     parameters: {

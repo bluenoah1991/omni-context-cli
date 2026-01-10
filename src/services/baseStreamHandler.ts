@@ -33,6 +33,7 @@ export abstract class BaseStreamHandler {
       headers: {...headers, 'Accept-Encoding': 'gzip, deflate, br'},
       body: JSON.stringify(body),
       signal,
+      credentials: 'omit',
     });
 
     if (!response.ok) {

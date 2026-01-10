@@ -62,7 +62,7 @@ function countMatches(output: string, mode: string): number {
 export function registerGrepTool(): void {
   registerTool(
     {
-      name: 'grep',
+      name: 'Grep',
       builtin: true,
       description:
         `Search for text patterns using regex. Great for finding function definitions, tracking variable usage, hunting down specific patterns, or doing code audits. Returns matches with file paths and line numbers. Respects .gitignore and searches hidden files. Output shows match counts and can be filtered by type, path, or glob pattern.`,
