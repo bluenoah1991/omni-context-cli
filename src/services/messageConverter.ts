@@ -1,6 +1,16 @@
 import { AnthropicMessage } from '../types/anthropicMessage';
+import { Provider } from '../types/config';
 import { GeminiMessage } from '../types/geminiMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
+import {
+  ResponsesContentItem,
+  ResponsesFunctionCall,
+  ResponsesFunctionCallOutput,
+  ResponsesMessage,
+  ResponsesMessageItem,
+  ResponsesReasoningItem,
+} from '../types/responsesMessage';
+import { ChatMessage } from '../types/session';
 import { PendingToolCall } from '../types/tool';
 import { UIMessage } from '../types/uiMessage';
 
@@ -231,17 +241,74 @@ function geminiMessageToUI(
   return uiMessages;
 }
 
-export function sessionMessagesToUI(
-  messages: (OpenAIMessage | AnthropicMessage | GeminiMessage)[],
-  provider: 'openai' | 'anthropic' | 'gemini',
+function responsesItemToUI(
+  item: ResponsesContentItem,
+  timestamp: number,
+  pendingToolCalls: Map<string, PendingToolCall>,
 ): UIMessage[] {
+  const uiMessages: UIMessage[] = [];
+
+  if (item.type === 'message') {
+    const message = item as ResponsesMessageItem;
+    const content = typeof message.content === 'string'
+      ? message.content
+      : message.content.map(c => c.type === 'output_text' || c.type === 'input_text' ? c.text : '')
+        .join('');
+
+    if (content.trim()) {
+      uiMessages.push({role: message.role === 'user' ? 'user' : 'assistant', content, timestamp});
+    }
+  } else if (item.type === 'function_call') {
+    const functionCall = item as ResponsesFunctionCall;
+    pendingToolCalls.set(functionCall.call_id, {
+      content: functionCall.arguments,
+      timestamp,
+      toolName: functionCall.name,
+    });
+  } else if (item.type === 'function_call_output') {
+    const functionCallOutput = item as ResponsesFunctionCallOutput;
+    const pending = pendingToolCalls.get(functionCallOutput.call_id);
+    if (pending) {
+      pendingToolCalls.delete(functionCallOutput.call_id);
+      uiMessages.push({
+        role: 'tool_call',
+        content: pending.content,
+        timestamp: pending.timestamp,
+        toolName: pending.toolName,
+        toolCallId: functionCallOutput.call_id,
+      });
+      uiMessages.push({
+        role: 'tool_result',
+        content: functionCallOutput.output,
+        timestamp,
+        toolName: pending.toolName,
+        toolCallId: functionCallOutput.call_id,
+      });
+    }
+  } else if (item.type === 'reasoning') {
+    const reasoning = item as ResponsesReasoningItem;
+    const text = reasoning.summary?.map(s => s.text).join('\n') || '';
+    if (text.trim()) {
+      uiMessages.push({role: 'thinking', content: text, timestamp});
+    }
+  }
+
+  return uiMessages;
+}
+
+export function sessionMessagesToUI(messages: ChatMessage[], provider: Provider): UIMessage[] {
   const uiMessages: UIMessage[] = [];
   const pendingToolCalls = new Map<string, PendingToolCall>();
 
   messages.forEach((message, index) => {
     const timestamp = Date.now() - (messages.length - index) * 1000;
 
-    if (provider === 'openai') {
+    if (provider === 'responses') {
+      const wrapper = message as ResponsesMessage;
+      wrapper.items.forEach(item => {
+        uiMessages.push(...responsesItemToUI(item, timestamp, pendingToolCalls));
+      });
+    } else if (provider === 'openai') {
       uiMessages.push(...openAIMessageToUI(message as OpenAIMessage, timestamp, pendingToolCalls));
     } else if (provider === 'gemini') {
       uiMessages.push(...geminiMessageToUI(message as GeminiMessage, timestamp, pendingToolCalls));

@@ -1,10 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
-import { Provider } from '../types/config';
-import { ModelConfig } from '../types/config';
+import { ModelConfig, Provider } from '../types/config';
 import { GeminiMessage, GeminiPart } from '../types/geminiMessage';
 import { OpenAIMessage } from '../types/openaiMessage';
+import {
+  ResponsesContentItem,
+  ResponsesFunctionCall,
+  ResponsesFunctionCallOutput,
+  ResponsesMessage,
+  ResponsesMessageItem,
+} from '../types/responsesMessage';
 import { ChatMessage, RewindPoint, Session } from '../types/session';
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
@@ -43,7 +49,19 @@ export function createSession(preferredModel?: ModelConfig): Session {
 export function addUserMessage(session: Session, content: string, provider: Provider): Session {
   let message: ChatMessage;
 
-  if (provider === 'openai') {
+  if (provider === 'responses') {
+    const responsesMessage: ResponsesMessageItem = {
+      type: 'message',
+      role: 'user',
+      content: [{type: 'input_text', text: content}],
+    };
+    message = {
+      type: 'responses',
+      role: 'user',
+      items: [responsesMessage],
+      content,
+    } as ResponsesMessage;
+  } else if (provider === 'openai') {
     message = {role: 'user', content} as OpenAIMessage;
   } else if (provider === 'gemini') {
     const parts: GeminiPart[] = [];
@@ -67,6 +85,33 @@ export function addUserMessage(session: Session, content: string, provider: Prov
 }
 
 export function getLastAssistantToolCalls(session: Session, provider: Provider): ToolCall[] {
+  if (provider === 'responses') {
+    const toolCalls: ToolCall[] = [];
+    const lastMessage = session.messages[session.messages.length - 1];
+
+    if (!lastMessage || !('type' in lastMessage)) return [];
+
+    let items: ResponsesContentItem[] = [];
+
+    if (lastMessage.type === 'responses') {
+      items = (lastMessage as ResponsesMessage).items;
+    } else {
+      return [];
+    }
+
+    for (const item of items) {
+      if (item.type === 'function_call') {
+        const functionCall = item as ResponsesFunctionCall;
+        let input: any = {};
+        try {
+          input = JSON.parse(functionCall.arguments);
+        } catch {}
+        toolCalls.push({id: functionCall.call_id, name: functionCall.name, input});
+      }
+    }
+    return toolCalls;
+  }
+
   const lastMessage = session.messages[session.messages.length - 1];
   if (lastMessage.role !== 'assistant' && lastMessage.role !== 'model') return [];
 
@@ -105,7 +150,21 @@ export function addToolResultMessages(
 ): Session {
   let toolResultMessages: ChatMessage[];
 
-  if (provider === 'openai') {
+  if (provider === 'responses') {
+    toolResultMessages = toolResults.map(result => {
+      const outputItem: ResponsesFunctionCallOutput = {
+        type: 'function_call_output',
+        call_id: result.id!,
+        output: result.content,
+      };
+      return {
+        type: 'responses',
+        role: 'user',
+        items: [outputItem],
+        content: result.content,
+      } as ResponsesMessage;
+    });
+  } else if (provider === 'openai') {
     toolResultMessages = toolResults.map(
       result => ({role: 'tool', content: result.content, tool_call_id: result.id} as OpenAIMessage)
     );

@@ -14,6 +14,8 @@ import { buildGeminiRequest } from './geminiRequestBuilder';
 import { GeminiStreamHandler } from './geminiStreamHandler';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
 import { OpenAIStreamHandler } from './openaiStreamHandler';
+import { buildResponsesRequest } from './responsesRequestBuilder';
+import { ResponsesStreamHandler } from './responsesStreamHandler';
 import { addToolResultMessages, getLastAssistantToolCalls } from './sessionManager';
 import { executeTool } from './toolExecutor';
 
@@ -29,8 +31,20 @@ async function streamAIResponse(
 ): Promise<StreamResult<ChatMessage>> {
   let headers: Record<string, string>;
   let body: Record<string, unknown>;
+  let handler;
 
-  if (model.provider === 'gemini') {
+  if (model.provider === 'responses') {
+    const result = await buildResponsesRequest(
+      model,
+      messages,
+      toolFilter,
+      skipSystemPrompt,
+      sessionId,
+    );
+    headers = result.headers;
+    body = result.body;
+    handler = new ResponsesStreamHandler(callbacks);
+  } else if (model.provider === 'gemini') {
     const result = await buildGeminiRequest(
       model,
       messages as GeminiMessage[],
@@ -39,6 +53,7 @@ async function streamAIResponse(
     );
     headers = result.headers;
     body = result.body;
+    handler = new GeminiStreamHandler(callbacks);
   } else if (model.provider === 'openai') {
     const result = await buildOpenAIRequest(
       model,
@@ -48,6 +63,7 @@ async function streamAIResponse(
     );
     headers = result.headers;
     body = result.body;
+    handler = new OpenAIStreamHandler(callbacks);
   } else {
     const result = await buildAnthropicRequest(
       model,
@@ -58,18 +74,10 @@ async function streamAIResponse(
     );
     headers = result.headers;
     body = result.body;
+    handler = new AnthropicStreamHandler(callbacks);
   }
 
   saveRequest(model.provider, headers, body, isFromAgent);
-
-  let handler;
-  if (model.provider === 'gemini') {
-    handler = new GeminiStreamHandler(callbacks);
-  } else if (model.provider === 'openai') {
-    handler = new OpenAIStreamHandler(callbacks);
-  } else {
-    handler = new AnthropicStreamHandler(callbacks);
-  }
 
   return handler.stream(headers, body, model, signal);
 }

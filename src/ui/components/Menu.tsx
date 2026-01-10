@@ -61,6 +61,10 @@ function normalizeApiUrl(url: string, provider: Provider): string {
     if (!apiUrl.endsWith('/chat/completions')) {
       apiUrl = `${apiUrl}/chat/completions`;
     }
+  } else if (provider === 'responses') {
+    if (!apiUrl.endsWith('/responses')) {
+      apiUrl = `${apiUrl}/responses`;
+    }
   }
 
   return apiUrl;
@@ -243,7 +247,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
         options: [{value: 'anthropic', label: 'Anthropic'}, {value: 'openai', label: 'OpenAI'}, {
           value: 'gemini',
           label: 'Gemini',
-        }],
+        }, {value: 'responses', label: 'OpenAI Responses API'}],
       },
       {type: 'text', key: 'model', label: 'Model Name', placeholder: 'e.g. deepseek-chat'},
       {type: 'text', key: 'apiKey', label: 'API Key', mask: true},
