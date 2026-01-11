@@ -75,7 +75,17 @@ async function generateCommitMessage(diff: string, files: string[]): Promise<str
   );
 
   const lastMessage = result.messages[result.messages.length - 1];
-  return extractTextContent(lastMessage).trim();
+  let message = extractTextContent(lastMessage).trim();
+
+  if (message.includes('```')) {
+    const start = message.indexOf('```') + 3;
+    const end = message.indexOf('```', start);
+    if (end > start) {
+      message = message.slice(start, end).trim();
+    }
+  }
+
+  return message;
 }
 
 export async function executeGitCommit(): Promise<{message: string;}> {
