@@ -13,6 +13,7 @@ import {
 import { ChatMessage } from '../types/session';
 import { PendingToolCall } from '../types/tool';
 import { UIMessage } from '../types/uiMessage';
+import { extractThinking } from '../utils/messageUtils';
 
 function openAIMessageToUI(
   message: OpenAIMessage,
@@ -42,8 +43,9 @@ function openAIMessageToUI(
     }
 
     case 'assistant': {
-      if (message.reasoning_content && message.reasoning_content.trim()) {
-        uiMessages.push({role: 'thinking', content: message.reasoning_content, timestamp});
+      const thinking = extractThinking(message);
+      if (thinking && thinking.trim()) {
+        uiMessages.push({role: 'thinking', content: thinking, timestamp});
       }
 
       if (typeof message.content === 'string') {

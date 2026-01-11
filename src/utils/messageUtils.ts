@@ -1,6 +1,24 @@
 import { ChatMessage, Session } from '../types/session';
 import { removeIDEContext, unwrapPromptMessage } from './messagePreprocessor';
 
+export function extractThinking(message: any): string {
+  if (!message) return '';
+
+  if (message.reasoning) {
+    return message.reasoning;
+  }
+
+  if (message.reasoning_content) {
+    return message.reasoning_content;
+  }
+
+  if (Array.isArray(message.reasoning_details)) {
+    return message.reasoning_details.map((item: any) => item.text || '').filter(Boolean).join('\n');
+  }
+
+  return '';
+}
+
 export function extractTextContent(message: ChatMessage): string {
   const content = (message as any).content;
   const parts = (message as any).parts;

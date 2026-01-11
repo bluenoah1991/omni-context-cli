@@ -47,7 +47,9 @@ export async function buildOpenAIRequest(
           content,
           ...(message.tool_calls && {tool_calls: message.tool_calls}),
           ...(message.tool_call_id && {tool_call_id: message.tool_call_id}),
+          ...(message.reasoning && {reasoning: message.reasoning}),
           ...(message.reasoning_content && {reasoning_content: message.reasoning_content}),
+          ...(message.reasoning_details && {reasoning_details: message.reasoning_details}),
         };
       }),
     ],

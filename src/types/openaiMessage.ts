@@ -16,5 +16,7 @@ export interface OpenAIMessage {
   content: string | OpenAIContentPart[];
   tool_calls?: OpenAIToolCall[];
   tool_call_id?: string;
+  reasoning?: string;
   reasoning_content?: string;
+  reasoning_details?: any[];
 }

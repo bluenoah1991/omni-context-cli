@@ -1,5 +1,6 @@
 import { ChatMessage } from '../types/session';
 import { StreamResult, ToolCall } from '../types/streamCallbacks';
+import { extractThinking } from '../utils/messageUtils';
 import { BaseStreamHandler } from './baseStreamHandler';
 
 interface ToolCallAccumulator {
@@ -8,8 +9,22 @@ interface ToolCallAccumulator {
   arguments: string;
 }
 
+interface ReasoningDetail {
+  type: string;
+  text?: string;
+  summary?: string;
+  data?: string;
+  id?: string | null;
+  format?: string;
+  signature?: string;
+  index: number;
+}
+
 export class OpenAIStreamHandler extends BaseStreamHandler {
   private activeToolCalls = new Map<number, ToolCallAccumulator>();
+  private reasoning = '';
+  private reasoningContent = '';
+  private reasoningDetailsAccumulator = new Map<string, ReasoningDetail>();
 
   protected processChunk(chunk: any): void {
     if (chunk.data === '[DONE]') {
@@ -44,10 +59,51 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       }
     }
 
-    const thinking = this.extractThinking(delta);
+    if (delta.reasoning) {
+      this.reasoning += delta.reasoning;
+    }
+
+    if (delta.reasoning_content) {
+      this.reasoningContent += delta.reasoning_content;
+    }
+
+    if (Array.isArray(delta.reasoning_details)) {
+      for (const detail of delta.reasoning_details) {
+        const index = detail.index ?? 0;
+        const key = `${detail.type}-${index}`;
+        const existing = this.reasoningDetailsAccumulator.get(key);
+
+        if (existing) {
+          if (detail.text !== undefined) {
+            existing.text = (existing.text || '') + detail.text;
+          }
+          if (detail.summary !== undefined) {
+            existing.summary = (existing.summary || '') + detail.summary;
+          }
+          if (detail.data !== undefined) {
+            existing.data = (existing.data || '') + detail.data;
+          }
+          if (detail.id !== undefined) existing.id = detail.id;
+          if (detail.format !== undefined) existing.format = detail.format;
+          if (detail.signature !== undefined) existing.signature = detail.signature;
+        } else {
+          this.reasoningDetailsAccumulator.set(key, {
+            type: detail.type,
+            text: detail.text,
+            summary: detail.summary,
+            data: detail.data,
+            id: detail.id,
+            format: detail.format,
+            signature: detail.signature,
+            index,
+          });
+        }
+      }
+    }
+
+    const thinking = extractThinking(delta);
     if (thinking) {
       this.accumulatedThinking += thinking;
-
       if (this.accumulatedThinking.trim()) {
         this.callbacks.onThinking(thinking);
       }
@@ -56,28 +112,6 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     if (delta.tool_calls) {
       delta.tool_calls.forEach((tc: any) => this.handleToolCallDelta(tc));
     }
-  }
-
-  private extractThinking(delta: any): string {
-    if (delta.reasoning) {
-      return delta.reasoning;
-    }
-
-    if (delta.reasoning_content) {
-      return delta.reasoning_content;
-    }
-
-    if (delta.reasoning_details) {
-      if (Array.isArray(delta.reasoning_details)) {
-        return delta.reasoning_details.map((item: any) => item.text || item.content || '').join(
-          '\n',
-        );
-      }
-
-      return String(delta.reasoning_details);
-    }
-
-    return '';
   }
 
   private handleToolCallDelta(delta: any): void {
@@ -119,11 +153,17 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       }
     }
 
+    const reasoningDetails = this.reasoningDetailsAccumulator.size > 0
+      ? Array.from(this.reasoningDetailsAccumulator.values())
+      : undefined;
+
     return {
       message: {
         role: 'assistant' as const,
         content: this.accumulatedContent,
-        ...(this.accumulatedThinking && {reasoning_content: this.accumulatedThinking}),
+        ...(this.reasoning && {reasoning: this.reasoning}),
+        ...(this.reasoningContent && {reasoning_content: this.reasoningContent}),
+        ...(reasoningDetails && {reasoning_details: reasoningDetails}),
         ...(this.completedToolCalls.length > 0
           && {
             tool_calls: this.completedToolCalls.map(tc => ({
