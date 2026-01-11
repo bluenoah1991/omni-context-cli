@@ -160,14 +160,14 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     return {
       message: {
         role: 'assistant' as const,
-        content: this.accumulatedContent,
+        ...(this.accumulatedContent && {content: this.accumulatedContent}),
         ...(this.reasoning && {reasoning: this.reasoning}),
         ...(this.reasoningContent && {reasoning_content: this.reasoningContent}),
         ...(reasoningDetails && {reasoning_details: reasoningDetails}),
         ...(this.completedToolCalls.length > 0
           && {
             tool_calls: this.completedToolCalls.map(tc => ({
-              id: tc.id,
+              id: tc.id!,
               type: 'function' as const,
               function: {name: tc.name, arguments: JSON.stringify(tc.input)},
             })),

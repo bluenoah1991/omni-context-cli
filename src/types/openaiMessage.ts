@@ -13,7 +13,7 @@ export interface OpenAIToolCall {
 
 export interface OpenAIMessage {
   role: OpenAIMessageRole;
-  content: string | OpenAIContentPart[];
+  content?: string | OpenAIContentPart[];
   tool_calls?: OpenAIToolCall[];
   tool_call_id?: string;
   reasoning?: string;

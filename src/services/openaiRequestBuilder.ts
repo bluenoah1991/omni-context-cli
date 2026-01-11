@@ -44,7 +44,7 @@ export async function buildOpenAIRequest(
         }
         return {
           role: message.role,
-          content,
+          ...(content && {content}),
           ...(message.tool_calls && {tool_calls: message.tool_calls}),
           ...(message.tool_call_id && {tool_call_id: message.tool_call_id}),
           ...(message.reasoning && {reasoning: message.reasoning}),

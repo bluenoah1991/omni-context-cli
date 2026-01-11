@@ -6,7 +6,7 @@ import {
   ResponsesReasoningItem,
 } from '../types/responsesMessage';
 import { ChatMessage } from '../types/session';
-import { StreamCallbacks, StreamResult, ToolCall } from '../types/streamCallbacks';
+import { StreamResult, ToolCall } from '../types/streamCallbacks';
 import { BaseStreamHandler } from './baseStreamHandler';
 
 interface FunctionCallAccumulator {
@@ -194,7 +194,7 @@ export class ResponsesStreamHandler extends BaseStreamHandler {
       type: 'responses',
       role: 'assistant',
       items: outputMessage,
-      content: this.accumulatedContent,
+      ...(this.accumulatedContent && {content: this.accumulatedContent}),
     };
 
     return {
