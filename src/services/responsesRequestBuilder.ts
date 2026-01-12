@@ -2,6 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { ModelConfig } from '../types/config';
 import {
   ResponsesContentItem,
+  ResponsesFunctionCallOutput,
   ResponsesMessage,
   ResponsesMessageItem,
 } from '../types/responsesMessage';
@@ -38,6 +39,14 @@ export async function buildResponsesRequest(
               ),
             });
           } else {
+            input.push(item);
+          }
+        } else if (item.type === 'function_call_output') {
+          const funcOutput = item as ResponsesFunctionCallOutput;
+          try {
+            const {displayText, ...rest} = JSON.parse(funcOutput.output);
+            input.push({...funcOutput, output: JSON.stringify(rest)});
+          } catch {
             input.push(item);
           }
         } else {

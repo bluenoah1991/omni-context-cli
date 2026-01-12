@@ -39,6 +39,12 @@ export async function buildOpenAIRequest(
             );
           }
         }
+        if (message.role === 'tool' && typeof content === 'string') {
+          try {
+            const {displayText, ...rest} = JSON.parse(content);
+            content = JSON.stringify(rest);
+          } catch {}
+        }
         if (Array.isArray(content)) {
           content = content.map(part => ({...part}));
         }

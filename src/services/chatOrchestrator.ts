@@ -104,8 +104,7 @@ async function processToolCalls(
     callbacks.onToolCall({id: toolCall.id, name: toolCall.name, input: toolCall.input});
 
     const result = await executeTool(toolCall.name, toolCall.input, signal);
-    const {displayText, ...resultForModel} = result;
-    const content = JSON.stringify(resultForModel);
+    const content = JSON.stringify(result);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
     toolResults.push({id: toolCall.id, name: toolCall.name, content});
   }

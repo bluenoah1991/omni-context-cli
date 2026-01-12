@@ -30,9 +30,20 @@ export async function buildAnthropicRequest(
       if (Array.isArray(message.content)) {
         return {
           role: message.role,
-          content: message.content.map(block =>
-            block.type === 'text' ? {...block, text: unwrapPromptMessage(block.text)} : {...block}
-          ),
+          content: message.content.map(block => {
+            if (block.type === 'text') {
+              return {...block, text: unwrapPromptMessage(block.text)};
+            }
+            if (block.type === 'tool_result' && typeof block.content === 'string') {
+              try {
+                const {displayText, ...rest} = JSON.parse(block.content);
+                return {...block, content: JSON.stringify(rest)};
+              } catch {
+                return {...block};
+              }
+            }
+            return {...block};
+          }),
         };
       }
     }
