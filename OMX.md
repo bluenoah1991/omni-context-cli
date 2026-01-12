@@ -140,7 +140,7 @@ Agents are markdown files with YAML frontmatter in `agents/` or `.omx/agents/`:
 ---
 name: explore
 description: Survey project structure
-allowedTools: [read, glob, grep, bash]
+allowedTools: [Read, Glob, Grep, Bash]
 parameters:
   properties:
     query: { type: string, description: "What to explore" }
