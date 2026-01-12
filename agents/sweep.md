@@ -1,7 +1,7 @@
 ---
 name: sweep
 description: Find files matching search criteria. Returns file paths only, doesn't read contents.
-allowedTools: [glob, grep, read]
+allowedTools: [Glob, Grep, Read]
 parameters:
   properties:
     query:

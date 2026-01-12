@@ -1,7 +1,7 @@
 ---
 name: graphic
 description: Generate a diagram for a feature or module. Creates flowchart, dependency graph, class diagram, or sequence diagram in Mermaid format.
-allowedTools: [read, grep, glob]
+allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
     target:

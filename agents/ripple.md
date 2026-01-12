@@ -1,7 +1,7 @@
 ---
 name: ripple
 description: Find all references to a symbol (function, class, method, etc.). Returns code snippets showing where it's used with surrounding context.
-allowedTools: [read, grep, glob]
+allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
     filePath:

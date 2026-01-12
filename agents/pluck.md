@@ -1,7 +1,7 @@
 ---
 name: pluck
 description: Find and extract specific code segments. Searches project-wide or in a single file. Returns matching code with line numbers only.
-allowedTools: [read, grep, glob]
+allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
     filePath:

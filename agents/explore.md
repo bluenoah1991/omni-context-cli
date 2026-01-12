@@ -1,7 +1,7 @@
 ---
 name: explore
 description: Survey project structure and architecture. Shows directory layout, where features live, and how the codebase is organized. For high-level mapping, not detailed code analysis.
-allowedTools: [read, glob, grep, bash, bashOutput]
+allowedTools: [Read, Glob, Grep, Bash, BashOutput]
 parameters:
   properties:
     query:

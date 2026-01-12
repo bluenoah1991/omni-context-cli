@@ -1,7 +1,7 @@
 ---
 name: sculpt
 description: Edit files by replacing text. Automatically fixes matching errors and retries if the edit fails.
-allowedTools: [edit, read, grep]
+allowedTools: [Edit, Read, Grep]
 parameters:
   properties:
     filePath:

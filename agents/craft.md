@@ -1,7 +1,7 @@
 ---
 name: craft
 description: Execute bash commands. Automatically fixes errors and retries if the command fails. Returns the result you expect.
-allowedTools: [bash, bashOutput, read, write]
+allowedTools: [Bash, BashOutput, Read, Write]
 parameters:
   properties:
     command:

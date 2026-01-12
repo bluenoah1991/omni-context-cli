@@ -1,7 +1,7 @@
 ---
 name: unravel
 description: Analyze a function to find what it calls, then retrieve the implementation of each called function. Returns the actual code of dependencies.
-allowedTools: [read, grep, glob]
+allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
     filePath:
