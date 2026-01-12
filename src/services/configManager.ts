@@ -74,6 +74,11 @@ export function addModel(model: Omit<ModelConfig, 'id'>): void {
     config.defaultModelId = id;
   }
   saveAppConfig(config);
+
+  if (config.models.length === 1) {
+    const defaultModel = getDefaultModel(config);
+    setCurrentModel(defaultModel);
+  }
 }
 
 export function removeModel(modelId: string): void {
