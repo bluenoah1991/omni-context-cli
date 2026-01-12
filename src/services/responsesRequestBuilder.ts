@@ -8,6 +8,7 @@ import {
 } from '../types/responsesMessage';
 import { ChatMessage } from '../types/session';
 import { ToolFilter } from '../types/tool';
+import { editResponsesContext } from '../utils/contextEditor';
 import { unwrapPromptMessage } from '../utils/messagePreprocessor';
 import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
@@ -22,8 +23,10 @@ export async function buildResponsesRequest(
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
 
+  const editedMessages = editResponsesContext(messages);
+
   const input: ResponsesContentItem[] = [];
-  for (const chatMessage of messages) {
+  for (const chatMessage of editedMessages) {
     if ('type' in chatMessage && chatMessage.type === 'responses') {
       const wrapper = chatMessage as ResponsesMessage;
       for (const item of wrapper.items) {

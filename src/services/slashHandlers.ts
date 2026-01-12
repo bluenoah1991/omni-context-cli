@@ -72,7 +72,7 @@ function handleStatus(): SlashHandlerResult {
   lines.push(`Specialist mode: ${config.specialistMode ? '√' : '✗'}`);
   lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
   lines.push(`Playbook memory: ${config.playbookEnabled ? '√' : '✗'}`);
-  lines.push(`Cache TTL: ${config.cacheTtl || '5m'}`);
+  lines.push(`Cache TTL: ${config.cacheTtl}`);
 
   return {message: lines.join('\n')};
 }

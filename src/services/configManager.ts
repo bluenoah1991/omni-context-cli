@@ -132,6 +132,12 @@ export function setCacheTtl(value: '5m' | '1h'): void {
   saveAppConfig(config);
 }
 
+export function setContextEditing(value: boolean): void {
+  const config = loadAppConfig();
+  config.contextEditing = value;
+  saveAppConfig(config);
+}
+
 export function initializeCurrentModel(): void {
   const appConfig = loadAppConfig();
 

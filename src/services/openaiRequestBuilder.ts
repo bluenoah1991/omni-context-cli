@@ -2,6 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { ModelConfig } from '../types/config';
 import { OpenAIMessage } from '../types/openaiMessage';
 import { ToolFilter } from '../types/tool';
+import { editOpenAIContext } from '../utils/contextEditor';
 import { unwrapPromptMessage } from '../utils/messagePreprocessor';
 import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
@@ -18,11 +19,13 @@ export async function buildOpenAIRequest(
     ? []
     : [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
 
+  const editedMessages = editOpenAIContext(messages);
+
   const request: Record<string, unknown> = {
     model: model.name,
     messages: [
       ...systemMessages,
-      ...messages.filter(message => {
+      ...editedMessages.filter(message => {
         if (message.role !== 'assistant') return true;
         if (message.tool_calls) return true;
         return Array.isArray(message.content)

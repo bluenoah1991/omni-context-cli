@@ -2,6 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { ModelConfig } from '../types/config';
 import { GeminiMessage, GeminiPart } from '../types/geminiMessage';
 import { ToolFilter } from '../types/tool';
+import { editGeminiContext } from '../utils/contextEditor';
 import { unwrapPromptMessage } from '../utils/messagePreprocessor';
 import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
@@ -15,7 +16,9 @@ export async function buildGeminiRequest(
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
 
-  const preprocessedMessages = messages.filter(message => {
+  const editedMessages = editGeminiContext(messages);
+
+  const preprocessedMessages = editedMessages.filter(message => {
     return message.parts && message.parts.length > 0;
   }).map(message => {
     const parts: GeminiPart[] = message.parts.map(part => {

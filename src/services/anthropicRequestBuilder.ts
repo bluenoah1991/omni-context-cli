@@ -2,6 +2,7 @@ import { buildSystemPrompt } from '../prompts/systemPromptBuilder.js';
 import { AnthropicMessage } from '../types/anthropicMessage';
 import { ModelConfig } from '../types/config';
 import { ToolFilter } from '../types/tool';
+import { editAnthropicContext } from '../utils/contextEditor';
 import { unwrapPromptMessage } from '../utils/messagePreprocessor';
 import { loadAppConfig } from './configManager';
 import { applyInterceptors } from './requestInterceptor';
@@ -19,7 +20,9 @@ export async function buildAnthropicRequest(
     ? {type: 'ephemeral', ttl: '1h'}
     : {type: 'ephemeral'};
 
-  const preprocessedMessages = messages.filter(message => {
+  const editedMessages = editAnthropicContext(messages);
+
+  const preprocessedMessages = editedMessages.filter(message => {
     if (message.role !== 'assistant') return true;
     return Array.isArray(message.content) ? message.content.length > 0 : Boolean(message.content);
   }).map(message => {

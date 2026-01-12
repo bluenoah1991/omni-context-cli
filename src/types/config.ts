@@ -19,7 +19,9 @@ export interface AppConfig {
   specialistMode: boolean;
   ideContext: boolean;
   playbookEnabled: boolean;
-  cacheTtl?: '5m' | '1h';
+  cacheTtl: '5m' | '1h';
+  contextEditing: boolean;
+  contextEditingRounds: number;
   clientId?: string;
 }
 
@@ -30,4 +32,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   specialistMode: true,
   ideContext: true,
   playbookEnabled: false,
+  cacheTtl: '5m',
+  contextEditing: true,
+  contextEditingRounds: 3,
 };

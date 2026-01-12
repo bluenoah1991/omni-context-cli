@@ -8,6 +8,7 @@ import {
   removeModel,
   setAgentModel,
   setCacheTtl,
+  setContextEditing,
   setCurrentModel,
   setDefaultModel,
   setIDEContext,
@@ -44,6 +45,7 @@ export type View =
   | 'pref-ide-context'
   | 'pref-playbook'
   | 'pref-cache-ttl'
+  | 'pref-context-editing'
   | 'browse-sessions'
   | 'rewind-session';
 
@@ -88,6 +90,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [playbookIndex, setPlaybookIndex] = useState<number>();
   const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
+  const [contextEditingIndex, setContextEditingIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
   const [modelsIndex, setModelsIndex] = useState(0);
@@ -177,6 +180,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'ide-context', label: '⌘ IDE context'},
       {id: 'playbook', label: '≡ Playbook memory'},
       {id: 'cache-ttl', label: '⏱ Cache duration'},
+      {id: 'context-editing', label: '✂ Context editing'},
     ];
 
     const viewMap: View[] = [
@@ -185,6 +189,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'pref-ide-context',
       'pref-playbook',
       'pref-cache-ttl',
+      'pref-context-editing',
     ];
 
     return (
@@ -598,8 +603,43 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           onSelect={setCacheTtlIndex}
           onConfirm={i => {
             const newValue = i === 0 ? '5m' : '1h';
-            if (newValue !== (config.cacheTtl ?? '5m')) {
+            if (newValue !== config.cacheTtl) {
               setCacheTtl(newValue);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('prefs')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pref-context-editing') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Trim old context to save tokens'}, {
+      id: 'off',
+      label: '✗ Keep full context',
+    }];
+    const initialIndex = config.contextEditing !== false ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='context-editing-mode'
+          title='Compress old tool calls and thinking to save tokens?'
+          items={items}
+          selectedIndex={contextEditingIndex ?? initialIndex}
+          onSelect={setContextEditingIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            const currentValue = config.contextEditing !== false;
+            if (shouldEnable !== currentValue) {
+              setContextEditing(shouldEnable);
             }
             onClose();
           }}
