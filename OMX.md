@@ -52,8 +52,9 @@ Service Layer
     └── sessionManager - Session persistence
     ↓
 Provider Adapters
-    ├── anthropic/openaiRequestBuilder - Format API requests
-    └── anthropic/openaiStreamHandler - Handle streaming responses
+    ├── anthropic/openai/gemini/responsesRequestBuilder - Format API requests
+    ├── anthropic/openai/gemini/responsesStreamHandler - Handle streaming responses
+    └── requestInterceptor - Apply provider-specific interceptors
     ↓
 Storage/State
     ├── chatStore - Zustand state management
@@ -65,6 +66,18 @@ Storage/State
 - Tool execution runs in parallel when possible
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
+- Request interceptors modify requests for specific providers (Codex, MiniMax, Zenmux, Zhipu)
+
+**Request Interceptors:**
+Provider-specific interceptors modify API requests before sending:
+- `CodexInterceptor` - Responses API adjustments
+- `MiniMaxInterceptor` - MiniMax API compatibility
+- `ZenmuxInterceptor` - Zenmux proxy handling
+- `ZhipuInterceptor` - Zhipu AI compatibility
+
+**Proxy Support:**
+- HTTP proxy via `HTTP_PROXY` and `HTTPS_PROXY` environment variables
+- Uses `EnvHttpProxyAgent` for automatic proxy configuration
 
 ## Tech Stack
 
@@ -72,7 +85,7 @@ Storage/State
 - **Language**: TypeScript 5.9 (ES2022 target, strict mode)
 - **UI Framework**: Ink 6.5 + React 19 (terminal UI)
 - **State Management**: Zustand 5
-- **LLM Providers**: Anthropic (Claude), OpenAI (GPT-4)
+- **LLM Providers**: Anthropic (Claude), OpenAI (GPT-4), Google Gemini, Responses API
 - **Protocol**: MCP (Model Context Protocol) via @modelcontextprotocol/sdk
 - **HTTP Client**: Undici (with connection pooling)
 - **Build Tool**: esbuild 0.27 (bundles to dist/cli.js)
@@ -122,10 +135,10 @@ Tools are registered in `src/services/tools/index.ts`. Each tool:
 Example from `grep.ts`:
 ```typescript
 registerTool({
-  name: 'grep',
+  name: 'Grep',
   description: 'Search file contents using ripgrep',
   parameters: { /* JSON Schema */ },
-  formatCall: (params) => `Search: ${params.query}`
+  formatCall: (params) => `Search: ${params.pattern}`
 }, async (params) => {
   // Implementation
   return results;
@@ -191,6 +204,12 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 | `src/services/mcpManager.ts` | MCP server connections and tool bridging |
 | `src/services/sessionManager.ts` | Session persistence to `~/.omx/projects/` |
 | `src/services/configManager.ts` | Model config, API keys, provider settings |
+| `src/services/requestInterceptor.ts` | Applies provider-specific request modifications |
+| `src/services/geminiRequestBuilder.ts` | Google Gemini API request formatting |
+| `src/services/geminiStreamHandler.ts` | Google Gemini streaming response handling |
+| `src/services/responsesRequestBuilder.ts` | Responses API request formatting |
+| `src/services/responsesStreamHandler.ts` | Responses API streaming handling |
+| `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Zenmux, Zhipu) |
 | `src/store/chatStore.ts` | Zustand store for chat state |
 | `src/ui/components/ChatView.tsx` | Main terminal UI component |
 | `src/prompts/systemPromptBuilder.ts` | Assembles full system prompt |
@@ -236,7 +255,7 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 ### Tool Patterns
 
 - Tools return structured results, not raw output
-- Use specialized tools (read, glob, grep) over bash when possible
+- Use specialized tools (Read, Glob, Grep) over Bash when possible
 - Bash for actual system commands only
 - Parallel execution when tools have no dependencies
 
