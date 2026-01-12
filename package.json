@@ -1,6 +1,6 @@
 {
   "name": "omni-context-cli",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "Omx is a small, helpful, zero-telemetry coding assistant.",
   "type": "module",
   "bin": {
