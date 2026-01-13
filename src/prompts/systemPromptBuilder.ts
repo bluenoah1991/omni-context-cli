@@ -11,6 +11,7 @@ export function buildSystemPrompt(specialistMode?: boolean): string {
   result = result.replace('{{OS_TYPE}}', getOSType());
   result = result.replace('{{PLATFORM}}', os.platform());
   result = result.replace('{{ARCH}}', os.arch());
+  result = result.replace('{{CWD}}', process.cwd());
 
   if (!specialistMode) {
     const skillsPrompt = buildSkillsPrompt(getSkills());
