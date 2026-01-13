@@ -34,5 +34,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   playbookEnabled: false,
   cacheTtl: '5m',
   contextEditing: true,
-  contextEditingRounds: 3,
+  contextEditingRounds: 0,
 };
