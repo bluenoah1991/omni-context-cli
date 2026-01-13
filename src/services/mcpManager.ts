@@ -100,12 +100,8 @@ class MCPManager {
     try {
       const client = new Client({name: 'omx', version: '1.0.0'}, {capabilities: {}});
       if (config.url) {
-        const headers: Record<string, string> = {};
-        if (config.key) {
-          headers['Authorization'] = `Bearer ${config.key}`;
-        }
         const transport = new StreamableHTTPClientTransport(new URL(config.url), {
-          requestInit: {headers},
+          requestInit: {headers: config.headers || {}},
         });
         await client.connect(transport);
       } else if (config.command) {

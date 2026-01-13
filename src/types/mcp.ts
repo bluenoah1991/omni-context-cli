@@ -3,7 +3,7 @@ export interface MCPServerConfig {
   args?: string[];
   url?: string;
   env?: Record<string, string>;
-  key?: string;
+  headers?: Record<string, string>;
 }
 
 export interface MCPConfig {
