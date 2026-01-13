@@ -250,7 +250,7 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 - Base system prompt in `src/prompts/system.txt`
 - Specialized prompts for specialist mode, skills, compaction
 - Dynamic prompt assembly via `systemPromptBuilder.ts`
-- Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`
+- Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 
 ### Tool Patterns
 
