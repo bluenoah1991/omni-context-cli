@@ -9,6 +9,7 @@ export interface ToolDefinition {
 export interface ToolHandlerResult {
   result: any;
   displayText: string;
+  dataUrl?: string;
 }
 
 export type ToolHandler = (args: any, signal?: AbortSignal) => Promise<ToolHandlerResult>;
@@ -18,6 +19,7 @@ export interface ToolExecutionResult {
   result?: any;
   error?: string;
   displayText?: string;
+  dataUrl?: string;
 }
 
 export interface PendingToolCall {

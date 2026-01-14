@@ -71,7 +71,12 @@ export async function executeTool(
 
   try {
     const result = await tool.handler(args, signal);
-    return {success: true, result: result.result, displayText: result.displayText};
+    return {
+      success: true,
+      result: result.result,
+      displayText: result.displayText,
+      dataUrl: result.dataUrl,
+    };
   } catch (error) {
     return {success: false, error: String(error)};
   }

@@ -1,4 +1,4 @@
-import { Box, Text } from 'ink';
+import { Text } from 'ink';
 import path from 'node:path';
 import React from 'react';
 import { IDESelection } from '../../types/ide';

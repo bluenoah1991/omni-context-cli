@@ -1,13 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
+import {
+  AnthropicContentBlock,
+  AnthropicMessage,
+  AnthropicToolResultContent,
+} from '../types/anthropicMessage';
 import { ModelConfig, Provider } from '../types/config';
-import { GeminiMessage, GeminiPart } from '../types/geminiMessage';
-import { OpenAIMessage } from '../types/openaiMessage';
+import { GeminiMessage } from '../types/geminiMessage';
+import { OpenAIContentPart, OpenAIMessage } from '../types/openaiMessage';
 import {
   ResponsesContentItem,
   ResponsesFunctionCall,
-  ResponsesFunctionCallOutput,
+  ResponsesInputImage,
+  ResponsesInputText,
   ResponsesMessage,
   ResponsesMessageItem,
 } from '../types/responsesMessage';
@@ -64,13 +69,9 @@ export function addUserMessage(session: Session, content: string, provider: Prov
   } else if (provider === 'openai') {
     message = {role: 'user', content} as OpenAIMessage;
   } else if (provider === 'gemini') {
-    const parts: GeminiPart[] = [];
-    if (content) parts.push({text: content});
-    message = {role: 'user', parts} as GeminiMessage;
+    message = {role: 'user', parts: [{text: content}]} as GeminiMessage;
   } else {
-    const contentBlocks: AnthropicContentBlock[] = [];
-    if (content) contentBlocks.push({type: 'text', text: content});
-    message = {role: 'user', content: contentBlocks} as AnthropicMessage;
+    message = {role: 'user', content: [{type: 'text', text: content}]} as AnthropicMessage;
   }
 
   const isFirstMessage = session.messages.length === 0;
@@ -143,6 +144,14 @@ export function getLastAssistantToolCalls(session: Session, provider: Provider):
   }));
 }
 
+function parseDataUrl(dataUrl: string): {mediaType: string; data: string;} | null {
+  const matches = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+  if (matches) {
+    return {mediaType: matches[1], data: matches[2]};
+  }
+  return null;
+}
+
 export function addToolResultMessages(
   session: Session,
   toolResults: ToolResult[],
@@ -152,22 +161,31 @@ export function addToolResultMessages(
 
   if (provider === 'responses') {
     toolResultMessages = toolResults.map(result => {
-      const outputItem: ResponsesFunctionCallOutput = {
-        type: 'function_call_output',
-        call_id: result.id!,
-        output: result.content,
-      };
+      const output: string | (ResponsesInputText | ResponsesInputImage)[] = result.dataUrl
+        ? [{type: 'input_text', text: result.content}, {
+          type: 'input_image',
+          image_url: result.dataUrl,
+          detail: 'auto',
+        }]
+        : result.content;
       return {
         type: 'responses',
         role: 'user',
-        items: [outputItem],
+        items: [{type: 'function_call_output', call_id: result.id!, output}],
         content: result.content,
       } as ResponsesMessage;
     });
   } else if (provider === 'openai') {
-    toolResultMessages = toolResults.map(
-      result => ({role: 'tool', content: result.content, tool_call_id: result.id} as OpenAIMessage)
-    );
+    toolResultMessages = toolResults.map(result => {
+      if (result.dataUrl) {
+        const parts: OpenAIContentPart[] = [{type: 'text', text: result.content}, {
+          type: 'image_url',
+          image_url: {url: result.dataUrl},
+        }];
+        return {role: 'tool', content: parts, tool_call_id: result.id} as OpenAIMessage;
+      }
+      return {role: 'tool', content: result.content, tool_call_id: result.id} as OpenAIMessage;
+    });
   } else if (provider === 'gemini') {
     toolResultMessages = [{
       role: 'user',
@@ -178,20 +196,42 @@ export function addToolResultMessages(
         } catch {
           response = {output: result.content};
         }
+        if (result.dataUrl) {
+          const parsed = parseDataUrl(result.dataUrl);
+          if (parsed) {
+            return {
+              functionResponse: {
+                id: result.id,
+                name: result.name,
+                response,
+                parts: [{inlineData: {mimeType: parsed.mediaType, data: parsed.data}}],
+              },
+            };
+          }
+        }
         return {functionResponse: {id: result.id, name: result.name, response}};
       }),
     } as GeminiMessage];
   } else {
-    toolResultMessages = [
-      {
-        role: 'user',
-        content: toolResults.map(result => ({
-          type: 'tool_result' as const,
-          tool_use_id: result.id,
-          content: result.content,
-        })),
-      } as AnthropicMessage,
-    ];
+    toolResultMessages = [{
+      role: 'user',
+      content: toolResults.map(result => {
+        if (result.dataUrl) {
+          const parsed = parseDataUrl(result.dataUrl);
+          if (parsed) {
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: result.id,
+              content: [{type: 'text', text: result.content}, {
+                type: 'image',
+                source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
+              }],
+            };
+          }
+        }
+        return {type: 'tool_result' as const, tool_use_id: result.id, content: result.content};
+      }),
+    } as AnthropicMessage];
   }
 
   return {

@@ -104,9 +104,10 @@ async function processToolCalls(
     callbacks.onToolCall({id: toolCall.id, name: toolCall.name, input: toolCall.input});
 
     const result = await executeTool(toolCall.name, toolCall.input, signal);
-    const content = JSON.stringify(result);
+    const {dataUrl, ...resultWithoutDataUrl} = result;
+    const content = JSON.stringify(resultWithoutDataUrl);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
-    toolResults.push({id: toolCall.id, name: toolCall.name, content});
+    toolResults.push({id: toolCall.id, name: toolCall.name, content, dataUrl});
   }
 
   if (signal?.aborted) {

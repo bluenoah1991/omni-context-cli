@@ -279,9 +279,16 @@ function responsesItemToUI(
         toolName: pending.toolName,
         toolCallId: functionCallOutput.call_id,
       });
+      let outputText: string;
+      if (typeof functionCallOutput.output === 'string') {
+        outputText = functionCallOutput.output;
+      } else {
+        const textPart = functionCallOutput.output.find(p => p.type === 'input_text');
+        outputText = textPart ? textPart.text : '';
+      }
       uiMessages.push({
         role: 'tool_result',
-        content: functionCallOutput.output,
+        content: outputText,
         timestamp,
         toolName: pending.toolName,
         toolCallId: functionCallOutput.call_id,

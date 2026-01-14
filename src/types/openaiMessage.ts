@@ -1,9 +1,9 @@
 export type OpenAIMessageRole = 'user' | 'assistant' | 'tool';
 
-export interface OpenAIContentPart {
-  type: 'text';
-  text: string;
-}
+export type OpenAIContentPart = {type: 'text'; text: string;} | {
+  type: 'image_url';
+  image_url: {url: string;};
+};
 
 export interface OpenAIToolCall {
   id: string;

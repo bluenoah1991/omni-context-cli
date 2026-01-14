@@ -46,10 +46,27 @@ export async function buildResponsesRequest(
           }
         } else if (item.type === 'function_call_output') {
           const funcOutput = item as ResponsesFunctionCallOutput;
-          try {
-            const {displayText, ...rest} = JSON.parse(funcOutput.output);
-            input.push({...funcOutput, output: JSON.stringify(rest)});
-          } catch {
+          if (typeof funcOutput.output === 'string') {
+            try {
+              const {displayText, ...rest} = JSON.parse(funcOutput.output);
+              input.push({...funcOutput, output: JSON.stringify(rest)});
+            } catch {
+              input.push(item);
+            }
+          } else if (Array.isArray(funcOutput.output)) {
+            const output = funcOutput.output.map(part => {
+              if (part.type === 'input_text') {
+                try {
+                  const {displayText, ...rest} = JSON.parse(part.text);
+                  return {...part, text: JSON.stringify(rest)};
+                } catch {
+                  return part;
+                }
+              }
+              return part;
+            });
+            input.push({...funcOutput, output});
+          } else {
             input.push(item);
           }
         } else {

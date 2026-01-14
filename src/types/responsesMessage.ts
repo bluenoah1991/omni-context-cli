@@ -3,6 +3,12 @@ export interface ResponsesInputText {
   text: string;
 }
 
+export interface ResponsesInputImage {
+  type: 'input_image';
+  image_url: string;
+  detail: 'auto';
+}
+
 export interface ResponsesOutputText {
   type: 'output_text';
   text: string;
@@ -11,7 +17,7 @@ export interface ResponsesOutputText {
 export interface ResponsesMessageItem {
   type: 'message';
   role: 'user' | 'assistant' | 'system' | 'developer';
-  content: string | Array<ResponsesInputText | ResponsesOutputText>;
+  content: string | Array<ResponsesInputText | ResponsesOutputText | ResponsesInputImage>;
   status?: 'in_progress' | 'completed' | 'incomplete';
   id?: string;
 }
@@ -28,7 +34,7 @@ export interface ResponsesFunctionCall {
 export interface ResponsesFunctionCallOutput {
   type: 'function_call_output';
   call_id: string;
-  output: string;
+  output: string | (ResponsesInputText | ResponsesInputImage)[];
   id?: string;
 }
 

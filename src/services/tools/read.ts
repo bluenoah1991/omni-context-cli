@@ -6,12 +6,25 @@ import { registerTool } from '../toolExecutor';
 const DEFAULT_READ_LIMIT = 50;
 const MAX_LINE_LENGTH = 1000;
 
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+};
+
+function getImageMimeType(filePath: string): string | null {
+  const ext = path.extname(filePath).toLowerCase();
+  return IMAGE_EXTENSIONS[ext] || null;
+}
+
 export function registerReadTool(): void {
   registerTool({
     name: 'Read',
     builtin: true,
     description:
-      `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content".`,
+      `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content". Also supports reading images (PNG, JPG, GIF, WEBP) for visual inspection.`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
@@ -65,6 +78,14 @@ export function registerReadTool(): void {
       throw new Error(
         `File not found: ${absolutePath}. Check the path or use 'glob' to find files.`,
       );
+    }
+
+    const mimeType = getImageMimeType(absolutePath);
+    if (mimeType) {
+      const buffer = await fs.readFile(absolutePath);
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+      return {result: `Image file: ${absolutePath}`, displayText: `Read image`, dataUrl};
     }
 
     const content = await fs.readFile(absolutePath, 'utf-8');

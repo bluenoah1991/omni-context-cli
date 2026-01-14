@@ -37,12 +37,28 @@ export async function buildAnthropicRequest(
             if (block.type === 'text') {
               return {...block, text: unwrapPromptMessage(block.text)};
             }
-            if (block.type === 'tool_result' && typeof block.content === 'string') {
-              try {
-                const {displayText, ...rest} = JSON.parse(block.content);
-                return {...block, content: JSON.stringify(rest)};
-              } catch {
-                return {...block};
+            if (block.type === 'tool_result') {
+              if (typeof block.content === 'string') {
+                try {
+                  const {displayText, ...rest} = JSON.parse(block.content);
+                  return {...block, content: JSON.stringify(rest)};
+                } catch {
+                  return {...block};
+                }
+              }
+              if (Array.isArray(block.content)) {
+                const content = block.content.map(part => {
+                  if (part.type === 'text') {
+                    try {
+                      const {displayText, ...rest} = JSON.parse(part.text);
+                      return {...part, text: JSON.stringify(rest)};
+                    } catch {
+                      return part;
+                    }
+                  }
+                  return part;
+                });
+                return {...block, content};
               }
             }
             return {...block};

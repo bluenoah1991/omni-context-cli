@@ -42,11 +42,25 @@ export async function buildOpenAIRequest(
             );
           }
         }
-        if (message.role === 'tool' && typeof content === 'string') {
-          try {
-            const {displayText, ...rest} = JSON.parse(content);
-            content = JSON.stringify(rest);
-          } catch {}
+        if (message.role === 'tool') {
+          if (typeof content === 'string') {
+            try {
+              const {displayText, ...rest} = JSON.parse(content);
+              content = JSON.stringify(rest);
+            } catch {}
+          } else if (Array.isArray(content)) {
+            content = content.map(part => {
+              if (part.type === 'text') {
+                try {
+                  const {displayText, ...rest} = JSON.parse(part.text);
+                  return {...part, text: JSON.stringify(rest)};
+                } catch {
+                  return part;
+                }
+              }
+              return part;
+            });
+          }
         }
         if (Array.isArray(content)) {
           content = content.map(part => ({...part}));

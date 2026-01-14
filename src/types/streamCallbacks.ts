@@ -19,6 +19,7 @@ export interface ToolResult {
   id?: string;
   name: string;
   content: string;
+  dataUrl?: string;
 }
 
 export interface TokenUsage {
