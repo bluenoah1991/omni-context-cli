@@ -1,4 +1,5 @@
 import { Box, Text, useInput } from 'ink';
+import path from 'node:path';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import {
   addToInputHistory,
@@ -6,6 +7,8 @@ import {
   getInputHistoryLength,
 } from '../../services/inputHistoryManager';
 import { getAllSlashCommands } from '../../services/slashManager';
+import { useChatStore } from '../../store/chatStore';
+import { extractMediaPath, loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { colors } from '../theme/colors';
 import { SlashCommandPicker } from './SlashCommandPicker';
 
@@ -204,6 +207,11 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
   useInput((input, key) => {
     if (key.tab) return;
     if (key.ctrl && input === 'c') return;
+    if ((key.ctrl || key.meta) && input === 'l') {
+      dispatch({type: 'clear'});
+      useChatStore.getState().clearMediaContexts();
+      return;
+    }
     if (key.return && !key.shift && !key.meta) {
       if (showPicker) return;
       if (state.value.trim()) {
@@ -236,7 +244,23 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     } else if (key.delete) {
       dispatch({type: 'delete'});
     } else if (input) {
-      dispatch({type: 'insert', text: input});
+      const mediaPath = extractMediaPath(input);
+      if (mediaPath) {
+        const mediaData = loadMediaAsBase64(mediaPath);
+        if (mediaData) {
+          const fileName = path.basename(mediaPath);
+          const existing = useChatStore.getState().mediaContexts;
+          if (!existing.some(m => m.fileName === fileName)) {
+            useChatStore.getState().addMediaContext({
+              fileName,
+              dataUrl: mediaData.dataUrl,
+              mimeType: mediaData.mimeType,
+            });
+          }
+        }
+      } else {
+        dispatch({type: 'insert', text: input});
+      }
     }
   }, {isActive: !disabled});
 

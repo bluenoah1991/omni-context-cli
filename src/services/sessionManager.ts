@@ -18,6 +18,7 @@ import {
 } from '../types/responsesMessage';
 import { ChatMessage, RewindPoint, Session } from '../types/session';
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
+import { parseDataUrl } from '../utils/mediaUtils';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
@@ -51,14 +52,33 @@ export function createSession(preferredModel?: ModelConfig): Session {
   };
 }
 
-export function addUserMessage(session: Session, content: string, provider: Provider): Session {
+export interface UserMessageMedia {
+  dataUrl: string;
+  mimeType: string;
+}
+
+export function addUserMessage(
+  session: Session,
+  content: string,
+  provider: Provider,
+  media?: UserMessageMedia[],
+): Session {
   let message: ChatMessage;
 
   if (provider === 'responses') {
+    const contentItems: (ResponsesInputText | ResponsesInputImage)[] = [{
+      type: 'input_text',
+      text: content,
+    }];
+    if (media) {
+      for (const item of media) {
+        contentItems.push({type: 'input_image', image_url: item.dataUrl, detail: 'auto'});
+      }
+    }
     const responsesMessage: ResponsesMessageItem = {
       type: 'message',
       role: 'user',
-      content: [{type: 'input_text', text: content}],
+      content: contentItems,
     };
     message = {
       type: 'responses',
@@ -67,11 +87,40 @@ export function addUserMessage(session: Session, content: string, provider: Prov
       content,
     } as ResponsesMessage;
   } else if (provider === 'openai') {
-    message = {role: 'user', content} as OpenAIMessage;
+    if (media && media.length > 0) {
+      const parts: OpenAIContentPart[] = [{type: 'text', text: content}];
+      for (const item of media) {
+        parts.push({type: 'image_url', image_url: {url: item.dataUrl}});
+      }
+      message = {role: 'user', content: parts} as OpenAIMessage;
+    } else {
+      message = {role: 'user', content} as OpenAIMessage;
+    }
   } else if (provider === 'gemini') {
-    message = {role: 'user', parts: [{text: content}]} as GeminiMessage;
+    const parts: GeminiMessage['parts'] = [{text: content}];
+    if (media) {
+      for (const item of media) {
+        const parsed = parseDataUrl(item.dataUrl);
+        if (parsed) {
+          parts.push({inlineData: {mimeType: parsed.mediaType, data: parsed.data}});
+        }
+      }
+    }
+    message = {role: 'user', parts} as GeminiMessage;
   } else {
-    message = {role: 'user', content: [{type: 'text', text: content}]} as AnthropicMessage;
+    const contentBlocks: AnthropicContentBlock[] = [{type: 'text', text: content}];
+    if (media) {
+      for (const item of media) {
+        const parsed = parseDataUrl(item.dataUrl);
+        if (parsed) {
+          contentBlocks.push({
+            type: 'image',
+            source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
+          });
+        }
+      }
+    }
+    message = {role: 'user', content: contentBlocks} as AnthropicMessage;
   }
 
   const isFirstMessage = session.messages.length === 0;
@@ -142,14 +191,6 @@ export function getLastAssistantToolCalls(session: Session, provider: Provider):
     name: block.name,
     input: block.input,
   }));
-}
-
-function parseDataUrl(dataUrl: string): {mediaType: string; data: string;} | null {
-  const matches = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
-  if (matches) {
-    return {mediaType: matches[1], data: matches[2]};
-  }
-  return null;
 }
 
 export function addToolResultMessages(

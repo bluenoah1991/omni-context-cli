@@ -20,6 +20,7 @@ import { CompactingIndicator } from './CompactingIndicator';
 import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
 import { LoadingIndicator } from './LoadingIndicator';
+import { MediaContextBar } from './MediaContextBar';
 import { Menu, View } from './Menu';
 import { MessageList } from './MessageList';
 import { StatusBar } from './StatusBar';
@@ -31,12 +32,14 @@ export function ChatView(): React.ReactElement {
     isLoading,
     isCompacting,
     error,
+    mediaContexts,
     setSession,
     updateSessionTokens,
     updateMessages,
     setLoading,
     setCompacting,
     setError,
+    clearMediaContexts,
   } = useChatStore(
     useShallow(state => ({
       session: state.session,
@@ -44,12 +47,14 @@ export function ChatView(): React.ReactElement {
       isLoading: state.isLoading,
       isCompacting: state.isCompacting,
       error: state.error,
+      mediaContexts: state.mediaContexts,
       setSession: state.setSession,
       updateSessionTokens: state.updateSessionTokens,
       updateMessages: state.updateMessages,
       setLoading: state.setLoading,
       setCompacting: state.setCompacting,
       setError: state.setError,
+      clearMediaContexts: state.clearMediaContexts,
     })),
   );
   const [showMenu, setShowMenu] = useState(false);
@@ -143,6 +148,14 @@ export function ChatView(): React.ReactElement {
       text = wrapIDEContext(text, currentSelection);
     }
 
+    const currentMediaContexts = useChatStore.getState().mediaContexts;
+    const userMedia = currentMediaContexts.length > 0
+      ? currentMediaContexts.map(m => ({dataUrl: m.dataUrl, mimeType: m.mimeType}))
+      : undefined;
+    if (currentMediaContexts.length > 0) {
+      clearMediaContexts();
+    }
+
     let sessionToRun = sessionRef.current;
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -173,7 +186,7 @@ export function ChatView(): React.ReactElement {
         sessionToRun = injectSummary(sessionToRun, summary, model.provider);
 
         if (slashCommand?.name !== 'compact') {
-          sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+          sessionToRun = addUserMessage(sessionToRun, text, model.provider, userMedia);
         }
         process.stdout.write('\x1Bc');
         setSession(sessionToRun);
@@ -194,7 +207,7 @@ export function ChatView(): React.ReactElement {
         }
         sessionToRun = injectProjectInstructions(sessionToRun, model.provider);
       }
-      sessionToRun = addUserMessage(sessionToRun, text, model.provider);
+      sessionToRun = addUserMessage(sessionToRun, text, model.provider, userMedia);
       setSession(sessionToRun);
     }
 
@@ -313,7 +326,10 @@ export function ChatView(): React.ReactElement {
           disabled={showMenu}
         />
         <InputBox onSubmit={handleSubmit} disabled={isLoading || isCompacting || showMenu} />
-        {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
+        <Box flexDirection='row' gap={2}>
+          {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
+          <MediaContextBar mediaContexts={mediaContexts} />
+        </Box>
       </Box>
     </Box>
   );

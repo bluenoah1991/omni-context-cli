@@ -1,23 +1,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 
 const DEFAULT_READ_LIMIT = 50;
 const MAX_LINE_LENGTH = 1000;
-
-const IMAGE_EXTENSIONS: Record<string, string> = {
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.webp': 'image/webp',
-};
-
-function getImageMimeType(filePath: string): string | null {
-  const ext = path.extname(filePath).toLowerCase();
-  return IMAGE_EXTENSIONS[ext] || null;
-}
 
 export function registerReadTool(): void {
   registerTool({
@@ -80,12 +68,13 @@ export function registerReadTool(): void {
       );
     }
 
-    const mimeType = getImageMimeType(absolutePath);
-    if (mimeType) {
-      const buffer = await fs.readFile(absolutePath);
-      const base64 = buffer.toString('base64');
-      const dataUrl = `data:${mimeType};base64,${base64}`;
-      return {result: `Image file: ${absolutePath}`, displayText: `Read image`, dataUrl};
+    const mediaData = loadMediaAsBase64(absolutePath);
+    if (mediaData) {
+      return {
+        result: `Image file: ${absolutePath}`,
+        displayText: `Read image`,
+        dataUrl: mediaData.dataUrl,
+      };
     }
 
     const content = await fs.readFile(absolutePath, 'utf-8');
