@@ -102,15 +102,17 @@ export function registerBashTool(): void {
           );
         }, timeout);
 
+        const onAbort = () => {
+          if (!killed) {
+            killed = true;
+            clearTimeout(timeoutId);
+            child.kill();
+            reject(new Error('Aborted on request'));
+          }
+        };
+
         if (signal) {
-          signal.addEventListener('abort', () => {
-            if (!killed) {
-              killed = true;
-              clearTimeout(timeoutId);
-              child.kill();
-              reject(new Error('Aborted on request'));
-            }
-          });
+          signal.addEventListener('abort', onAbort, {once: true});
         }
 
         child.stdout.on('data', data => {
@@ -123,6 +125,9 @@ export function registerBashTool(): void {
 
         child.on('error', error => {
           clearTimeout(timeoutId);
+          if (signal) {
+            signal.removeEventListener('abort', onAbort);
+          }
           if (!killed) {
             reject(
               new Error(
@@ -134,6 +139,9 @@ export function registerBashTool(): void {
 
         child.on('close', code => {
           clearTimeout(timeoutId);
+          if (signal) {
+            signal.removeEventListener('abort', onAbort);
+          }
           if (killed) return;
 
           let output = stdout;

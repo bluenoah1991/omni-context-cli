@@ -77,7 +77,7 @@ async function streamAIResponse(
     handler = new AnthropicStreamHandler(callbacks);
   }
 
-  saveRequest(model.provider, headers, body, isFromAgent);
+  saveRequest(model.provider, body, isFromAgent);
 
   return handler.stream(headers, body, model, signal);
 }

@@ -1,10 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-  AnthropicContentBlock,
-  AnthropicMessage,
-  AnthropicToolResultContent,
-} from '../types/anthropicMessage';
+import { AnthropicContentBlock, AnthropicMessage } from '../types/anthropicMessage';
 import { ModelConfig, Provider } from '../types/config';
 import { GeminiMessage } from '../types/geminiMessage';
 import { OpenAIContentPart, OpenAIMessage } from '../types/openaiMessage';
@@ -123,8 +119,7 @@ export function addUserMessage(
     message = {role: 'user', content: contentBlocks} as AnthropicMessage;
   }
 
-  const isFirstMessage = session.messages.length === 0;
-  const title = isFirstMessage ? normalizeMessageContent(content) : session.title;
+  const title = normalizeMessageContent(content);
   return {
     ...session,
     title,

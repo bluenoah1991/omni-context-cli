@@ -1,6 +1,6 @@
 ---
 name: explore
-description: Survey project structure and architecture. Shows directory layout, where features live, and how the codebase is organized. For high-level mapping, not detailed code analysis.
+description: Survey project structure and architecture. Shows directory layout, where features live, and how the codebase is organized. For structural overview, not detailed analysis.
 allowedTools: [Read, Glob, Grep, Bash, BashOutput]
 parameters:
   properties:

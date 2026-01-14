@@ -1,6 +1,6 @@
 ---
 name: craft
-description: Execute bash commands. Automatically fixes errors and retries if the command fails. Returns the result you expect.
+description: Execute bash commands when no suitable specialized tool exists. Automatically fixes errors and retries if the command fails. Returns the result you expect.
 allowedTools: [Bash, BashOutput, Read, Write]
 parameters:
   properties:

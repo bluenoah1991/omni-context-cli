@@ -1,6 +1,6 @@
 ---
 name: graphic
-description: Generate a diagram for a feature or module. Creates flowchart, dependency graph, class diagram, or sequence diagram in Mermaid format.
+description: Analyze code relationships and structure. Shows dependencies, call flows, or hierarchies. Best for understanding architecture.
 allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
@@ -9,8 +9,8 @@ parameters:
       description: The feature, module, or component to diagram
     diagramType:
       type: string
-      description: Type of diagram—flowchart, dependency, class, or sequence
-  required: [target, diagramType]
+      description: Type of diagram—flowchart, dependency, class, or sequence. If not specified, automatically choose the best fit.
+  required: [target]
 ---
 
 Target: {{target}}

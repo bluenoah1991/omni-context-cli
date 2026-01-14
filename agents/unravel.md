@@ -1,6 +1,6 @@
 ---
 name: unravel
-description: Analyze a function to find what it calls, then retrieve the implementation of each called function. Returns the actual code of dependencies.
+description: Analyze a function to identify which other functions it calls, then retrieve their implementations. Returns the actual code of all called functions.
 allowedTools: [Read, Grep, Glob]
 parameters:
   properties:

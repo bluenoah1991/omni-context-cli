@@ -225,6 +225,9 @@ export function registerGrepTool(): void {
             stdout += chunk.slice(0, remaining);
             stdoutBytes = MAX_OUTPUT_LENGTH;
             truncated = true;
+            if (signal) {
+              signal.removeEventListener('abort', onAbort);
+            }
             child.kill('SIGTERM');
           } else {
             stdout += chunk;
