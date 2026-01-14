@@ -10,6 +10,7 @@ import { getAllSlashCommands } from '../../services/slashManager';
 import { useChatStore } from '../../store/chatStore';
 import { extractMediaPath, loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { colors } from '../theme/colors';
+import { OptionPicker } from './OptionPicker';
 import { SlashCommandPicker } from './SlashCommandPicker';
 
 interface InputBoxProps {
@@ -159,6 +160,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     savedInput: '',
   });
   const [pickerCancelled, setPickerCancelled] = useState(false);
+  const [pendingMediaPath, setPendingMediaPath] = useState<string | null>(null);
 
   const filteredSlashCommands = useMemo(() => {
     if (!state.value || !state.value.startsWith('/') || state.value.includes('\n')) return [];
@@ -204,7 +206,36 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     return {lines, cursorLine, cursorCol, isPlaceholder};
   }, [state.value, state.cursorOffset, disabled]);
 
+  const handleMediaOption = (key: string) => {
+    if (!pendingMediaPath) return;
+    if (key === 'image') {
+      const mediaData = loadMediaAsBase64(pendingMediaPath);
+      if (mediaData) {
+        const fileName = path.basename(pendingMediaPath);
+        const existing = useChatStore.getState().mediaContexts;
+        if (!existing.some(m => m.fileName === fileName)) {
+          useChatStore.getState().addMediaContext({
+            fileName,
+            dataUrl: mediaData.dataUrl,
+            mimeType: mediaData.mimeType,
+          });
+        }
+      }
+    } else {
+      dispatch({type: 'insert', text: pendingMediaPath});
+    }
+    setPendingMediaPath(null);
+  };
+
+  const handleMediaCancel = () => {
+    if (pendingMediaPath) {
+      dispatch({type: 'insert', text: pendingMediaPath});
+      setPendingMediaPath(null);
+    }
+  };
+
   useInput((input, key) => {
+    if (pendingMediaPath) return;
     if (key.tab) return;
     if (key.ctrl && input === 'c') return;
     if ((key.ctrl || key.meta) && input === 'l') {
@@ -246,18 +277,7 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     } else if (input) {
       const mediaPath = extractMediaPath(input);
       if (mediaPath) {
-        const mediaData = loadMediaAsBase64(mediaPath);
-        if (mediaData) {
-          const fileName = path.basename(mediaPath);
-          const existing = useChatStore.getState().mediaContexts;
-          if (!existing.some(m => m.fileName === fileName)) {
-            useChatStore.getState().addMediaContext({
-              fileName,
-              dataUrl: mediaData.dataUrl,
-              mimeType: mediaData.mimeType,
-            });
-          }
-        }
+        setPendingMediaPath(mediaPath);
       } else {
         dispatch({type: 'insert', text: input});
       }
@@ -272,8 +292,21 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
     setPickerCancelled(true);
   };
 
+  const mediaOptions = [{
+    key: 'image',
+    label: `Add as image: ${pendingMediaPath ? path.basename(pendingMediaPath) : ''}`,
+  }, {key: 'text', label: 'Paste as text'}];
+
   return (
     <Box flexDirection='column' flexGrow={1}>
+      {pendingMediaPath && (
+        <OptionPicker
+          title='Image file detected'
+          options={mediaOptions}
+          onSelect={handleMediaOption}
+          onCancel={handleMediaCancel}
+        />
+      )}
       {showPicker && (
         <SlashCommandPicker
           commands={filteredSlashCommands}
