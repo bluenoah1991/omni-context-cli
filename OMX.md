@@ -3,7 +3,7 @@
 
 # OMX (Omni Context CLI)
 
-A zero-telemetry CLI coding assistant built with React/Ink, supporting multiple LLM providers (Anthropic, OpenAI), extensible via agents, slash commands, and MCP servers.
+A zero-telemetry CLI coding assistant built with React/Ink, supporting multiple LLM providers (Anthropic, OpenAI, Gemini, Responses), extensible via agents, slash commands, and MCP servers.
 
 ## Quick Start
 
@@ -42,7 +42,7 @@ OMX follows a layered architecture:
 ```
 CLI Entry (cli.tsx)
     ↓
-UI Layer (Ink/React) - ChatView, InputBox, Menu
+UI Layer (Ink/React) - ChatView, InputBox, Menu, MediaContextBar, OptionPicker
     ↓
 Service Layer
     ├── chatOrchestrator - Main conversation loop
@@ -67,6 +67,7 @@ Storage/State
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
 - Request interceptors modify requests for specific providers (Codex, MiniMax, Zenmux, Zhipu)
+- Media files (images) can be attached to user messages across all providers
 
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
@@ -110,12 +111,13 @@ omx/
 │   │   ├── sessionManager.ts      # Session CRUD and persistence
 │   │   ├── configManager.ts       # Model configuration and API keys
 │   │   ├── slashManager.ts        # Slash command loading
+│   │   ├── messageConverter.ts    # Message format conversion between providers
 │   │   └── tools/                 # Built-in tool implementations
 │   ├── types/                     # TypeScript definitions
 │   ├── prompts/                   # System prompt templates
 │   ├── store/                     # Zustand state management
 │   ├── ui/                        # React/Ink components
-│   └── utils/                     # Helper utilities
+│   └── utils/                     # Helper utilities (mediaUtils, contextEditor)
 ├── agents/                        # Built-in agent definitions (.md)
 ├── slash/                         # Built-in slash commands (.md)
 ├── bin/                           # Embedded ripgrep binaries
@@ -189,6 +191,24 @@ description: Echo a message
 
 **Priority**: Project-level overrides user-level overrides built-in.
 
+### Configuration Options
+
+Key options in `~/.omx/omx.json` or `.omx/omx.json`:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `models` | ModelConfig[] | [] | Configured models with API keys |
+| `defaultModelId` | string | undefined | Default model to use |
+| `agentModelId` | string | undefined | Model for agent execution |
+| `enableThinking` | boolean | true | Enable Claude thinking mode |
+| `streamingOutput` | boolean | false | Stream responses to terminal |
+| `specialistMode` | boolean | true | Enable specialist agent mode |
+| `ideContext` | boolean | true | Include IDE context |
+| `playbookEnabled` | boolean | false | Enable playbook features |
+| `cacheTtl` | '5m' \| '1h' | '5m' | Response cache duration |
+| `contextEditing` | boolean | true | Enable context editing |
+| `contextEditingRounds` | number | 0 | Number of context editing rounds |
+
 ### MCP Integration
 
 MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpManager` connects to servers via stdio or HTTP and exposes their tools as `mcp_<server>_<tool>`.
@@ -205,13 +225,18 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 | `src/services/sessionManager.ts` | Session persistence to `~/.omx/projects/` |
 | `src/services/configManager.ts` | Model config, API keys, provider settings |
 | `src/services/requestInterceptor.ts` | Applies provider-specific request modifications |
+| `src/services/messageConverter.ts` | Message format conversion between providers |
 | `src/services/geminiRequestBuilder.ts` | Google Gemini API request formatting |
 | `src/services/geminiStreamHandler.ts` | Google Gemini streaming response handling |
 | `src/services/responsesRequestBuilder.ts` | Responses API request formatting |
 | `src/services/responsesStreamHandler.ts` | Responses API streaming handling |
 | `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Zenmux, Zhipu) |
+| `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
+| `src/utils/mediaUtils.ts` | Media file handling and encoding |
 | `src/store/chatStore.ts` | Zustand store for chat state |
 | `src/ui/components/ChatView.tsx` | Main terminal UI component |
+| `src/ui/components/MediaContextBar.tsx` | Media attachment preview bar |
+| `src/ui/components/OptionPicker.tsx` | Option selection UI |
 | `src/prompts/systemPromptBuilder.ts` | Assembles full system prompt |
 | `build.mjs` | esbuild configuration with obfuscation |
 | `package.json` | Dependencies and scripts |
@@ -251,6 +276,7 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 - Specialized prompts for specialist mode, skills, compaction
 - Dynamic prompt assembly via `systemPromptBuilder.ts`
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
+- Context editing via `contextEditor.ts` for configurable message modification rounds
 
 ### Tool Patterns
 
