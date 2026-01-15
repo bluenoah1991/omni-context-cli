@@ -1,5 +1,5 @@
 ---
-name: craft
+name: spark
 description: Execute bash commands when no suitable specialized tool exists. Automatically fixes errors and retries if the command fails.
 allowedTools: [Bash, BashOutput, Read, Write]
 parameters:
