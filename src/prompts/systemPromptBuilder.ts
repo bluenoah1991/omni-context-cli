@@ -6,14 +6,15 @@ import { buildSkillsPrompt } from './skillsPromptBuilder';
 import specialistPrompt from './specialist.txt';
 import systemPrompt from './system.txt';
 
-export function buildSystemPrompt(specialistMode?: boolean): string {
-  let result = specialistMode ? getSpecialistPrompt() : systemPrompt;
+export function buildSystemPrompt(specialistMode?: boolean, isFromAgent?: boolean): string {
+  const useSpecialist = specialistMode && !isFromAgent;
+  let result = useSpecialist ? getSpecialistPrompt() : systemPrompt;
   result = result.replace('{{OS_TYPE}}', getOSType());
   result = result.replace('{{PLATFORM}}', os.platform());
   result = result.replace('{{ARCH}}', os.arch());
   result = result.replace('{{CWD}}', process.cwd());
 
-  if (!specialistMode) {
+  if (!useSpecialist && !isFromAgent) {
     const skillsPrompt = buildSkillsPrompt(getSkills());
     if (skillsPrompt) {
       result += '\n\n' + skillsPrompt;

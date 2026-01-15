@@ -40,6 +40,7 @@ async function streamAIResponse(
       toolFilter,
       skipSystemPrompt,
       sessionId,
+      isFromAgent,
     );
     headers = result.headers;
     body = result.body;
@@ -50,6 +51,7 @@ async function streamAIResponse(
       messages as GeminiMessage[],
       toolFilter,
       skipSystemPrompt,
+      isFromAgent,
     );
     headers = result.headers;
     body = result.body;
@@ -60,6 +62,7 @@ async function streamAIResponse(
       messages as OpenAIMessage[],
       toolFilter,
       skipSystemPrompt,
+      isFromAgent,
     );
     headers = result.headers;
     body = result.body;
@@ -71,6 +74,7 @@ async function streamAIResponse(
       toolFilter,
       skipSystemPrompt,
       sessionId,
+      isFromAgent,
     );
     headers = result.headers;
     body = result.body;

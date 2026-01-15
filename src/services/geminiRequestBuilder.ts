@@ -13,6 +13,7 @@ export async function buildGeminiRequest(
   messages: GeminiMessage[],
   toolFilter?: ToolFilter,
   skipSystemPrompt?: boolean,
+  isFromAgent?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
 
@@ -40,7 +41,9 @@ export async function buildGeminiRequest(
   const request: Record<string, unknown> = {contents: preprocessedMessages};
 
   if (!skipSystemPrompt) {
-    request.systemInstruction = {parts: [{text: buildSystemPrompt(config.specialistMode)}]};
+    request.systemInstruction = {
+      parts: [{text: buildSystemPrompt(config.specialistMode, isFromAgent)}],
+    };
   }
 
   const generationConfig: Record<string, unknown> = {};

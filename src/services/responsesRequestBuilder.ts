@@ -20,6 +20,7 @@ export async function buildResponsesRequest(
   toolFilter?: ToolFilter,
   skipSystemPrompt?: boolean,
   sessionId?: string,
+  isFromAgent?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
 
@@ -89,7 +90,7 @@ export async function buildResponsesRequest(
   }
 
   if (!skipSystemPrompt) {
-    const instructions = buildSystemPrompt(config.specialistMode);
+    const instructions = buildSystemPrompt(config.specialistMode, isFromAgent);
     if (instructions && instructions.trim()) {
       request.instructions = instructions;
     }

@@ -13,11 +13,12 @@ export async function buildOpenAIRequest(
   messages: OpenAIMessage[],
   toolFilter?: ToolFilter,
   skipSystemPrompt?: boolean,
+  isFromAgent?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
   const systemMessages = skipSystemPrompt
     ? []
-    : [{role: 'system', content: buildSystemPrompt(config.specialistMode)}];
+    : [{role: 'system', content: buildSystemPrompt(config.specialistMode, isFromAgent)}];
 
   const editedMessages = editOpenAIContext(messages);
 

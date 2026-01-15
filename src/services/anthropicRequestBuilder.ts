@@ -14,6 +14,7 @@ export async function buildAnthropicRequest(
   toolFilter?: ToolFilter,
   skipSystemPrompt?: boolean,
   sessionId?: string,
+  isFromAgent?: boolean,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
   const cacheControl = config.cacheTtl === '1h'
@@ -92,7 +93,7 @@ export async function buildAnthropicRequest(
 
   if (!skipSystemPrompt) {
     request.system = [{
-      text: buildSystemPrompt(config.specialistMode),
+      text: buildSystemPrompt(config.specialistMode, isFromAgent),
       type: 'text',
       cache_control: cacheControl,
     }];
