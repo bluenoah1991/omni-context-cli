@@ -1,45 +1,41 @@
 ---
 name: slice
-description: Extract all code files and key code segments for a feature module. Returns complete file contents and relevant snippets from other files.
+description: Extract code snippets relevant to answering a specific question. Returns targeted code segments from across the codebase that address the query.
 allowedTools: [Read, Grep, Glob, Bash, BashOutput]
 parameters:
   properties:
-    module:
+    question:
       type: string
-      description: The feature module to extract. Can be a component name or module identifier.
+      description: The question or doubt you need answered. Be specific about what you want to understand. Examples: "How does session persistence work?", "Where are tool calls dispatched?", "What's the error handling flow?", "How is state managed in the UI?"
     directory:
       type: string
       description: Limit the search to this directory. If not provided, searches the entire project.
-  required: [module]
+  required: [question]
 ---
 
-Extract all code for this feature module: {{module}}
+Find and extract code that answers this question: {{question}}
 
 {{#if directory}}Limit the search to this directory: {{directory}}.{{/if}}
 
-Start by using glob to find files that belong to this module.
+Use grep to search for keywords related to the question. Trace function calls, imports, and references.
 
-Then use grep to trace imports, exports, and references so you understand the full scope.
+Use glob to identify relevant files based on your grep findings.
 
-Read the main implementation files in their entirety.
+Read the files that contain the answer to the question. Focus on the specific code sections that address what's being asked.
 
-For other files that reference or use this module, extract just the relevant code segments.
+For complex flows, read multiple files to understand the complete picture.
 
-Return the code in this format. Use complete contents for main files, line ranges for snippets:
+Return the code in this format. Use line ranges when only a section is relevant, complete contents for small files:
 
 ```
-File: path/to/main.ts
-<complete file contents>
+File: path/to/file.ts
+Lines X-Y:
+<relevant code segment>
 ---
 File: path/to/another.ts
-Lines X-Y:
-<code segment>
+<complete file contents>
 ```
 
-If you can't find the module:
-
-```
-Couldn't find this module: [brief explanation of what you searched and why nothing matched]
-```
+If the code references other parts that explain the answer, include those too.
 
 Do not include explanations beyond the result format. Keep responses concise and structured.
