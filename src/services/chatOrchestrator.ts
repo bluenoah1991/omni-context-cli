@@ -100,6 +100,8 @@ async function processToolCalls(
 
   const toolResults: ToolResult[] = [];
 
+  const executedIds = new Set<string | undefined>();
+
   for (const toolCall of toolCalls) {
     if (signal?.aborted) {
       break;
@@ -112,9 +114,16 @@ async function processToolCalls(
     const content = JSON.stringify(resultWithoutDataUrl);
     callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
     toolResults.push({id: toolCall.id, name: toolCall.name, content, dataUrl});
+    executedIds.add(toolCall.id);
   }
 
   if (signal?.aborted) {
+    for (const toolCall of toolCalls) {
+      if (!executedIds.has(toolCall.id)) {
+        const content = JSON.stringify({success: false, error: 'Execution interrupted'});
+        toolResults.push({id: toolCall.id, name: toolCall.name, content});
+      }
+    }
     callbacks.onError?.('Tool execution interrupted');
   }
   return {
