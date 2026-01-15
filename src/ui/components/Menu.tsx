@@ -179,7 +179,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'streaming', label: '⇵ Streaming output'},
       {id: 'ide-context', label: '⌘ IDE context'},
       {id: 'playbook', label: '≡ Playbook memory'},
-      {id: 'cache-ttl', label: '⏱ Cache duration'},
+      {id: 'cache-ttl', label: '↺ Cache duration'},
       {id: 'context-editing', label: '✂ Context editing'},
     ];
 
