@@ -13,37 +13,38 @@ parameters:
   required: [query]
 ---
 
-{{#if filePath}}
-File: {{filePath}}
-{{else}}
-Search across entire project
-{{/if}}
-Query: {{query}}
+Find and extract this code segment: {{query}}
 
 {{#if filePath}}
-Read the specified file and locate the code segment that matches the query.
+Search within this file: {{filePath}}. Read the file and locate the code segment that matches the query.
 {{else}}
-First use glob and grep to search across the project and identify which file contains the code segment that matches the query. Then read that file to extract the exact code.
+Search across the entire project. Use glob and grep to identify which files contain matching code, then read those files to extract the exact segments.
 {{/if}}
 
-Return ONLY the matching code segments with their file paths and line numbers in this exact format. If multiple matches are found, list all of them separated by "---":
+Return what you find in this format:
 
 ```
 File: path/to/file.ts
 Lines X-Y:
-<code>
+<the matching code>
 ```
 
-If there are multiple matches:
+If there are multiple matches, separate them like this:
 
 ```
 File: path/to/file1.ts
 Lines X-Y:
-<code>
+<the matching code>
 ---
 File: path/to/file2.ts
 Lines A-B:
-<code>
+<the matching code>
+```
+
+If you can't find what was asked for:
+
+```
+Couldn't find it: [brief explanation of what you searched and why nothing matched]
 ```
 
 Do not include explanations beyond the result format. Keep responses concise and structured.

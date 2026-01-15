@@ -6,7 +6,7 @@ parameters:
   properties:
     filePath:
       type: string
-      description: File to edit—relative or absolute path.
+      description: File to edit, relative or absolute path.
     oldString:
       type: string
       description: Exact text to replace. Must match perfectly, including whitespace and indentation.
@@ -19,44 +19,44 @@ parameters:
   required: [filePath, oldString, newString]
 ---
 
-Target file: {{filePath}}
-{{#if replaceAll}}
-Replace all occurrences.
-{{else}}
-Replace single occurrence only.
-{{/if}}
+Edit this file by replacing text: {{filePath}}
 
-Old text to replace:
-<oldString>
+{{#if replaceAll}}Replace all occurrences of the old text.{{else}}Replace only the first occurrence.{{/if}}
+
+Old text to find and replace:
+
+```
 {{oldString}}
-</oldString>
+```
 
-New text:
-<newString>
+New text to insert:
+
+```
 {{newString}}
-</newString>
-
-First, attempt to edit the file using the edit tool.
-
-If the edit succeeds, return the result immediately in this exact format:
-```
-Success: Edited /path/to/file
 ```
 
-If the edit fails, analyze the error and attempt to fix it.
+Try to make the edit using the edit tool.
 
-After fixing, retry the edit operation.
+If it works, return:
 
-If it succeeds, return:
 ```
-Success after fix: Edited /path/to/file
-Fixed issue: [brief description of what was fixed]
+Done: Edited {{filePath}}
 ```
 
-If all attempts fail, return:
+If it fails, figure out why. Maybe the text doesn't match exactly, or there's a whitespace issue. Fix it and try again.
+
+If the fix worked:
+
 ```
-Failed: [error description]
-Attempted fixes: [what was tried]
+Done: Edited {{filePath}}
+What I fixed: [quick note on what was off and how you corrected it]
+```
+
+If nothing worked after a few tries:
+
+```
+Couldn't complete this: [what went wrong]
+What I tried: [the fixes you attempted]
 ```
 
 Do not include explanations beyond the result format. Keep responses concise and structured.

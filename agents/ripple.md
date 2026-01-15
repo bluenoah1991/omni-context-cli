@@ -12,36 +12,44 @@ parameters:
       description: Name of the symbol to find references for
     symbolType:
       type: string
-      description: Type of symbol—function, class, interface, variable, etc. Helps narrow the search.
-    contextLines:
-      type: number
-      description: Lines to include before and after each reference. Defaults to 5.
+      description: Type of symbol (function, class, interface, variable, etc.). Helps narrow the search.
   required: [filePath, symbolName]
 ---
 
-File: {{filePath}}
-Symbol: {{symbolName}}{{#if symbolType}} ({{symbolType}}){{/if}}
+Find all references to a symbol in the codebase.
 
-Use grep and glob to search for all places where the symbol is referenced. For each reference found, read the file and extract the code snippet with {{#if contextLines}}{{contextLines}}{{else}}5{{/if}} lines of context before and after.
+Symbol name: {{symbolName}}.
 
-Return the reference sites in this exact format. For each location found, include:
+{{#if symbolType}}Symbol type: {{symbolType}}.{{/if}}
+
+Defined in: {{filePath}}.
+
+Use grep and glob to search for all places where this symbol is referenced. For each reference found, read the file and extract the code snippet with 5 lines of context before and after.
+
+Return the references in this format:
 
 ```
 File: path/to/file.ts
 Lines X-Y:
-<code>
+<the code with context>
 ```
 
-If multiple reference sites are found, separate each with "---":
+If there are multiple references, separate them like this:
 
 ```
 File: path/to/file1.ts
 Lines X-Y:
-<code>
+<the code with context>
 ---
 File: path/to/file2.ts
 Lines A-B:
-<code>
+<the code with context>
+```
+
+If you can't find any references:
+
+```
+No references found: [brief explanation of what you searched]
 ```
 
 Do not include explanations beyond the result format. Keep responses concise and structured.

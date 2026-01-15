@@ -10,14 +10,17 @@ parameters:
   required: [query]
 ---
 
-Explore: {{query}}
+Survey the project structure and find out: {{query}}
 
-Use glob to survey the file structure and identify relevant areas. Use grep to scan for where functionality lives. Focus on the big picture—what directories exist, how the project is organized, where different concerns are separated.
+Use glob to survey the file structure and identify relevant areas. Use grep to scan for where functionality lives. 
+
+Focus on the big picture: what directories exist, how the project is organized, where different concerns are separated.
 
 Return a report covering:
+- A brief overview of what you found
 - Relevant directories and their purposes
 - Key files and their roles
 - How the codebase is organized (features, layers, modules)
 - Where the queried functionality lives
 
-Keep code excerpts minimal—just enough to identify locations and responsibilities.
+Keep the report concise and to the point. Focus on what matters, skip the fluff.

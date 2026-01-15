@@ -6,19 +6,20 @@ parameters:
   properties:
     query:
       type: string
-      description: What files to find—like "configuration files", "React components", or "test files for user authentication".
+      description: What files to find, like "configuration files", "React components", or "test files for user authentication".
     maxFiles:
       type: number
       description: Maximum number of files to return. Defaults to 50.
   required: [query]
 ---
 
-Query: {{query}}
-Max files to return: {{#if maxFiles}}{{maxFiles}}{{else}}50{{/if}}
+Find files in the project that match this criteria: {{query}}
 
-Use glob and grep to search across the project for files matching the criteria.
+Maximum files to return: {{#if maxFiles}}{{maxFiles}}{{else}}50 (default){{/if}}.
 
-Return ONLY the list of matching file paths in this exact format:
+Use glob and grep to search across the project for matching files. Only return file paths, don't read the contents.
+
+Return just the list of matching file paths:
 
 ```
 path/to/file1.ts
@@ -26,6 +27,12 @@ path/to/file2.tsx
 path/to/file3.json
 ```
 
-If more files match than the maximum limit, return the most relevant ones.
+If more files match than the limit allows, return the most relevant ones.
+
+If you can't find any matching files:
+
+```
+Couldn't find any matches: [brief explanation of what you searched]
+```
 
 Do not include explanations beyond the result format. Keep responses concise and structured.

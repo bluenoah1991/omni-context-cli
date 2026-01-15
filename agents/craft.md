@@ -1,6 +1,6 @@
 ---
 name: craft
-description: Execute bash commands when no suitable specialized tool exists. Automatically fixes errors and retries if the command fails. Returns the result you expect.
+description: Execute bash commands when no suitable specialized tool exists. Automatically fixes errors and retries if the command fails.
 allowedTools: [Bash, BashOutput, Read, Write]
 parameters:
   properties:
@@ -9,42 +9,44 @@ parameters:
       description: Bash command to run. Pipes, redirects, and chains all work.
     expectedResult:
       type: string
-      description: What result you expect from this command—like "list of JavaScript files", "successful installation message", or "version number".
+      description: What result you expect from this command, like "list of JavaScript files", "successful installation message", or "version number".
     timeout:
       type: number
       description: Max runtime in milliseconds. Defaults to 120000 (2 minutes).
     workdir:
       type: string
-      description: Where to run the command—relative or absolute path. Defaults to current directory.
+      description: Where to run the command, relative or absolute path. Defaults to current directory.
   required: [command, expectedResult]
 ---
 
-Command: {{command}}
-Expected result: {{expectedResult}}
-{{#if timeout}}Timeout: {{timeout}}ms{{/if}}
-{{#if workdir}}Working directory: {{workdir}}{{/if}}
+Use the bash tool to run this command: {{command}}
 
-First, attempt to execute the command using the bash tool.
+Working directory: {{#if workdir}}{{workdir}}{{else}}current directory{{/if}}.
 
-If the command succeeds, extract and return the result according to the expected result description in this exact format:
+Timeout: {{#if timeout}}{{timeout}}ms{{else}}120000ms (2 minutes){{/if}}.
+
+Expected result: {{expectedResult}}.
+
+If it works, extract what was asked for and return:
+
 ```
-Success: [extracted result matching the expected result description]
-```
-
-If the command fails, analyze the error and attempt to fix it.
-
-After fixing, retry the command.
-
-If it succeeds after fix, return:
-```
-Success after fix: [extracted result matching the expected result description]
-Fixed issue: [brief description of what was fixed]
+Done: [the result matching what was expected]
 ```
 
-If all attempts fail, return:
+If something goes wrong, figure out why and fix it. Then try again.
+
+If the fix worked, return:
+
 ```
-Failed: [error description]
-Attempted fixes: [what was tried]
+Done: [the result matching what was expected]
+What I fixed: [quick note on what went wrong and how you fixed it]
+```
+
+If nothing worked after a few tries, return:
+
+```
+Couldn't complete this: [what went wrong]
+What I tried: [the fixes you attempted]
 ```
 
 Do not include explanations beyond the result format. Keep responses concise and structured.
