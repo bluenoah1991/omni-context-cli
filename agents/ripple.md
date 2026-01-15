@@ -24,7 +24,9 @@ Symbol name: {{symbolName}}.
 
 Defined in: {{filePath}}.
 
-Use grep and glob to search for all places where this symbol is referenced. For each reference found, read the file and extract the code snippet with 5 lines of context before and after.
+Use grep and glob to search for all places where this symbol is referenced.
+
+For each reference found, read the file and extract the code snippet with 5 lines of context before and after.
 
 Return the references in this format:
 

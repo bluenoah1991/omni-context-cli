@@ -17,7 +17,9 @@ Research this topic: {{query}}
 
 Expected result: {{expectedResult}}.
 
-Use available web search tools and external knowledge bases to find the answer. Gather information from multiple sources if needed for a comprehensive result.
+Use available web search tools and external knowledge bases to find the answer.
+
+Gather information from multiple sources if needed for a comprehensive result.
 
 Return what you find in this format:
 

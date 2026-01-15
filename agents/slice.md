@@ -17,9 +17,13 @@ Extract all code for this feature module: {{module}}
 
 {{#if directory}}Limit the search to this directory: {{directory}}.{{/if}}
 
-Start by using glob to find files that belong to this module. Then use grep to trace imports, exports, and references so you understand the full scope.
+Start by using glob to find files that belong to this module.
 
-Read the main implementation files in their entirety. For other files that reference or use this module, extract just the relevant code segments.
+Then use grep to trace imports, exports, and references so you understand the full scope.
+
+Read the main implementation files in their entirety.
+
+For other files that reference or use this module, extract just the relevant code segments.
 
 Return the code in this format. Use complete contents for main files, line ranges for snippets:
 

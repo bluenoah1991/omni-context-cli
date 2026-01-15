@@ -18,7 +18,9 @@ Find and extract this code segment: {{query}}
 {{#if filePath}}
 Search within this file: {{filePath}}. Read the file and locate the code segment that matches the query.
 {{else}}
-Search across the entire project. Use glob and grep to identify which files contain matching code, then read those files to extract the exact segments.
+Search across the entire project.
+
+Use glob and grep to identify which files contain matching code, then read those files to extract the exact segments.
 {{/if}}
 
 Return what you find in this format:
