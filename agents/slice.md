@@ -6,7 +6,7 @@ parameters:
   properties:
     question:
       type: string
-      description: The question or doubt you need answered. Be specific about what you want to understand. Examples: "How does session persistence work?", "Where are tool calls dispatched?", "What's the error handling flow?", "How is state managed in the UI?"
+      description: What you want to understand. Be specific, like "How does session persistence work?" or "Where are tool calls dispatched?"
     directory:
       type: string
       description: Limit the search to this directory. If not provided, searches the entire project.
