@@ -7,10 +7,15 @@ parameters:
     query:
       type: string
       description: What aspect of the project structure to explore
+    directory:
+      type: string
+      description: Limit the search to this directory. If not provided, searches the entire project.
   required: [query]
 ---
 
 Survey the project structure and find out: {{query}}
+
+{{#if directory}}Limit the search to this directory: {{directory}}.{{/if}}
 
 Use glob to survey the file structure and identify relevant areas. Use grep to scan for where functionality lives. 
 

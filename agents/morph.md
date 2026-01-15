@@ -7,10 +7,15 @@ parameters:
     task:
       type: string
       description: What refactor to perform. Be specific about what to change and where.
+    directory:
+      type: string
+      description: Limit the refactor to this directory. If not provided, searches the entire project.
   required: [task]
 ---
 
 Perform this refactor: {{task}}
+
+{{#if directory}}Limit the scope to this directory: {{directory}}.{{/if}}
 
 Use grep to find all relevant occurrences. Read files to verify matches are real references. Edit each file to apply the change.
 

@@ -25,15 +25,15 @@ Edit this file by replacing text: {{filePath}}
 
 Old text to find and replace:
 
-```
+<old_text>
 {{oldString}}
-```
+</old_text>
 
 New text to insert:
 
-```
+<new_text>
 {{newString}}
-```
+</new_text>
 
 Try to make the edit using the edit tool.
 

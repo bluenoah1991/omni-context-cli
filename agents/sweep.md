@@ -7,6 +7,9 @@ parameters:
     query:
       type: string
       description: What files to find, like "configuration files", "React components", or "test files for user authentication".
+    directory:
+      type: string
+      description: Limit the search to this directory. If not provided, searches the entire project.
     maxFiles:
       type: number
       description: Maximum number of files to return. Defaults to 50.
@@ -15,9 +18,11 @@ parameters:
 
 Find files in the project that match this criteria: {{query}}
 
+{{#if directory}}Limit the search to this directory: {{directory}}.{{/if}}
+
 Maximum files to return: {{#if maxFiles}}{{maxFiles}}{{else}}50 (default){{/if}}.
 
-Use glob and grep to search across the project for matching files. Only return file paths, don't read the contents.
+Use glob and grep to search for matching files. Only return file paths, don't read the contents.
 
 Return just the list of matching file paths:
 

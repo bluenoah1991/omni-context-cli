@@ -4,13 +4,18 @@ description: Extract all code files and key code segments for a feature module. 
 allowedTools: [Read, Grep, Glob, Bash, BashOutput]
 parameters:
   properties:
-    target:
+    module:
       type: string
       description: The feature module to extract. Can be a component name or module identifier.
-  required: [target]
+    directory:
+      type: string
+      description: Limit the search to this directory. If not provided, searches the entire project.
+  required: [module]
 ---
 
-Extract all code for this feature module: {{target}}
+Extract all code for this feature module: {{module}}
+
+{{#if directory}}Limit the search to this directory: {{directory}}.{{/if}}
 
 Start by using glob to find files that belong to this module. Then use grep to trace imports, exports, and references so you understand the full scope.
 

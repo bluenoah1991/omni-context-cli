@@ -4,12 +4,12 @@ description: Find and extract specific code segments. Searches project-wide or i
 allowedTools: [Read, Grep, Glob]
 parameters:
   properties:
-    filePath:
-      type: string
-      description: Path to search within. If not provided, searches across the entire project.
     query:
       type: string
       description: What code segment to find
+    filePath:
+      type: string
+      description: Path to search within. If not provided, searches across the entire project.
   required: [query]
 ---
 

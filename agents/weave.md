@@ -22,9 +22,9 @@ Write content to this file: {{filePath}}
 
 Content to write:
 
-```
+<file_content>
 {{content}}
-```
+</file_content>
 
 Try to write the content using the write tool.
 
