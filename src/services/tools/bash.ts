@@ -129,6 +129,7 @@ export function registerBashTool(): void {
             signal.removeEventListener('abort', onAbort);
           }
           if (!killed) {
+            killed = true;
             reject(
               new Error(
                 `Couldn't start command: ${error.message}. Does it exist? Is it executable?`,
