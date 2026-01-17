@@ -2,6 +2,7 @@ import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
 import { ToolHandlerResult } from '../types/tool';
 import { extractTextContent } from '../utils/messageUtils';
+import { injectAgentInstructions } from './agentInstructionsManager';
 import { runConversation } from './chatOrchestrator';
 import { getAgentModel, loadAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
@@ -26,8 +27,13 @@ export async function executeAgent(
   }
 
   const session = createSession(agentModel);
+  const sessionWithInstructions = injectAgentInstructions(session, agentModel.provider);
   const userMessage = interpolatePrompt(agent.promptTemplate, params);
-  const sessionWithMessage = addUserMessage(session, userMessage, agentModel.provider);
+  const sessionWithMessage = addUserMessage(
+    sessionWithInstructions,
+    userMessage,
+    agentModel.provider,
+  );
 
   const result = await runConversation(
     sessionWithMessage,

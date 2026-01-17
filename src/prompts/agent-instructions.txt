@@ -1,0 +1,8 @@
+# Agent Instructions
+
+The following agent-specific instructions were found:
+
+{{AGENT_INSTRUCTIONS}}
+
+Follow these instructions when executing agent tasks.
+

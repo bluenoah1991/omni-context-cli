@@ -1,6 +1,6 @@
 # Project Instructions
 
-The following project-specific instructions were found in the project root:
+The following project-specific instructions were found:
 
 {{PROJECT_INSTRUCTIONS}}
 
