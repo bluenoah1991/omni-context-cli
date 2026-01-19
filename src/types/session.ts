@@ -1,4 +1,5 @@
 import { AnthropicMessage } from './anthropicMessage.js';
+import { Provider } from './config.js';
 import { GeminiMessage } from './geminiMessage.js';
 import { OpenAIMessage } from './openaiMessage.js';
 import { ResponsesMessage } from './responsesMessage.js';
@@ -21,3 +22,13 @@ export interface RewindPoint {
   index: number;
   label: string;
 }
+
+export type SessionIndexEntry = {
+  path: string;
+  title: string;
+  provider: Provider;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type SessionIndex = SessionIndexEntry[];

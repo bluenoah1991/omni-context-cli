@@ -12,12 +12,47 @@ import {
   ResponsesMessage,
   ResponsesMessageItem,
 } from '../types/responsesMessage';
-import { ChatMessage, RewindPoint, Session } from '../types/session';
+import { ChatMessage, RewindPoint, Session, SessionIndex } from '../types/session';
+
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
 import { parseDataUrl } from '../utils/mediaUtils';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
+
+const INDEX_LIMIT = 10;
+
+function getIndexPath(): string {
+  return path.join(getProjectDir(), 'index.json');
+}
+
+function loadIndex(): SessionIndex {
+  const indexPath = getIndexPath();
+  if (!fs.existsSync(indexPath)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+  } catch {
+    return [];
+  }
+}
+
+function saveIndex(index: SessionIndex): void {
+  ensureProjectDir();
+  fs.writeFileSync(getIndexPath(), JSON.stringify(index));
+}
+
+function updateIndex(session: Session, provider: Provider, filepath: string): void {
+  let index = loadIndex().filter(e => e.path !== filepath);
+  index.unshift({
+    path: filepath,
+    title: session.title,
+    provider,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+  });
+  index = index.slice(0, INDEX_LIMIT);
+  saveIndex(index);
+}
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -281,23 +316,29 @@ export function saveSession(session: Session, provider: Provider): void {
   ensureProjectDir();
   const filepath = path.join(getProjectDir(), `${provider}-${session.createdAt}.json`);
   fs.writeFileSync(filepath, JSON.stringify(session, null, 2));
+  updateIndex(session, provider, filepath);
 }
 
 export function listSessions(
   provider: Provider,
   limit = 10,
-): Array<{path: string; title: string; createdAt: number;}> {
+): Array<{path: string; title: string; updatedAt: number;}> {
+  const index = loadIndex();
+  const entries = index.filter(e => e.provider === provider).slice(0, limit);
+
+  if (entries.length > 0) {
+    return entries.map(e => ({path: e.path, title: e.title, updatedAt: e.updatedAt}));
+  }
+
   const dir = getProjectDir();
   if (!fs.existsSync(dir)) return [];
 
   const prefix = `${provider}-`;
-  return fs.readdirSync(dir).filter(f => f.startsWith(prefix) && f.endsWith('.json')).sort((a, b) =>
-    parseInt(b.slice(prefix.length, -5)) - parseInt(a.slice(prefix.length, -5))
-  ).slice(0, limit).map(f => {
+  return fs.readdirSync(dir).filter(f => f.startsWith(prefix) && f.endsWith('.json')).map(f => {
     const filepath = path.join(dir, f);
     const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-    return {path: filepath, title: content.title, createdAt: content.createdAt};
-  });
+    return {path: filepath, title: content.title, updatedAt: content.updatedAt};
+  }).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, limit);
 }
 
 export function loadSession(filepath: string): Session {
@@ -316,14 +357,25 @@ export function loadSession(filepath: string): Session {
 }
 
 export function loadLatestSession(): Session | null {
+  const index = loadIndex();
+
+  if (index.length > 0) {
+    const latest = index[0];
+    if (fs.existsSync(latest.path)) {
+      return loadSession(latest.path);
+    }
+  }
+
   const dir = getProjectDir();
   if (!fs.existsSync(dir)) return null;
 
-  const allFiles = fs.readdirSync(dir).filter(f => f.endsWith('.json')).map(f => {
-    const filepath = path.join(dir, f);
-    const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-    return {path: filepath, updatedAt: content.updatedAt};
-  }).sort((a, b) => b.updatedAt - a.updatedAt);
+  const allFiles = fs.readdirSync(dir).filter(f => f.endsWith('.json') && f !== 'index.json').map(
+    f => {
+      const filepath = path.join(dir, f);
+      const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+      return {path: filepath, updatedAt: content.updatedAt};
+    },
+  ).sort((a, b) => b.updatedAt - a.updatedAt);
 
   if (allFiles.length === 0) return null;
   return loadSession(allFiles[0].path);

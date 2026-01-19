@@ -10,7 +10,7 @@ export function CompactingIndicator(): React.ReactElement {
         <Spinner type='dots' />
         {' '}
       </Text>
-      <Text color={colors.info}>Compacting conversation history...</Text>
+      <Text color={colors.muted}>Compacting conversation history...</Text>
     </>
   );
 }

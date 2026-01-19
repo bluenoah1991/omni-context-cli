@@ -657,7 +657,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'new', label: '+ Start a fresh new session'},
       ...sessions.map(s => ({
         id: s.path,
-        label: `${s.title} (${new Date(s.createdAt).toLocaleString()})`,
+        label: `${s.title} (${new Date(s.updatedAt).toLocaleString()})`,
       })),
     ];
 
