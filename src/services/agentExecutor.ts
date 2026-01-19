@@ -45,14 +45,22 @@ export async function executeAgent(
   );
 
   const lastMessage = result.messages[result.messages.length - 1];
-  const displayText = extractTextContent(lastMessage);
+  const fullText = extractTextContent(lastMessage);
+  let displayText = fullText;
+  if (fullText.startsWith('```')) {
+    const start = fullText.indexOf('\n') + 1;
+    const end = fullText.lastIndexOf('```');
+    if (start > 0 && end > start) {
+      displayText = fullText.slice(start, end).trim();
+    }
+  }
 
   if (signal?.aborted) {
     throw new Error(`Agent ${agent.name} was interrupted`);
   }
 
   return {
-    result: displayText,
+    result: fullText,
     displayText: `Agent ${agent.name} done: ${displayText.slice(0, 200)}${
       displayText.length > 200 ? '...' : ''
     }`,
