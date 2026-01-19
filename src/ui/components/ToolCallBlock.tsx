@@ -43,7 +43,7 @@ export const ToolCallBlock = React.memo(
     return (
       <Box marginTop={type === 'call' ? 0 : -1} marginBottom={1}>
         <Box marginRight={1}>
-          <Text color={colors.secondary}>{type === 'call' ? '◈' : ' '}</Text>
+          <Text color={colors.secondary}>{type === 'call' ? '≡' : ' '}</Text>
         </Box>
         <Box marginRight={3} flexDirection='column' width={contentWidth}>
           <Text color={textColor} wrap='wrap'>{text}</Text>
