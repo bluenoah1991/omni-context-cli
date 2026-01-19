@@ -77,7 +77,7 @@ export async function buildAnthropicRequest(
     if (typeof message.content === 'string') {
       message.content = [{type: 'text', text: message.content, cache_control: cacheControl}] as any;
     } else if (Array.isArray(message.content)) {
-      const block = message.content.findLast(b => b.type !== 'thinking') ?? message.content.at(-1);
+      const block = message.content.findLast(b => b.type !== 'thinking');
       if (block) {
         (block as any).cache_control = cacheControl;
       }
