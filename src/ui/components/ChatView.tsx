@@ -112,7 +112,10 @@ export function ChatView(): React.ReactElement {
           messages => [...messages, {role: 'user', content: text, timestamp: Date.now()}]
         );
         setLoading(true);
-        const result = await slashCommand.execute();
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
+        const result = await slashCommand.execute(abortController.signal);
+        abortControllerRef.current = null;
         setLoading(false);
         if (result.message) {
           setError(null);

@@ -49,7 +49,11 @@ async function commitWithMessage(message: string): Promise<string> {
   return runGitCommand(['commit', '-m', message]);
 }
 
-async function generateCommitMessage(diff: string, files: string[]): Promise<string> {
+async function generateCommitMessage(
+  diff: string,
+  files: string[],
+  signal?: AbortSignal,
+): Promise<string> {
   const appConfig = loadAppConfig();
   const agentModel = getAgentModel(appConfig);
 
@@ -68,11 +72,15 @@ async function generateCommitMessage(diff: string, files: string[]): Promise<str
   const result = await runConversation(
     sessionWithMessage,
     undefined,
-    undefined,
+    signal,
     {excludeAgents: true, excludeMcp: true, allowedTools: []},
     agentModel,
     true,
   );
+
+  if (signal?.aborted) {
+    throw new Error('Git commit was interrupted');
+  }
 
   const lastMessage = result.messages[result.messages.length - 1];
   let message = extractTextContent(lastMessage).trim();
@@ -88,7 +96,7 @@ async function generateCommitMessage(diff: string, files: string[]): Promise<str
   return message;
 }
 
-export async function executeGitCommit(): Promise<{message: string;}> {
+export async function executeGitCommit(signal?: AbortSignal): Promise<{message: string;}> {
   try {
     const stagedFiles = await getStagedFiles();
 
@@ -102,11 +110,19 @@ export async function executeGitCommit(): Promise<{message: string;}> {
       return {message: 'No changes detected in staged files.'};
     }
 
-    const commitMessage = await generateCommitMessage(diff, stagedFiles);
+    const commitMessage = await generateCommitMessage(diff, stagedFiles, signal);
+
+    if (signal?.aborted) {
+      return {message: 'Git commit cancelled.'};
+    }
+
     const commitResult = await commitWithMessage(commitMessage);
 
     return {message: `Committed with message:\n\n  ${commitMessage}\n\n${commitResult}`};
   } catch (err) {
+    if (signal?.aborted) {
+      return {message: 'Git commit cancelled.'};
+    }
     return {message: `Failed to commit: ${err instanceof Error ? err.message : String(err)}`};
   }
 }
