@@ -15,6 +15,13 @@ import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInputHistory } from './services/inputHistoryManager.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
 import { mcpManager } from './services/mcpManager.js';
+import {
+  addProviderModels,
+  getAllModelProviders,
+  getModelProvider,
+  removeProviderModels,
+} from './services/modelProvider.js';
+import { initializeProviders } from './services/modelProviders/index.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { initializeTools } from './services/tools/index.js';
 import { useChatStore } from './store/chatStore.js';
@@ -26,9 +33,56 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('-c, --continue', 'Continue from last session').option(
   '-d, --diagnostic',
   'Enable diagnostic mode to save request/response JSON',
-).option('-a, --cost-analysis', 'Record token usage to CSV for cost analysis').parse();
+).option('-a, --cost-analysis', 'Record token usage to CSV for cost analysis').option(
+  '--add-provider <provider>',
+  'Add models from a provider (use --list-providers to see available)',
+).option('--remove-provider <provider>', 'Remove all models from a provider').option(
+  '--api-key <key>',
+  'API key for --add-provider',
+).option('--list-providers', 'List available model providers').parse();
 
 const opts = program.opts();
+
+initializeProviders();
+
+if (opts.listProviders) {
+  const providers = getAllModelProviders();
+  if (providers.length === 0) {
+    console.log('No model providers available');
+  } else {
+    console.log('Available model providers:');
+    for (const p of providers) {
+      console.log(`  ${p.id} - ${p.name}`);
+    }
+  }
+  process.exit(0);
+}
+
+if (opts.addProvider) {
+  if (!opts.apiKey) {
+    console.error('Error: --api-key is required with --add-provider');
+    process.exit(1);
+  }
+  const provider = getModelProvider(opts.addProvider);
+  if (!provider) {
+    console.error(`Unknown provider: ${opts.addProvider}`);
+    process.exit(1);
+  }
+  try {
+    const count = await addProviderModels(opts.addProvider, opts.apiKey);
+    console.log(`Added ${count} models from ${provider.name}`);
+  } catch (e) {
+    console.error(`Failed to add models: ${e instanceof Error ? e.message : e}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (opts.removeProvider) {
+  const count = removeProviderModels(opts.removeProvider);
+  console.log(`Removed ${count} models from ${opts.removeProvider}`);
+  process.exit(0);
+}
 
 dns.setDefaultResultOrder('ipv4first');
 

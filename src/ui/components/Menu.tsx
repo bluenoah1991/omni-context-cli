@@ -238,6 +238,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           }}
           onCancel={() => setView('main')}
           emptyMessage='No models configured yet. Add one first!'
+          maxVisible={10}
         />
       </Box>
     );
@@ -340,6 +341,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           }}
           onCancel={() => setView('model-ops')}
           emptyMessage='No models configured yet. Add one first!'
+          maxVisible={10}
         />
       </Box>
     );
@@ -377,6 +379,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           }}
           onCancel={() => setView('model-ops')}
           emptyMessage='No models configured yet. Add one first!'
+          maxVisible={10}
         />
       </Box>
     );
@@ -407,6 +410,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           }}
           onCancel={() => setView('model-ops')}
           emptyMessage='No models to remove'
+          maxVisible={10}
         />
       </Box>
     );

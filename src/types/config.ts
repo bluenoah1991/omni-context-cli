@@ -8,6 +8,7 @@ export interface ModelConfig {
   apiKey: string;
   apiUrl: string;
   contextSize: number;
+  source?: string;
 }
 
 export interface AppConfig {

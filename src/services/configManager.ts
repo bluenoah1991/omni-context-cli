@@ -42,7 +42,8 @@ export function saveAppConfig(config: AppConfig): void {
 
 export function getDefaultModel(config: AppConfig): ModelConfig | undefined {
   if (config.defaultModelId) {
-    return config.models.find(m => m.id === config.defaultModelId);
+    const model = config.models.find(m => m.id === config.defaultModelId);
+    if (model) return model;
   }
   return config.models[0];
 }
@@ -55,7 +56,8 @@ export function setDefaultModel(modelId: string): void {
 
 export function getAgentModel(config: AppConfig): ModelConfig | undefined {
   if (config.agentModelId) {
-    return config.models.find(m => m.id === config.agentModelId);
+    const model = config.models.find(m => m.id === config.agentModelId);
+    if (model) return model;
   }
   return getDefaultModel(config);
 }
