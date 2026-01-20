@@ -175,21 +175,21 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
 
   if (view === 'prefs') {
     const items: SelectItem[] = [
-      {id: 'thinking', label: '◉ Extended thinking'},
-      {id: 'streaming', label: '⇵ Streaming output'},
-      {id: 'ide-context', label: '⌘ IDE context'},
-      {id: 'memory', label: '≡ Cross-session memory'},
       {id: 'cache-ttl', label: '↺ Cache duration'},
       {id: 'context-editing', label: '✂ Context editing'},
+      {id: 'memory', label: '≡ Cross-session memory'},
+      {id: 'thinking', label: '◉ Extended thinking'},
+      {id: 'ide-context', label: '⌘ IDE context'},
+      {id: 'streaming', label: '⇵ Streaming output'},
     ];
 
     const viewMap: View[] = [
-      'pref-thinking',
-      'pref-streaming',
-      'pref-ide-context',
-      'pref-memory',
       'pref-cache-ttl',
       'pref-context-editing',
+      'pref-memory',
+      'pref-thinking',
+      'pref-ide-context',
+      'pref-streaming',
     ];
 
     return (

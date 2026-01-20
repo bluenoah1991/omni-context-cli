@@ -67,12 +67,12 @@ function handleStatus(): SlashHandlerResult {
   }
 
   lines.push('');
-  lines.push(`Thinking mode: ${config.enableThinking ? '√' : '✗'}`);
-  lines.push(`Streaming output: ${config.streamingOutput ? '√' : '✗'}`);
   lines.push(`Specialist mode: ${config.specialistMode ? '√' : '✗'}`);
-  lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
-  lines.push(`Cross-session memory: ${config.memoryEnabled ? '√' : '✗'}`);
   lines.push(`Cache TTL: ${config.cacheTtl}`);
+  lines.push(`Cross-session memory: ${config.memoryEnabled ? '√' : '✗'}`);
+  lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
+  lines.push(`Streaming output: ${config.streamingOutput ? '√' : '✗'}`);
+  lines.push(`Thinking mode: ${config.enableThinking ? '√' : '✗'}`);
 
   return {message: lines.join('\n')};
 }
