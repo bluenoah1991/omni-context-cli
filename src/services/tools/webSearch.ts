@@ -3,7 +3,11 @@ import { getAgentModel, loadAppConfig } from '../configManager';
 import { saveRequest } from '../diagnostic';
 import { registerTool } from '../toolExecutor';
 
-async function performWebSearch(query: string, model: ModelConfig): Promise<string> {
+async function performWebSearch(
+  query: string,
+  model: ModelConfig,
+  signal?: AbortSignal,
+): Promise<string> {
   const request: Record<string, unknown> = {
     model: model.name,
     messages: [{
@@ -28,6 +32,7 @@ async function performWebSearch(query: string, model: ModelConfig): Promise<stri
     method: 'POST',
     headers,
     body: JSON.stringify(request),
+    signal,
   });
 
   if (!response.ok) {
@@ -75,7 +80,7 @@ export function registerWebSearchTool(): void {
       properties: {query: {type: 'string', description: 'The search query.'}},
       required: ['query'],
     },
-  }, async (args: {query: string;}) => {
+  }, async (args: {query: string;}, signal?: AbortSignal) => {
     const model = getAgentModel(loadAppConfig());
     if (!model) {
       throw new Error('No model configured.');
@@ -85,7 +90,7 @@ export function registerWebSearchTool(): void {
       throw new Error('Web search only available with Anthropic models.');
     }
 
-    const result = await performWebSearch(args.query, model);
+    const result = await performWebSearch(args.query, model, signal);
 
     return {result, displayText: 'Search completed.'};
   });
