@@ -3,7 +3,7 @@
 
 # OMX (Omni Context CLI)
 
-A zero-telemetry CLI coding assistant built with React/Ink, supporting multiple LLM providers (Anthropic, OpenAI, Gemini, Responses), extensible via agents, slash commands, and MCP servers.
+A zero-telemetry CLI coding assistant built with React/Ink, supporting multiple LLM API types (Anthropic, OpenAI, Gemini, Responses) and model sources (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu), extensible via agents, slash commands, and MCP servers.
 
 ## Quick Start
 
@@ -49,12 +49,16 @@ Service Layer
     ├── agentManager - Loads and executes agents
     ├── toolExecutor - Dispatches tool calls
     ├── mcpManager - MCP server integration
-    └── sessionManager - Session persistence
+    ├── sessionManager - Session persistence
+    ├── memoryManager - Cross-session memory and key points
+    ├── compactionManager - Auto-summarization at context limits
+    └── skillManager - Skill system management
     ↓
 Provider Adapters
     ├── anthropic/openai/gemini/responsesRequestBuilder - Format API requests
     ├── anthropic/openai/gemini/responsesStreamHandler - Handle streaming responses
-    └── requestInterceptor - Apply provider-specific interceptors
+    ├── requestInterceptor - Apply provider-specific interceptors
+    └── modelProviders/ - Model source adapters (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu)
     ↓
 Storage/State
     ├── chatStore - Zustand state management
@@ -86,7 +90,8 @@ Provider-specific interceptors modify API requests before sending:
 - **Language**: TypeScript 5.9 (ES2022 target, strict mode)
 - **UI Framework**: Ink 6.5 + React 19 (terminal UI)
 - **State Management**: Zustand 5
-- **LLM Providers**: Anthropic (Claude), OpenAI (GPT-4), Google Gemini, Responses API
+- **LLM API Types**: Anthropic, OpenAI, Gemini, Responses
+- **Model Sources**: DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu (via pluggable model providers)
 - **Protocol**: MCP (Model Context Protocol) via @modelcontextprotocol/sdk
 - **HTTP Client**: Undici (with connection pooling)
 - **Build Tool**: esbuild 0.27 (bundles to dist/cli.js)
@@ -111,7 +116,11 @@ omx/
 │   │   ├── sessionManager.ts      # Session CRUD and persistence
 │   │   ├── configManager.ts       # Model configuration and API keys
 │   │   ├── slashManager.ts        # Slash command loading
+│   │   ├── memoryManager.ts       # Cross-session memory system
+│   │   ├── compactionManager.ts   # Context summarization
+│   │   ├── skillManager.ts        # Skill system management
 │   │   ├── messageConverter.ts    # Message format conversion between providers
+│   │   ├── modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
 │   │   └── tools/                 # Built-in tool implementations
 │   ├── types/                     # TypeScript definitions
 │   ├── prompts/                   # System prompt templates
@@ -187,6 +196,8 @@ description: Echo a message
 | MCP Servers | `~/.omx/mcp.json` | `.omx/mcp.json` |
 | App Config | `~/.omx/omx.json` | `.omx/omx.json` |
 | Skills | `~/.omx/skills/` | `.omx/skills/` |
+| Memory | - | `.omx/memory.json` |
+| Agent Instructions | - | `.omx/OMX-AGENTS.md` |
 | Sessions | `~/.omx/projects/<id>/` | - |
 
 **Priority**: Project-level overrides user-level overrides built-in.
@@ -230,6 +241,10 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 | `src/services/geminiStreamHandler.ts` | Google Gemini streaming response handling |
 | `src/services/responsesRequestBuilder.ts` | Responses API request formatting |
 | `src/services/responsesStreamHandler.ts` | Responses API streaming handling |
+| `src/services/memoryManager.ts` | Cross-session memory and key points |
+| `src/services/compactionManager.ts` | Auto-summarization at context limits |
+| `src/services/skillManager.ts` | Skill discovery and loading |
+| `src/services/modelProviders/` | Model source adapters (map to API types) |
 | `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Zenmux, Zhipu) |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
 | `src/utils/mediaUtils.ts` | Media file handling and encoding |
@@ -291,6 +306,34 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 - **Slash Commands**: Markdown with Handlebars, triggered by `/`
 - **MCP Servers**: JSON config, tools exposed as `mcp_*`
 - **Skills**: Reusable prompt-based capabilities in `~/.omx/skills/`
+
+### Built-in Agents
+
+| Agent | Purpose |
+|-------|---------|
+| `explore` | Survey project structure and architecture |
+| `glance` | Preview multiple files with brief summaries |
+| `pluck` | Extract specific code segments from a file |
+| `quest` | Research topics using web search |
+| `ripple` | Find all references to a symbol |
+| `sculpt` | Edit files by replacing text with auto-retry |
+| `slice` | Extract code snippets relevant to a question |
+| `spark` | Execute bash commands with auto-fix |
+| `sweep` | Find files matching search criteria |
+| `weave` | Write content to files |
+
+### Built-in Tools
+
+| Tool | Purpose |
+|------|---------|
+| `Bash` | Run shell commands with timeout and background support |
+| `BashOutput` | Check background task status |
+| `Edit` | Surgical text replacements in files |
+| `Glob` | Find files by pattern |
+| `Grep` | Search file contents using ripgrep |
+| `Read` | Read file contents with line numbers |
+| `WebSearch` | Perform web searches via Anthropic API |
+| `Write` | Create or overwrite files |
 
 ### Build Process
 
