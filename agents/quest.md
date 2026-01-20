@@ -1,7 +1,7 @@
 ---
 name: quest
 description: Research topics using web search and external knowledge bases. Returns information matching what you need to know.
-allowedTools: []
+allowedTools: [WebSearch]
 parameters:
   properties:
     query:

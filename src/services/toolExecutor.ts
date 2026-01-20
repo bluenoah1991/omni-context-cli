@@ -1,4 +1,5 @@
 import { ToolDefinition, ToolExecutionResult, ToolFilter, ToolHandler } from '../types/tool';
+import { getAgentModel, loadAppConfig } from './configManager';
 import { mcpManager } from './mcpManager';
 
 const tools: Map<string, {definition: ToolDefinition; handler: ToolHandler;}> = new Map();
@@ -7,6 +8,11 @@ export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[
   const localTools = Array.from(tools.values()).map(t => t.definition);
   const mcpTools = mcpManager.getAllToolDefinitions();
   let allTools = [...localTools, ...mcpTools];
+
+  const agentModel = getAgentModel(loadAppConfig());
+  if (agentModel?.provider !== 'anthropic') {
+    allTools = allTools.filter(t => t.name !== 'WebSearch');
+  }
 
   if (!toolFilter) return allTools;
 
