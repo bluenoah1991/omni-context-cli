@@ -127,9 +127,9 @@ export function setIDEContext(value: boolean): void {
   saveAppConfig(config);
 }
 
-export function setPlaybookEnabled(value: boolean): void {
+export function setMemoryEnabled(value: boolean): void {
   const config = loadAppConfig();
-  config.playbookEnabled = value;
+  config.memoryEnabled = value;
   saveAppConfig(config);
 }
 

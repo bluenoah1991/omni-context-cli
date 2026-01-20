@@ -12,7 +12,7 @@ import {
   setCurrentModel,
   setDefaultModel,
   setIDEContext,
-  setPlaybookEnabled,
+  setMemoryEnabled,
   setSpecialistMode,
   setStreamingOutput,
   setThinking,
@@ -43,7 +43,7 @@ export type View =
   | 'pref-streaming'
   | 'pref-specialist'
   | 'pref-ide-context'
-  | 'pref-playbook'
+  | 'pref-memory'
   | 'pref-cache-ttl'
   | 'pref-context-editing'
   | 'browse-sessions'
@@ -88,7 +88,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [streamingIndex, setStreamingIndex] = useState<number>();
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
-  const [playbookIndex, setPlaybookIndex] = useState<number>();
+  const [memoryIndex, setMemoryIndex] = useState<number>();
   const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
   const [contextEditingIndex, setContextEditingIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
@@ -178,7 +178,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'thinking', label: '◉ Extended thinking'},
       {id: 'streaming', label: '⇵ Streaming output'},
       {id: 'ide-context', label: '⌘ IDE context'},
-      {id: 'playbook', label: '≡ Playbook memory'},
+      {id: 'memory', label: '≡ Cross-session memory'},
       {id: 'cache-ttl', label: '↺ Cache duration'},
       {id: 'context-editing', label: '✂ Context editing'},
     ];
@@ -187,7 +187,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'pref-thinking',
       'pref-streaming',
       'pref-ide-context',
-      'pref-playbook',
+      'pref-memory',
       'pref-cache-ttl',
       'pref-context-editing',
     ];
@@ -553,12 +553,12 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'pref-playbook') {
-    const items: SelectItem[] = [{id: 'on', label: '✓ Enable playbook memory'}, {
+  if (view === 'pref-memory') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable memory'}, {
       id: 'off',
-      label: '✗ Disable playbook memory',
+      label: '✗ Disable memory',
     }];
-    const initialIndex = config.playbookEnabled ? 0 : 1;
+    const initialIndex = config.memoryEnabled ? 0 : 1;
 
     return (
       <Box
@@ -569,15 +569,15 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
-          key='playbook-mode'
-          title='Enable playbook memory for cross-session learning?'
+          key='memory-mode'
+          title='Enable memory for cross-session learning?'
           items={items}
-          selectedIndex={playbookIndex ?? initialIndex}
-          onSelect={setPlaybookIndex}
+          selectedIndex={memoryIndex ?? initialIndex}
+          onSelect={setMemoryIndex}
           onConfirm={i => {
             const shouldEnable = i === 0;
-            if (shouldEnable !== config.playbookEnabled) {
-              setPlaybookEnabled(shouldEnable);
+            if (shouldEnable !== config.memoryEnabled) {
+              setMemoryEnabled(shouldEnable);
             }
             onClose();
           }}

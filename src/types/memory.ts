@@ -4,7 +4,7 @@ export interface KeyPoint {
   score: number;
 }
 
-export interface Playbook {
+export interface Memory {
   version: string;
   keyPoints: KeyPoint[];
 }

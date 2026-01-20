@@ -204,7 +204,7 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `streamingOutput` | boolean | false | Stream responses to terminal |
 | `specialistMode` | boolean | true | Enable specialist agent mode |
 | `ideContext` | boolean | true | Include IDE context |
-| `playbookEnabled` | boolean | false | Enable playbook features |
+| `memoryEnabled` | boolean | false | Enable memory features |
 | `cacheTtl` | '5m' \| '1h' | '5m' | Response cache duration |
 | `contextEditing` | boolean | true | Enable context editing |
 | `contextEditingRounds` | number | 0 | Number of context editing rounds |

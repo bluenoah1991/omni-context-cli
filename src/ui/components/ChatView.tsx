@@ -8,7 +8,7 @@ import {
   shouldAutoCompact,
 } from '../../services/compactionManager';
 import { getCurrentModel, loadAppConfig } from '../../services/configManager';
-import { generatePlaybook, injectPlaybook } from '../../services/playbookManager';
+import { generateMemory, injectMemory } from '../../services/memoryManager';
 import { injectProjectInstructions } from '../../services/projectInstructionsManager';
 import { addUserMessage, createSession, saveSession } from '../../services/sessionManager';
 import { parseSlashCommand } from '../../services/slashManager';
@@ -64,7 +64,7 @@ export function ChatView(): React.ReactElement {
   const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
   const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
   const [ideContextEnabled, setIDEContextEnabled] = useState(() => loadAppConfig().ideContext);
-  const [playbookEnabled, setPlaybookEnabled] = useState(() => loadAppConfig().playbookEnabled);
+  const [memoryEnabled, setMemoryEnabled] = useState(() => loadAppConfig().memoryEnabled);
   const ideSelection = useIDEStore(state => state.selection);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
@@ -97,7 +97,7 @@ export function ChatView(): React.ReactElement {
     setSpecialistMode(config.specialistMode);
     setStreamingOutput(config.streamingOutput);
     setIDEContextEnabled(config.ideContext);
-    setPlaybookEnabled(config.playbookEnabled);
+    setMemoryEnabled(config.memoryEnabled);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
@@ -169,10 +169,10 @@ export function ChatView(): React.ReactElement {
       );
       setCompacting(true);
       try {
-        const [summary, playbook] = await Promise.all([
+        const [summary, memory] = await Promise.all([
           generateSummary(model, sessionRef.current.messages, abortController.signal),
-          playbookEnabled
-            ? generatePlaybook(model, sessionRef.current, abortController.signal)
+          memoryEnabled
+            ? generateMemory(model, sessionRef.current, abortController.signal)
             : Promise.resolve(undefined),
         ]);
 
@@ -182,8 +182,8 @@ export function ChatView(): React.ReactElement {
         }
 
         sessionToRun = createSession(model);
-        if (playbookEnabled) {
-          sessionToRun = injectPlaybook(sessionToRun, model.provider, playbook);
+        if (memoryEnabled) {
+          sessionToRun = injectMemory(sessionToRun, model.provider, memory);
         }
         sessionToRun = injectProjectInstructions(sessionToRun, model.provider);
         sessionToRun = injectSummary(sessionToRun, summary, model.provider);
@@ -205,8 +205,8 @@ export function ChatView(): React.ReactElement {
       }
     } else {
       if (sessionRef.current.messages.length === 0) {
-        if (playbookEnabled) {
-          sessionToRun = injectPlaybook(sessionToRun, model.provider);
+        if (memoryEnabled) {
+          sessionToRun = injectMemory(sessionToRun, model.provider);
         }
         sessionToRun = injectProjectInstructions(sessionToRun, model.provider);
       }
@@ -291,7 +291,7 @@ export function ChatView(): React.ReactElement {
     model,
     specialistMode,
     ideContextEnabled,
-    playbookEnabled,
+    memoryEnabled,
     updateMessages,
     updateSessionTokens,
     setLoading,

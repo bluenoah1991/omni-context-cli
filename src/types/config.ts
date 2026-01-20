@@ -19,7 +19,7 @@ export interface AppConfig {
   streamingOutput: boolean;
   specialistMode: boolean;
   ideContext: boolean;
-  playbookEnabled: boolean;
+  memoryEnabled: boolean;
   cacheTtl: '5m' | '1h';
   contextEditing: boolean;
   contextEditingRounds: number;
@@ -32,7 +32,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   streamingOutput: false,
   specialistMode: true,
   ideContext: true,
-  playbookEnabled: false,
+  memoryEnabled: false,
   cacheTtl: '5m',
   contextEditing: true,
   contextEditingRounds: 0,

@@ -1,10 +1,7 @@
 import fs from 'node:fs';
-import {
-  buildPlaybookInjectionPrompt,
-  buildReflectionPrompt,
-} from '../prompts/playbookPromptBuilder';
+import { buildMemoryInjectionPrompt, buildReflectionPrompt } from '../prompts/memoryPromptBuilder';
 import { ModelConfig, Provider } from '../types/config';
-import { Playbook, ReflectionResult } from '../types/playbook';
+import { Memory, ReflectionResult } from '../types/memory';
 import { Session } from '../types/session';
 import { distillMessages, getLastResponse } from '../utils/messageUtils';
 import { ensureProjectDir, getProjectFilePath } from '../utils/omxPaths';
@@ -24,7 +21,7 @@ function generateKeyPointName(existingNames: Set<string>): string {
   return `kpt_${String(maxNum + 1).padStart(3, '0')}`;
 }
 
-function isValidPlaybook(data: unknown): data is Playbook {
+function isValidMemory(data: unknown): data is Memory {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
   if (!Array.isArray(obj.keyPoints)) return false;
@@ -37,40 +34,40 @@ function isValidPlaybook(data: unknown): data is Playbook {
   );
 }
 
-function loadPlaybook(): Playbook {
-  const playbookPath = getProjectFilePath('playbook.json');
+function loadMemory(): Memory {
+  const memoryPath = getProjectFilePath('memory.json');
 
-  let result: Playbook = {version: '1.0', keyPoints: []};
+  let result: Memory = {version: '1.0', keyPoints: []};
 
-  if (!fs.existsSync(playbookPath)) {
+  if (!fs.existsSync(memoryPath)) {
     return result;
   }
 
   try {
-    const data = JSON.parse(fs.readFileSync(playbookPath, 'utf-8'));
-    if (isValidPlaybook(data)) {
+    const data = JSON.parse(fs.readFileSync(memoryPath, 'utf-8'));
+    if (isValidMemory(data)) {
       result = data;
     }
   } catch {}
   return result;
 }
 
-function savePlaybook(playbook: Playbook): void {
+function saveMemory(memory: Memory): void {
   ensureProjectDir();
-  fs.writeFileSync(getProjectFilePath('playbook.json'), JSON.stringify(playbook, null, 2));
+  fs.writeFileSync(getProjectFilePath('memory.json'), JSON.stringify(memory, null, 2));
 }
 
-function updatePlaybook(playbook: Playbook, reflectionResult: ReflectionResult): Playbook {
+function updateMemory(memory: Memory, reflectionResult: ReflectionResult): Memory {
   const newKeyPoints = reflectionResult.newKeyPoints || [];
   const evaluations = reflectionResult.evaluations || [];
 
-  const existingNames = new Set(playbook.keyPoints.map(kp => kp.name));
-  const existingTexts = new Set(playbook.keyPoints.map(kp => kp.text));
+  const existingNames = new Set(memory.keyPoints.map(kp => kp.name));
+  const existingTexts = new Set(memory.keyPoints.map(kp => kp.text));
 
   for (const text of newKeyPoints) {
     if (text && !existingTexts.has(text)) {
       const name = generateKeyPointName(existingNames);
-      playbook.keyPoints.push({name, text, score: 0});
+      memory.keyPoints.push({name, text, score: 0});
       existingNames.add(name);
     }
   }
@@ -78,14 +75,14 @@ function updatePlaybook(playbook: Playbook, reflectionResult: ReflectionResult):
   const ratingDelta: Record<string, number> = {helpful: 1, harmful: -3, neutral: -2};
   const evalMap = new Map(evaluations.map(e => [e.name, e.rating]));
 
-  for (const kp of playbook.keyPoints) {
+  for (const kp of memory.keyPoints) {
     const rating = evalMap.get(kp.name);
     kp.score += rating ? (ratingDelta[rating] ?? 0) : -1;
   }
 
-  playbook.keyPoints = playbook.keyPoints.filter(kp => kp.score > -5);
+  memory.keyPoints = memory.keyPoints.filter(kp => kp.score > -5);
 
-  return playbook;
+  return memory;
 }
 
 function extractReflectionFromResponse(response: string): ReflectionResult {
@@ -109,14 +106,14 @@ function extractReflectionFromResponse(response: string): ReflectionResult {
   }
 }
 
-export async function generatePlaybook(
+export async function generateMemory(
   model: ModelConfig,
   session: Session,
   signal?: AbortSignal,
-): Promise<Playbook> {
-  const playbook = loadPlaybook();
+): Promise<Memory> {
+  const memory = loadMemory();
   const trajectories = distillMessages(session.messages);
-  const promptText = buildReflectionPrompt(trajectories, playbook);
+  const promptText = buildReflectionPrompt(trajectories, memory);
 
   const reflectionSession = createSession(model);
   const sessionWithPrompt = addUserMessage(reflectionSession, promptText, model.provider);
@@ -133,22 +130,22 @@ export async function generatePlaybook(
 
   const responseContent = getLastResponse(resultSession);
   const reflectionResult = extractReflectionFromResponse(responseContent);
-  const updatedPlaybook = updatePlaybook(playbook, reflectionResult);
-  savePlaybook(updatedPlaybook);
+  const updatedMemory = updateMemory(memory, reflectionResult);
+  saveMemory(updatedMemory);
 
-  return updatedPlaybook;
+  return updatedMemory;
 }
 
-export function injectPlaybook(session: Session, provider: Provider, playbook?: Playbook): Session {
-  const finalPlaybook = playbook ?? loadPlaybook();
-  if (finalPlaybook.keyPoints.length === 0) {
+export function injectMemory(session: Session, provider: Provider, memory?: Memory): Session {
+  const finalMemory = memory ?? loadMemory();
+  if (finalMemory.keyPoints.length === 0) {
     return session;
   }
 
-  const playbookMessage = buildPlaybookInjectionPrompt(finalPlaybook);
-  if (!playbookMessage) {
+  const memoryMessage = buildMemoryInjectionPrompt(finalMemory);
+  if (!memoryMessage) {
     return session;
   }
 
-  return addUserMessage(session, playbookMessage, provider);
+  return addUserMessage(session, memoryMessage, provider);
 }

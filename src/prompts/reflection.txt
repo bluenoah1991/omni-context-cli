@@ -1,11 +1,11 @@
 # Task
-Extract key points from reasoning trajectories and evaluate existing playbook key points.
+Extract new key points from the reasoning trajectories and evaluate previously learned key points.
 
 # Reasoning Trajectories
 {{TRAJECTORIES}}
 
-# Current Playbook
-{{PLAYBOOK}}
+# Previously Learned Key Points
+{{MEMORY}}
 
 # Instructions
 1. Key points should have reference value for the future, such as:
@@ -15,18 +15,18 @@ Extract key points from reasoning trajectories and evaluate existing playbook ke
    - Important file paths and configurations
    - Technical decisions and their rationale
 
-2. Extract NEW key points from the reasoning trajectories that are NOT already in the Current Playbook
+2. Extract NEW key points from the reasoning trajectories that are NOT already covered above
 
-3. Evaluate EACH existing playbook key point based on the reasoning trajectories:
-   - "helpful": key point was useful and applied correctly
-   - "harmful": key point caused issues or provided wrong guidance
-   - "neutral": key point was not relevant
+3. Evaluate EACH previously learned key point based on the reasoning trajectories:
+   - "helpful": the key point was useful and applied correctly
+   - "harmful": the key point caused issues or provided wrong guidance
+   - "neutral": the key point was not relevant to the reasoning trajectories
 
 # Output Format
 {
   "newKeyPoints": [
-    "First key point extracted from the reasoning trajectories",
-    "Second key point extracted from the reasoning trajectories"
+    "First new key point extracted from the reasoning trajectories",
+    "Second new key point extracted from the reasoning trajectories"
   ],
   "evaluations": [
     {"name": "kpt_001", "rating": "helpful"},
