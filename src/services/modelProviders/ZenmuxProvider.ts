@@ -34,9 +34,7 @@ export const ZenmuxProvider: ModelProvider = {
 };
 
 async function fetchOpenAIModels(apiKey: string): Promise<ModelConfig[]> {
-  const response = await fetch('https://zenmux.ai/api/v1/models', {
-    headers: {Authorization: `Bearer ${apiKey}`},
-  });
+  const response = await fetch('https://zenmux.ai/api/v1/models');
 
   if (!response.ok) {
     throw new Error(`Failed to fetch OpenAI models: ${response.status}`);
@@ -56,9 +54,7 @@ async function fetchOpenAIModels(apiKey: string): Promise<ModelConfig[]> {
 }
 
 async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
-  const response = await fetch('https://zenmux.ai/api/anthropic/v1/models', {
-    headers: {Authorization: `Bearer ${apiKey}`},
-  });
+  const response = await fetch('https://zenmux.ai/api/anthropic/v1/models');
 
   if (!response.ok) {
     throw new Error(`Failed to fetch Anthropic models: ${response.status}`);
