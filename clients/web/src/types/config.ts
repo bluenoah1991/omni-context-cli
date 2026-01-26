@@ -6,6 +6,7 @@ export interface Config {
   specialistMode: boolean;
   ideContext: boolean;
   memoryEnabled: boolean;
+  notificationEnabled: boolean;
   contextEditing: boolean;
   webTheme?: 'dark' | 'light' | 'auto';
 }

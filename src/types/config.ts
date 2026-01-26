@@ -20,6 +20,7 @@ export interface AppConfig {
   specialistMode: boolean;
   ideContext: boolean;
   memoryEnabled: boolean;
+  notificationEnabled: boolean;
   cacheTtl: '5m' | '1h';
   contextEditing: boolean;
   contextEditingRounds: number;
@@ -34,6 +35,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   specialistMode: true,
   ideContext: true,
   memoryEnabled: false,
+  notificationEnabled: false,
   cacheTtl: '5m',
   contextEditing: true,
   contextEditingRounds: 0,

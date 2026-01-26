@@ -20,6 +20,9 @@ export default function Settings({onClose}: SettingsProps) {
   const [enableThinking, setEnableThinking] = useState(config?.enableThinking ?? true);
   const [specialistMode, setSpecialistMode] = useState(config?.specialistMode ?? true);
   const [memoryEnabled, setMemoryEnabled] = useState(config?.memoryEnabled ?? false);
+  const [notificationEnabled, setNotificationEnabled] = useState(
+    config?.notificationEnabled ?? false,
+  );
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
   const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
   const [saving, setSaving] = useState(false);
@@ -32,6 +35,7 @@ export default function Settings({onClose}: SettingsProps) {
       setEnableThinking(config.enableThinking);
       setSpecialistMode(config.specialistMode);
       setMemoryEnabled(config.memoryEnabled);
+      setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
       setWebTheme(config.webTheme || 'dark');
     }
@@ -46,6 +50,7 @@ export default function Settings({onClose}: SettingsProps) {
         enableThinking,
         specialistMode,
         memoryEnabled,
+        notificationEnabled,
         contextEditing,
         webTheme,
       });
@@ -148,10 +153,17 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <ToggleOption
-                label='Extended Thinking'
-                description='Enable chain-of-thought reasoning'
-                enabled={enableThinking}
-                onChange={setEnableThinking}
+                label='Completion Notification'
+                description='Notify when response takes over a minute'
+                enabled={notificationEnabled}
+                onChange={setNotificationEnabled}
+              />
+
+              <ToggleOption
+                label='Context Editing'
+                description='Allow context modification during conversation'
+                enabled={contextEditing}
+                onChange={setContextEditing}
               />
 
               <ToggleOption
@@ -162,10 +174,10 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <ToggleOption
-                label='Context Editing'
-                description='Allow context modification during conversation'
-                enabled={contextEditing}
-                onChange={setContextEditing}
+                label='Extended Thinking'
+                description='Enable chain-of-thought reasoning'
+                enabled={enableThinking}
+                onChange={setEnableThinking}
               />
             </>
           )}

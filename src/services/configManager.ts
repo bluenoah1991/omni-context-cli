@@ -132,6 +132,12 @@ export function setMemoryEnabled(value: boolean): void {
   saveAppConfig(config);
 }
 
+export function setNotificationEnabled(value: boolean): void {
+  const config = loadAppConfig();
+  config.notificationEnabled = value;
+  saveAppConfig(config);
+}
+
 export function setCacheTtl(value: '5m' | '1h'): void {
   const config = loadAppConfig();
   config.cacheTtl = value;

@@ -68,6 +68,9 @@ export function ChatView(): React.ReactElement {
   const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
   const [ideContextEnabled, setIDEContextEnabled] = useState(() => loadAppConfig().ideContext);
   const [memoryEnabled, setMemoryEnabled] = useState(() => loadAppConfig().memoryEnabled);
+  const [notificationEnabled, setNotificationEnabled] = useState(() =>
+    loadAppConfig().notificationEnabled
+  );
   const ideSelection = useIDEStore(state => state.selection);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
@@ -101,6 +104,7 @@ export function ChatView(): React.ReactElement {
     setStreamingOutput(config.streamingOutput);
     setIDEContextEnabled(config.ideContext);
     setMemoryEnabled(config.memoryEnabled);
+    setNotificationEnabled(config.notificationEnabled);
   }, []);
 
   const handleSubmit = useCallback(async (text: string) => {
@@ -292,7 +296,7 @@ export function ChatView(): React.ReactElement {
     } finally {
       setLoading(false);
       const elapsed = Date.now() - startTime;
-      if (elapsed >= NOTIFICATION_THRESHOLD_MS) {
+      if (notificationEnabled && elapsed >= NOTIFICATION_THRESHOLD_MS) {
         notifier.notify({title: 'OmniContext CLI', message: 'Response complete'});
       }
     }
@@ -301,6 +305,7 @@ export function ChatView(): React.ReactElement {
     specialistMode,
     ideContextEnabled,
     memoryEnabled,
+    notificationEnabled,
     updateMessages,
     updateSessionTokens,
     setLoading,

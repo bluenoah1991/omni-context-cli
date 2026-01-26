@@ -13,6 +13,7 @@ import {
   setDefaultModel,
   setIDEContext,
   setMemoryEnabled,
+  setNotificationEnabled,
   setSpecialistMode,
   setStreamingOutput,
   setThinking,
@@ -44,6 +45,7 @@ export type View =
   | 'pref-specialist'
   | 'pref-ide-context'
   | 'pref-memory'
+  | 'pref-notification'
   | 'pref-cache-ttl'
   | 'pref-context-editing'
   | 'browse-sessions'
@@ -89,6 +91,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [specialistIndex, setSpecialistIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [memoryIndex, setMemoryIndex] = useState<number>();
+  const [notificationIndex, setNotificationIndex] = useState<number>();
   const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
   const [contextEditingIndex, setContextEditingIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
@@ -176,6 +179,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   if (view === 'prefs') {
     const items: SelectItem[] = [
       {id: 'cache-ttl', label: '↺ Cache duration'},
+      {id: 'notification', label: '♪ Completion notification'},
       {id: 'context-editing', label: '✂ Context editing'},
       {id: 'memory', label: '≡ Cross-session memory'},
       {id: 'thinking', label: '◉ Extended thinking'},
@@ -185,6 +189,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
 
     const viewMap: View[] = [
       'pref-cache-ttl',
+      'pref-notification',
       'pref-context-editing',
       'pref-memory',
       'pref-thinking',
@@ -583,6 +588,40 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.memoryEnabled) {
               setMemoryEnabled(shouldEnable);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('prefs')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pref-notification') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable notification'}, {
+      id: 'off',
+      label: '✗ Disable notification',
+    }];
+    const initialIndex = config.notificationEnabled ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='notification-mode'
+          title='Notify when response takes over a minute?'
+          items={items}
+          selectedIndex={notificationIndex ?? initialIndex}
+          onSelect={setNotificationIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            if (shouldEnable !== config.notificationEnabled) {
+              setNotificationEnabled(shouldEnable);
             }
             onClose();
           }}

@@ -84,6 +84,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     specialistMode: config.specialistMode ?? true,
     ideContext: config.ideContext ?? true,
     memoryEnabled: config.memoryEnabled ?? false,
+    notificationEnabled: config.notificationEnabled ?? false,
     contextEditing: config.contextEditing ?? true,
     webTheme: config.webTheme,
   });
@@ -108,6 +109,7 @@ export async function handleSetConfig(
   if ('specialistMode' in body) config.specialistMode = body.specialistMode;
   if ('ideContext' in body) config.ideContext = body.ideContext;
   if ('memoryEnabled' in body) config.memoryEnabled = body.memoryEnabled;
+  if ('notificationEnabled' in body) config.notificationEnabled = body.notificationEnabled;
   if ('contextEditing' in body) config.contextEditing = body.contextEditing;
   if ('webTheme' in body) config.webTheme = body.webTheme;
 

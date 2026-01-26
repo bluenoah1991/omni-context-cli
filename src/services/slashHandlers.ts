@@ -69,6 +69,7 @@ function handleStatus(): SlashHandlerResult {
   lines.push('');
   lines.push(`Specialist mode: ${config.specialistMode ? '√' : '✗'}`);
   lines.push(`Cache duration: ${config.cacheTtl}`);
+  lines.push(`Completion notification: ${config.notificationEnabled ? '√' : '✗'}`);
   lines.push(`Context editing: ${config.contextEditing ? '√' : '✗'}`);
   lines.push(`Cross-session memory: ${config.memoryEnabled ? '√' : '✗'}`);
   lines.push(`Extended thinking: ${config.enableThinking ? '√' : '✗'}`);
