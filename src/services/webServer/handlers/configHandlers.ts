@@ -1,4 +1,5 @@
 import http from 'node:http';
+import path from 'node:path';
 import { findModelById, loadAppConfig, saveAppConfig } from '../../configManager';
 import { WebSession } from '../../webSessionManager';
 import {
@@ -76,6 +77,7 @@ export async function handleSetModel(
 export function handleGetConfig(res: http.ServerResponse): boolean {
   const config = loadAppConfig();
   sendJsonResponse(res, {
+    projectName: path.basename(process.cwd()),
     defaultModelId: config.defaultModelId || config.models[0]?.id,
     agentModelId: config.agentModelId,
     enableThinking: config.enableThinking ?? true,

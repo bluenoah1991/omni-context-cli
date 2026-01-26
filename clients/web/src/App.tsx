@@ -10,6 +10,7 @@ import { useChatStore } from './store/chatStore';
 export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
+    config,
     getConfig,
     getModel,
     getModels,
@@ -35,10 +36,15 @@ export default function App() {
 
   return (
     <div className='flex flex-col h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
-      <header className='flex-none py-4 bg-vscode-bg z-10 px-6 border-b border-vscode-element'>
+      <header className='flex-none py-4 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
         <div className='flex items-center justify-between w-full'>
-          <div className='w-80'>
-            <SessionSelector disabled={isLoading} />
+          <div className='flex items-center gap-4'>
+            <span className='hidden sm:block text-vscode-text font-medium'>
+              {config?.projectName}
+            </span>
+            <div className='w-80'>
+              <SessionSelector disabled={isLoading} />
+            </div>
           </div>
           <IconButton
             icon={SettingsIcon}

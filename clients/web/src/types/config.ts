@@ -1,4 +1,5 @@
 export interface Config {
+  projectName: string;
   defaultModelId?: string;
   agentModelId?: string;
   enableThinking: boolean;
