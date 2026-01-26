@@ -3,6 +3,9 @@ import { useIDEStore } from '../../../store/ideStore';
 import { wrapIDEContext } from '../../../utils/messagePreprocessor';
 import { runConversation } from '../../chatOrchestrator';
 import { loadAppConfig } from '../../configManager';
+import { injectMemory } from '../../memoryManager';
+import { sessionMessagesToUI } from '../../messageConverter';
+import { injectProjectInstructions } from '../../projectInstructionsManager';
 import { addUserMessage, createSession, saveSession } from '../../sessionManager';
 import { WebSession } from '../../webSessionManager';
 import {
@@ -57,7 +60,19 @@ export async function handleChat(
     webSession.abortController = null;
   });
 
+  const config = loadAppConfig();
   const processedContent = wrapIDEContext(content, useIDEStore.getState().selection);
+
+  const isNewSession = session.messages.length === 0;
+  if (isNewSession) {
+    if (config.memoryEnabled) {
+      session = injectMemory(session, model.provider);
+    }
+    session = injectProjectInstructions(session, model.provider);
+
+    const uiMessages = sessionMessagesToUI(session.messages, model.provider);
+    uiMessages.forEach(message => sendSseEvent(res, 'message', message));
+  }
 
   const media = images?.map(image => ({
     dataUrl: `data:${image.mediaType};base64,${image.base64}`,
@@ -68,7 +83,6 @@ export async function handleChat(
 
   sendSseEvent(res, 'message', {role: 'user', content, timestamp: Date.now()});
 
-  const config = loadAppConfig();
   const specialistMode = config.specialistMode ?? true;
 
   const toolFilter = {
