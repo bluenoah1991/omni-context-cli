@@ -42,6 +42,8 @@ export async function executeAgent(
     {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},
     agentModel,
     true,
+    false,
+    true,
   );
 
   const lastMessage = result.messages[result.messages.length - 1];

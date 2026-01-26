@@ -126,6 +126,7 @@ export async function generateMemory(
     model,
     true,
     true,
+    true,
   );
 
   const responseContent = getLastResponse(resultSession);

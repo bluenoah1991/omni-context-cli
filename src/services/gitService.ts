@@ -76,6 +76,8 @@ async function generateCommitMessage(
     {excludeAgents: true, excludeMcp: true, allowedTools: []},
     agentModel,
     true,
+    false,
+    true,
   );
 
   if (signal?.aborted) {

@@ -44,6 +44,7 @@ export async function generateSummary(
     model,
     true,
     true,
+    true,
   );
 
   const responseContent = getLastResponse(resultSession);

@@ -28,6 +28,7 @@ async function streamAIResponse(
   isFromAgent?: boolean,
   skipSystemPrompt?: boolean,
   sessionId?: string,
+  useDefaultTtl?: boolean,
 ): Promise<StreamResult<ChatMessage>> {
   let headers: Record<string, string>;
   let body: Record<string, unknown>;
@@ -75,6 +76,7 @@ async function streamAIResponse(
       skipSystemPrompt,
       sessionId,
       isFromAgent,
+      useDefaultTtl,
     );
     headers = result.headers;
     body = result.body;
@@ -147,6 +149,7 @@ export async function runConversation(
   preferredModel?: ModelConfig,
   isFromAgent?: boolean,
   skipSystemPrompt?: boolean,
+  useDefaultTtl?: boolean,
 ): Promise<Session> {
   let currentSession = session;
   const finalCallbacks = callbacks ?? noopCallbacks;
@@ -168,6 +171,7 @@ export async function runConversation(
         isFromAgent,
         skipSystemPrompt,
         currentSession.id,
+        useDefaultTtl,
       );
     } catch (error) {
       const errorText = `${error}`;

@@ -15,9 +15,10 @@ export async function buildAnthropicRequest(
   skipSystemPrompt?: boolean,
   sessionId?: string,
   isFromAgent?: boolean,
+  useDefaultTtl: boolean = false,
 ): Promise<{headers: Record<string, string>; body: Record<string, unknown>;}> {
   const config = loadAppConfig();
-  const cacheControl = config.cacheTtl === '1h'
+  const cacheControl = config.cacheTtl === '1h' && !useDefaultTtl
     ? {type: 'ephemeral', ttl: '1h'}
     : {type: 'ephemeral'};
 
