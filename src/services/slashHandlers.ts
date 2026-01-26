@@ -68,11 +68,12 @@ function handleStatus(): SlashHandlerResult {
 
   lines.push('');
   lines.push(`Specialist mode: ${config.specialistMode ? '√' : '✗'}`);
-  lines.push(`Cache TTL: ${config.cacheTtl}`);
+  lines.push(`Cache duration: ${config.cacheTtl}`);
+  lines.push(`Context editing: ${config.contextEditing ? '√' : '✗'}`);
   lines.push(`Cross-session memory: ${config.memoryEnabled ? '√' : '✗'}`);
+  lines.push(`Extended thinking: ${config.enableThinking ? '√' : '✗'}`);
   lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
   lines.push(`Streaming output: ${config.streamingOutput ? '√' : '✗'}`);
-  lines.push(`Thinking mode: ${config.enableThinking ? '√' : '✗'}`);
 
   return {message: lines.join('\n')};
 }

@@ -151,7 +151,7 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <ToggleOption
-                label='Memory'
+                label='Cross-session memory'
                 description='Persist key information across sessions'
                 enabled={memoryEnabled}
                 onChange={setMemoryEnabled}
