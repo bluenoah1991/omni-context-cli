@@ -85,6 +85,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     ideContext: config.ideContext ?? true,
     memoryEnabled: config.memoryEnabled ?? false,
     contextEditing: config.contextEditing ?? true,
+    webTheme: config.webTheme,
   });
   return true;
 }
@@ -108,6 +109,7 @@ export async function handleSetConfig(
   if ('ideContext' in body) config.ideContext = body.ideContext;
   if ('memoryEnabled' in body) config.memoryEnabled = body.memoryEnabled;
   if ('contextEditing' in body) config.contextEditing = body.contextEditing;
+  if ('webTheme' in body) config.webTheme = body.webTheme;
 
   saveAppConfig(config);
   sendJsonResponse(res, {ok: true});

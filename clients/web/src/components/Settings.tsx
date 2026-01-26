@@ -1,6 +1,7 @@
-import { Check, Cpu, Sliders, X } from 'lucide-react';
+import { Check, Cpu, Palette, Sliders, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useChatStore } from '../store/chatStore';
+import SegmentedControl from './SegmentedControl';
 import { Select } from './Select';
 import { ToggleOption } from './ToggleOption';
 
@@ -8,7 +9,7 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-type Tab = 'models' | 'preferences';
+type Tab = 'models' | 'preferences' | 'appearance';
 
 export default function Settings({onClose}: SettingsProps) {
   const {models, config, currentModel, setCurrentModel, setConfig} = useChatStore();
@@ -20,6 +21,7 @@ export default function Settings({onClose}: SettingsProps) {
   const [specialistMode, setSpecialistMode] = useState(config?.specialistMode ?? true);
   const [memoryEnabled, setMemoryEnabled] = useState(config?.memoryEnabled ?? false);
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
+  const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export default function Settings({onClose}: SettingsProps) {
       setSpecialistMode(config.specialistMode);
       setMemoryEnabled(config.memoryEnabled);
       setContextEditing(config.contextEditing);
+      setWebTheme(config.webTheme || 'dark');
     }
   }, [config, currentModel]);
 
@@ -44,14 +47,15 @@ export default function Settings({onClose}: SettingsProps) {
         specialistMode,
         memoryEnabled,
         contextEditing,
+        webTheme,
       });
-      const newModel = models.find(m => m.id === currentModelId);
+      const newModel = models.find(model => model.id === currentModelId);
       if (newModel) {
         setCurrentModel(newModel);
       }
       onClose();
-    } catch (e) {
-      console.error('Failed to save config:', e);
+    } catch (error) {
+      console.error('Failed to save config:', error);
     } finally {
       setSaving(false);
     }
@@ -61,16 +65,16 @@ export default function Settings({onClose}: SettingsProps) {
     id: 'preferences' as Tab,
     label: 'Preferences',
     icon: Sliders,
-  }];
+  }, {id: 'appearance' as Tab, label: 'Appearance', icon: Palette}];
 
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm'>
       <div className='bg-vscode-sidebar border border-vscode-border rounded-xl w-full max-w-md shadow-2xl transform transition-all scale-100 opacity-100 overflow-hidden m-4'>
         <div className='flex items-center justify-between px-6 py-4 border-b border-vscode-border bg-vscode-element/50'>
-          <h2 className='text-lg font-semibold text-white'>Settings</h2>
+          <h2 className='text-lg font-semibold text-vscode-text-header'>Settings</h2>
           <button
             onClick={onClose}
-            className='text-vscode-text-muted hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors'
+            className='text-vscode-text-muted hover:text-vscode-text p-1 rounded-md hover:bg-vscode-border transition-colors'
           >
             <X size={18} />
           </button>
@@ -151,7 +155,7 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <ToggleOption
-                label='Cross-session memory'
+                label='Cross-session Memory'
                 description='Persist key information across sessions'
                 enabled={memoryEnabled}
                 onChange={setMemoryEnabled}
@@ -164,6 +168,16 @@ export default function Settings({onClose}: SettingsProps) {
                 onChange={setContextEditing}
               />
             </>
+          )}
+
+          {activeTab === 'appearance' && (
+            <SegmentedControl
+              label='Color Theme'
+              description='Select interface appearance'
+              options={['dark', 'light', 'auto'] as const}
+              value={webTheme}
+              onChange={setWebTheme}
+            />
           )}
         </div>
 

@@ -36,7 +36,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
           }`}
         >
           <MessageSquare size={16} className='text-vscode-accent shrink-0' />
-          <span className='truncate text-sm font-medium text-vscode-text group-hover:text-white transition-colors'>
+          <span className='truncate text-sm font-medium text-vscode-text group-hover:text-vscode-text-header transition-colors'>
             {currentSession ? currentSession.title : 'New chat'}
           </span>
           <ChevronDown
@@ -65,7 +65,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
                           loadSession(session);
                           setIsOpen(false);
                         }}
-                        className='w-full text-left px-4 py-2.5 text-sm transition-colors border-l-2 text-vscode-text border-transparent hover:bg-vscode-element hover:text-white'
+                        className='w-full text-left px-4 py-2.5 text-sm transition-colors border-l-2 text-vscode-text border-transparent hover:bg-vscode-element hover:text-vscode-text-header'
                       >
                         <div className='truncate'>{session.title}</div>
                         <div className='text-[10px] text-vscode-text-muted mt-0.5 font-mono'>
@@ -83,7 +83,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
       <button
         onClick={() => newSession()}
         disabled={disabled}
-        className={`px-2.5 py-2.5 bg-vscode-element hover:brightness-110 text-white rounded-lg transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
+        className={`px-2.5 py-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-lg transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         title='New chat'

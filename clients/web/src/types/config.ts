@@ -7,4 +7,5 @@ export interface Config {
   ideContext: boolean;
   memoryEnabled: boolean;
   contextEditing: boolean;
+  webTheme?: 'dark' | 'light' | 'auto';
 }

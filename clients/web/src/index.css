@@ -1,21 +1,47 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-vscode-bg: #1e1e1e;
-  --color-vscode-sidebar: #252526;
-  --color-vscode-element: #2d2d2d;
-  --color-vscode-border: #3c3c3c;
-  --color-vscode-border-active: #4c4c4c;
-  --color-vscode-text: #cccccc;
-  --color-vscode-text-header: #e0e0e0;
-  --color-vscode-text-muted: #858585;
-  --color-vscode-accent: #0078d4;
-  --color-vscode-warning: #d7ba7d;
-  --color-vscode-error: #f14c4c;
+@theme inline {
+  --color-vscode-bg: var(--vscode-bg);
+  --color-vscode-sidebar: var(--vscode-sidebar);
+  --color-vscode-element: var(--vscode-element);
+  --color-vscode-border: var(--vscode-border);
+  --color-vscode-border-active: var(--vscode-border-active);
+  --color-vscode-text: var(--vscode-text);
+  --color-vscode-text-header: var(--vscode-text-header);
+  --color-vscode-text-muted: var(--vscode-text-muted);
+  --color-vscode-accent: var(--vscode-accent);
+  --color-vscode-warning: var(--vscode-warning);
+  --color-vscode-error: var(--vscode-error);
 }
 
 :root {
+  --vscode-bg: #1e1e1e;
+  --vscode-sidebar: #252526;
+  --vscode-element: #2d2d2d;
+  --vscode-border: #3c3c3c;
+  --vscode-border-active: #4c4c4c;
+  --vscode-text: #cccccc;
+  --vscode-text-header: #e0e0e0;
+  --vscode-text-muted: #858585;
+  --vscode-accent: #0078d4;
+  --vscode-warning: #d7ba7d;
+  --vscode-error: #f14c4c;
   color-scheme: dark;
+}
+
+:root.light {
+  --vscode-bg: #ffffff;
+  --vscode-sidebar: #f3f3f3;
+  --vscode-element: #eaeaea;
+  --vscode-border: #cecece;
+  --vscode-border-active: #999999;
+  --vscode-text: #3b3b3b;
+  --vscode-text-header: #1e1e1e;
+  --vscode-text-muted: #616161;
+  --vscode-accent: #0066b8;
+  --vscode-warning: #795e26;
+  --vscode-error: #c72e2e;
+  color-scheme: light;
 }
 
 * {
@@ -42,13 +68,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #424242;
+  background: var(--vscode-border-active);
   border-radius: 5px;
-  border: 2px solid #1e1e1e;
+  border: 2px solid var(--vscode-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4f4f4f;
+  background: var(--vscode-text-muted);
 }
 
 ::-webkit-scrollbar-corner {
@@ -78,11 +104,11 @@ body {
   margin-bottom: 0.6em;
   font-weight: 600;
   line-height: 1.25;
-  color: #e1e1e1;
+  color: var(--vscode-text-header);
 }
 
-.markdown-content h1 { font-size: 1.5em; border-bottom: 1px solid #3c3c3c; padding-bottom: 0.3em; }
-.markdown-content h2 { font-size: 1.3em; border-bottom: 1px solid #3c3c3c; padding-bottom: 0.3em; }
+.markdown-content h1 { font-size: 1.5em; border-bottom: 1px solid var(--vscode-border); padding-bottom: 0.3em; }
+.markdown-content h2 { font-size: 1.3em; border-bottom: 1px solid var(--vscode-border); padding-bottom: 0.3em; }
 .markdown-content h3 { font-size: 1.1em; }
 
 .markdown-content p {
@@ -104,17 +130,17 @@ body {
 }
 
 .markdown-content code {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--vscode-element);
   padding: 0.2em 0.4em;
   border-radius: 4px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 0.9em;
-  color: #d7ba7d;
+  color: var(--vscode-warning);
 }
 
 .markdown-content pre {
-  background: #1e1e1e;
-  border: 1px solid #2d2d2d;
+  background: var(--vscode-bg);
+  border: 1px solid var(--vscode-border);
   border-radius: 6px;
   padding: 1em;
   overflow-x: auto;
@@ -129,19 +155,19 @@ body {
 }
 
 .markdown-content blockquote {
-  border-left: 4px solid #0078d4;
+  border-left: 4px solid var(--vscode-accent);
   margin: 1em 0;
   padding: 0.5em 1em;
-  background: rgba(0, 120, 212, 0.05);
+  background: var(--vscode-element);
   border-radius: 0 4px 4px 0;
-  color: #cccccc;
+  color: var(--vscode-text);
 }
 
 .markdown-content blockquote > p:first-child { margin-top: 0; }
 .markdown-content blockquote > p:last-child { margin-bottom: 0; }
 
 .markdown-content a {
-  color: #3794ff;
+  color: var(--vscode-accent);
   text-decoration: none;
 }
 
@@ -158,18 +184,18 @@ body {
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid #3c3c3c;
+  border: 1px solid var(--vscode-border);
   padding: 0.6em 0.8em;
   text-align: left;
 }
 
 .markdown-content th {
-  background: #252526;
+  background: var(--vscode-sidebar);
   font-weight: 600;
 }
 
 .markdown-content tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--vscode-element);
 }
 
 @keyframes fadeIn {

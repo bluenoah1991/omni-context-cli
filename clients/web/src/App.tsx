@@ -23,6 +23,13 @@ export default function App() {
   } = useChatStore();
 
   useEffect(() => {
+    const isLight = config?.webTheme === 'light'
+      || (config?.webTheme === 'auto'
+        && window.matchMedia('(prefers-color-scheme: light)').matches);
+    document.documentElement.classList.toggle('light', isLight);
+  }, [config?.webTheme]);
+
+  useEffect(() => {
     Promise.all([getModels(), getModel(), getSession(), getConfig()]);
     startPolling();
     return () => stopPolling();

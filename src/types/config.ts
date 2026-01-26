@@ -23,6 +23,7 @@ export interface AppConfig {
   cacheTtl: '5m' | '1h';
   contextEditing: boolean;
   contextEditingRounds: number;
+  webTheme?: 'dark' | 'light' | 'auto';
   clientId?: string;
 }
 
@@ -36,4 +37,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   cacheTtl: '5m',
   contextEditing: true,
   contextEditingRounds: 0,
+  webTheme: 'dark',
 };
