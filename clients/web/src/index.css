@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant light (:root.light &);
+
 @theme inline {
   --color-vscode-bg: var(--vscode-bg);
   --color-vscode-sidebar: var(--vscode-sidebar);
@@ -54,8 +56,8 @@ body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #1e1e1e;
-  color: #cccccc;
+  background-color: var(--vscode-bg);
+  color: var(--vscode-text);
 }
 
 ::-webkit-scrollbar {

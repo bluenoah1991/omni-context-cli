@@ -5,16 +5,21 @@ import type { ChatState } from '../chatStore';
 
 export interface UISlice {
   error: string | null;
+  theme: 'light' | 'dark';
   ideContext: IDEContext | null;
   pollInterval: ReturnType<typeof setInterval> | null;
+  setTheme: (theme: 'light' | 'dark') => void;
   startPolling: () => void;
   stopPolling: () => void;
 }
 
 export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get) => ({
   error: null,
+  theme: 'dark',
   ideContext: null,
   pollInterval: null,
+
+  setTheme: theme => set({theme}),
 
   startPolling: () => {
     const {pollInterval} = get();

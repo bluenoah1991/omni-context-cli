@@ -20,6 +20,7 @@ export default function App() {
     stopPolling,
     isLoading,
     currentModel,
+    setTheme,
   } = useChatStore();
 
   useEffect(() => {
@@ -27,7 +28,8 @@ export default function App() {
       || (config?.webTheme === 'auto'
         && window.matchMedia('(prefers-color-scheme: light)').matches);
     document.documentElement.classList.toggle('light', isLight);
-  }, [config?.webTheme]);
+    setTheme(isLight ? 'light' : 'dark');
+  }, [config?.webTheme, setTheme]);
 
   useEffect(() => {
     Promise.all([getModels(), getModel(), getSession(), getConfig()]);

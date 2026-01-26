@@ -184,7 +184,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           <div className='flex items-center justify-between px-3 pb-2 pt-1'>
             <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none'>
               <div
-                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 transition-colors cursor-default'
+                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default'
                 title='Current Model'
               >
                 <span className='text-vscode-text font-medium'>{modelName}</span>

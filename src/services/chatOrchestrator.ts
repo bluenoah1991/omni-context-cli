@@ -134,6 +134,17 @@ async function processToolCalls(
   };
 }
 
+function shouldUseDefaultTtl(
+  session: Session,
+  model: ModelConfig,
+  useDefaultTtl?: boolean,
+): boolean {
+  if (useDefaultTtl) return true;
+  const contextLimit = (model.contextSize || 200) * 1024;
+  const totalTokens = (session.inputTokens ?? 0) + (session.outputTokens ?? 0);
+  return (totalTokens / contextLimit) >= 0.5;
+}
+
 export async function runConversation(
   session: Session,
   callbacks?: StreamCallbacks,
@@ -164,7 +175,7 @@ export async function runConversation(
         isFromAgent,
         skipSystemPrompt,
         currentSession.id,
-        useDefaultTtl,
+        shouldUseDefaultTtl(currentSession, model, useDefaultTtl),
       );
     } catch (error) {
       const errorText = `${error}`;
