@@ -2,6 +2,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { render } from 'ink';
 import dns from 'node:dns';
+import { performance } from 'node:perf_hooks';
 import React from 'react';
 import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
@@ -92,6 +93,8 @@ if (opts.removeProvider) {
 }
 
 dns.setDefaultResultOrder('ipv4first');
+
+performance.setResourceTimingBufferSize(0);
 
 const agent = new EnvHttpProxyAgent({
   connections: 100,
