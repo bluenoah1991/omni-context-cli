@@ -26,7 +26,7 @@ import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor'
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
 
-const INDEX_LIMIT = 10;
+const INDEX_LIMIT = 20;
 
 function getIndexPath(): string {
   return path.join(getProjectDir(), 'index.json');
