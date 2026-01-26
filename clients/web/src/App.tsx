@@ -48,7 +48,7 @@ export default function App() {
       <header className='flex-none py-4 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
         <div className='flex items-center justify-between w-full'>
           <div className='flex items-center gap-4'>
-            <span className='hidden sm:block text-vscode-text font-medium'>
+            <span className='hidden sm:block text-vscode-text font-medium uppercase'>
               {config?.projectName}
             </span>
             <div className='w-80'>
