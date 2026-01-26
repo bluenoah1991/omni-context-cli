@@ -86,16 +86,6 @@ class MCPManager {
     return toolName.startsWith('mcp_');
   }
 
-  async shutdown(): Promise<void> {
-    await ideIntegration.shutdown();
-    for (const client of this.clients.values()) {
-      try {
-        await client.close();
-      } catch {}
-    }
-    this.clients.clear();
-  }
-
   private async connectServer(id: string, config: MCPServerConfig): Promise<void> {
     try {
       const client = new Client({name: 'omx', version: '1.0.0'}, {capabilities: {}});

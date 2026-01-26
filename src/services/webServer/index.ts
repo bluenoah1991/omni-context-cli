@@ -1,0 +1,56 @@
+import { once } from 'node:events';
+import http from 'node:http';
+import { createWebSession, getWebSession } from '../webSessionManager.js';
+import { handleAPI } from './apiHandlers.js';
+import { sendErrorResponse, sendRedirectResponse } from './httpUtils.js';
+import { serveStatic } from './staticServer.js';
+
+let server: http.Server | null = null;
+
+async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+  const pathname = new URL(req.url || '/', `http://${req.headers.host}`).pathname;
+  const method = req.method || 'GET';
+
+  if (pathname.startsWith('/api/')) {
+    const handled = await handleAPI(req, res, pathname, method);
+    if (!handled) {
+      sendErrorResponse(res, 'Not found', 404);
+    }
+    return;
+  }
+
+  if (pathname === '/') {
+    const webSession = createWebSession();
+    sendRedirectResponse(res, `/webSession/${webSession.id}`);
+    return;
+  }
+
+  const wsIdMatch = pathname.match(/^\/webSession\/([a-z0-9-]+)$/);
+  if (wsIdMatch) {
+    const wsId = wsIdMatch[1];
+    if (getWebSession(wsId)) {
+      if (serveStatic(res, '/index.html')) {
+        return;
+      }
+    } else {
+      sendRedirectResponse(res, '/');
+      return;
+    }
+  }
+
+  if (!serveStatic(res, pathname)) {
+    sendErrorResponse(res, 'Not found', 404);
+  }
+}
+
+export async function startServer(port = 5281): Promise<void> {
+  server = http.createServer(handleRequest);
+
+  server.listen(port);
+  await Promise.race([
+    once(server, 'listening'),
+    once(server, 'error').then(([err]) => {
+      throw err;
+    }),
+  ]);
+}

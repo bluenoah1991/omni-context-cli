@@ -283,7 +283,7 @@ export function ChatView(): React.ReactElement {
       );
 
       setSession(finalSession);
-      saveSession(finalSession, model.provider);
+      saveSession(finalSession);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-export type Provider = 'openai' | 'anthropic' | 'gemini' | 'responses';
+export type Provider = 'openai' | 'anthropic' | 'gemini' | 'responses' | 'none';
 
 export interface ModelConfig {
   id: string;

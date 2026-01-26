@@ -12,7 +12,13 @@ import {
   ResponsesMessage,
   ResponsesMessageItem,
 } from '../types/responsesMessage';
-import { ChatMessage, RewindPoint, Session, SessionIndex } from '../types/session';
+import {
+  ChatMessage,
+  RewindPoint,
+  Session,
+  SessionIndex,
+  SessionIndexEntry,
+} from '../types/session';
 
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
 import { parseDataUrl } from '../utils/mediaUtils';
@@ -41,12 +47,13 @@ function saveIndex(index: SessionIndex): void {
   fs.writeFileSync(getIndexPath(), JSON.stringify(index));
 }
 
-function updateIndex(session: Session, provider: Provider, filepath: string): void {
-  let index = loadIndex().filter(e => e.path !== filepath);
+function updateIndex(session: Session, filepath: string): void {
+  let index = loadIndex().filter(e => e.id !== session.id);
   index.unshift({
+    id: session.id,
     path: filepath,
     title: session.title,
-    provider,
+    provider: session.provider,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,
   });
@@ -55,7 +62,7 @@ function updateIndex(session: Session, provider: Provider, filepath: string): vo
 }
 
 function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
 function normalizeMessageContent(text: string, maxLength = 50): string {
@@ -68,15 +75,16 @@ function normalizeMessageContent(text: string, maxLength = 50): string {
   return normalized;
 }
 
-export function createSession(preferredModel?: ModelConfig): Session {
+export function createSession(model?: ModelConfig): Session {
   const now = Date.now();
   return {
     id: generateId(),
     title: 'New Chat',
+    provider: model?.provider ?? 'none',
     messages: [],
     createdAt: now,
     updatedAt: now,
-    modelId: (preferredModel ?? getCurrentModel())?.id,
+    modelId: model?.id,
     inputTokens: 0,
     outputTokens: 0,
     cachedTokens: 0,
@@ -158,6 +166,7 @@ export function addUserMessage(
   return {
     ...session,
     title,
+    provider,
     messages: [...session.messages, message],
     updatedAt: Date.now(),
     modelId: getCurrentModel()?.id,
@@ -312,33 +321,16 @@ export function addToolResultMessages(
   };
 }
 
-export function saveSession(session: Session, provider: Provider): void {
+export function saveSession(session: Session): void {
   ensureProjectDir();
-  const filepath = path.join(getProjectDir(), `${provider}-${session.createdAt}.json`);
+  const filepath = path.join(getProjectDir(), `${session.provider}-${session.createdAt}.json`);
   fs.writeFileSync(filepath, JSON.stringify(session, null, 2));
-  updateIndex(session, provider, filepath);
+  updateIndex(session, filepath);
 }
 
-export function listSessions(
-  provider: Provider,
-  limit = 10,
-): Array<{path: string; title: string; updatedAt: number;}> {
+export function listSessions(provider: Provider, limit = 10): SessionIndexEntry[] {
   const index = loadIndex();
-  const entries = index.filter(e => e.provider === provider).slice(0, limit);
-
-  if (entries.length > 0) {
-    return entries.map(e => ({path: e.path, title: e.title, updatedAt: e.updatedAt}));
-  }
-
-  const dir = getProjectDir();
-  if (!fs.existsSync(dir)) return [];
-
-  const prefix = `${provider}-`;
-  return fs.readdirSync(dir).filter(f => f.startsWith(prefix) && f.endsWith('.json')).map(f => {
-    const filepath = path.join(dir, f);
-    const content = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-    return {path: filepath, title: content.title, updatedAt: content.updatedAt};
-  }).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, limit);
+  return index.filter(e => e.provider === provider).slice(0, limit);
 }
 
 export function loadSession(filepath: string): Session {
@@ -346,6 +338,7 @@ export function loadSession(filepath: string): Session {
   return {
     id: content.id,
     title: content.title,
+    provider: content.provider,
     messages: content.messages,
     createdAt: content.createdAt,
     updatedAt: content.updatedAt,
@@ -354,6 +347,13 @@ export function loadSession(filepath: string): Session {
     outputTokens: content.outputTokens ?? 0,
     cachedTokens: content.cachedTokens ?? 0,
   };
+}
+
+export function loadSessionById(sessionId: string): Session | null {
+  const index = loadIndex();
+  const entry = index.find(e => e.id === sessionId);
+  if (!entry) return null;
+  return loadSession(entry.path);
 }
 
 export function loadLatestSession(): Session | null {

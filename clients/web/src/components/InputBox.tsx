@@ -1,0 +1,270 @@
+import {
+  ArrowDown,
+  ArrowUp,
+  Brain,
+  FileCode,
+  MessageSquare,
+  RefreshCw,
+  Scissors,
+  Send,
+  Sparkles,
+  Square,
+  X,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useChatStore } from '../store/chatStore';
+
+import { StatusIcon } from './StatusIcon';
+
+interface PastedImage {
+  id: string;
+  dataUrl: string;
+  base64: string;
+  mediaType: string;
+}
+
+interface InputBoxProps {
+  disabled?: boolean;
+}
+
+function processFile(file: File): Promise<PastedImage> {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const result = e.target?.result as string;
+      const [header, base64] = result.split(',');
+      const mediaType = header.split(':')[1].split(';')[0];
+
+      resolve({
+        id: Date.now().toString() + Math.random().toString(36).substring(2),
+        dataUrl: result,
+        base64,
+        mediaType,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: number;}): string {
+  const fileName = file.path.split(/[/\\]/).pop() || file.path;
+  if (file.lineStart) {
+    return file.lineEnd && file.lineEnd !== file.lineStart
+      ? `${fileName}:${file.lineStart}-${file.lineEnd}`
+      : `${fileName}:${file.lineStart}`;
+  }
+  return fileName;
+}
+
+export default function InputBox({disabled = false}: InputBoxProps) {
+  const [message, setMessage] = useState('');
+  const [images, setImages] = useState<PastedImage[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const {isLoading, sendMessage, stopGeneration, config, currentModel, currentSession, ideContext} =
+    useChatStore();
+
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = 'auto';
+    const height = Math.max(24, Math.min(textareaRef.current.scrollHeight, 200));
+    textareaRef.current.style.height = `${height}px`;
+  }, [message]);
+
+  useEffect(() => {
+    if (!isLoading && !disabled && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isLoading, disabled]);
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const newImages: PastedImage[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          const image = await processFile(file);
+          newImages.push(image);
+        }
+      }
+    }
+
+    if (newImages.length > 0) {
+      setImages(prev => [...prev, ...newImages]);
+    }
+  };
+
+  const removeImage = (id: string) => {
+    setImages(prev => prev.filter(image => image.id !== id));
+  };
+
+  const handleSend = () => {
+    if (message.trim() && !isLoading && !disabled) {
+      const text = message.trim();
+      const imageData = images.map(img => ({base64: img.base64, mediaType: img.mediaType}));
+      sendMessage(text, imageData.length > 0 ? imageData : undefined);
+      setMessage('');
+      setImages([]);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.nativeEvent.isComposing) return;
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const modelName = currentModel?.nickname || currentModel?.name || 'Not Set';
+  const contextLimit = (currentModel?.contextSize || 200) * 1024;
+  const totalTokens = (currentSession?.inputTokens || 0) + (currentSession?.outputTokens || 0);
+  const contextPercent = contextLimit > 0 ? ((totalTokens / contextLimit) * 100).toFixed(1) : '0';
+
+  const hasContext = ideContext || images.length > 0;
+
+  return (
+    <div className='border-t border-vscode-element bg-vscode-bg pb-6 pt-4'>
+      <div className='max-w-4xl mx-auto space-y-3'>
+        {hasContext && (
+          <div className='flex flex-wrap gap-2 animate-fade-in'>
+            {ideContext && (
+              <div className='flex items-center gap-1.5 px-2.5 py-1.5 bg-vscode-element border border-vscode-accent rounded text-xs text-vscode-text'>
+                <FileCode size={12} className='text-vscode-accent' />
+                <span className='max-w-50 truncate' title={ideContext.path}>
+                  {formatFileLabel(ideContext)}
+                </span>
+              </div>
+            )}
+            {images.map(image => (
+              <div
+                key={image.id}
+                className='relative group rounded overflow-hidden border border-vscode-border'
+              >
+                <img src={image.dataUrl} alt='Attached' className='w-10 h-10 object-cover' />
+                <button
+                  onClick={() => removeImage(image.id)}
+                  className='absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'
+                >
+                  <X size={14} className='text-white' />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div
+          className={`relative bg-vscode-sidebar border transition-colors rounded-xl overflow-hidden ${
+            isLoading
+              ? 'border-vscode-border'
+              : 'border-vscode-border focus-within:border-vscode-accent focus-within:ring-1 focus-within:ring-vscode-accent/30'
+          }`}
+        >
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+            placeholder={disabled
+              ? 'Configure a model in settings'
+              : isLoading
+              ? 'Waiting for response...'
+              : 'Type your message...'}
+            disabled={isLoading || disabled}
+            rows={1}
+            className='w-full px-4 py-3 bg-transparent text-sm text-vscode-text placeholder-vscode-text-muted resize-none focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
+          />
+
+          <div className='flex items-center justify-between px-3 pb-2 pt-1'>
+            <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none'>
+              <div
+                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 transition-colors cursor-default'
+                title='Current Model'
+              >
+                <span className='text-vscode-text font-medium'>{modelName}</span>
+              </div>
+
+              <div className='w-px h-3 bg-vscode-border' />
+
+              <div className='flex items-center gap-0.5'>
+                <StatusIcon
+                  icon={Sparkles}
+                  active={config?.specialistMode}
+                  title='Specialist Mode'
+                />
+                <StatusIcon
+                  icon={Brain}
+                  active={config?.enableThinking}
+                  title='Extended Thinking'
+                />
+                <StatusIcon icon={MessageSquare} active={config?.memoryEnabled} title='Memory' />
+                <StatusIcon
+                  icon={Scissors}
+                  active={config?.contextEditing}
+                  title='Context Editing'
+                />
+              </div>
+
+              <div className='w-px h-3 bg-vscode-border' />
+
+              <div className='flex items-center gap-2' title='Token Usage'>
+                <span className={Number(contextPercent) > 80 ? 'text-vscode-warning' : ''}>
+                  {contextPercent}%
+                </span>
+                <span className='flex items-center gap-1.5'>
+                  <span className='flex items-center gap-0.5'>
+                    <ArrowUp size={12} />
+                    {currentSession?.inputTokens || 0}
+                  </span>
+                  <span className='flex items-center gap-0.5'>
+                    <ArrowDown size={12} />
+                    {currentSession?.outputTokens || 0}
+                  </span>
+                  <span className='flex items-center gap-0.5'>
+                    <RefreshCw size={12} />
+                    {currentSession?.cachedTokens || 0}
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            <div className='flex items-center pl-2'>
+              {isLoading
+                ? (
+                  <button
+                    type='button'
+                    onClick={stopGeneration}
+                    className='p-1.5 bg-vscode-error hover:brightness-90 text-white rounded-md transition-all shadow-sm'
+                    title='Stop generation'
+                  >
+                    <Square size={14} fill='currentColor' />
+                  </button>
+                )
+                : (
+                  <button
+                    type='button'
+                    onClick={handleSend}
+                    disabled={!message.trim() || disabled}
+                    className={`p-1.5 rounded-md transition-all ${
+                      !message.trim() || disabled
+                        ? 'text-vscode-border-active cursor-not-allowed'
+                        : 'bg-vscode-accent text-white hover:brightness-110 shadow-sm'
+                    }`}
+                    title='Send message'
+                  >
+                    <Send size={14} />
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

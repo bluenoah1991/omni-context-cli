@@ -24,6 +24,7 @@ import {
 import { initializeProviders } from './services/modelProviders/index.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { initializeTools } from './services/tools/index.js';
+import { startServer } from './services/webServer/index.js';
 import { useChatStore } from './store/chatStore.js';
 import { ChatView } from './ui/components/ChatView.js';
 
@@ -39,7 +40,13 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('--remove-provider <provider>', 'Remove all models from a provider').option(
   '--api-key <key>',
   'API key for --add-provider',
-).option('--list-providers', 'List available model providers').parse();
+).option('--list-providers', 'List available model providers').option(
+  '-s, --serve',
+  'Start as HTTP server instead of TUI',
+).option('-w, --web', 'Open web UI in browser (requires --serve)').option(
+  '-p, --port <port>',
+  'Port for server mode (default: 5281)',
+).parse();
 
 const opts = program.opts();
 
@@ -99,6 +106,7 @@ setGlobalDispatcher(agent);
 initializeCurrentModel();
 initializeInterceptors();
 initializeTools();
+initializeInputHistory();
 mcpManager.initialize();
 
 if (opts.diagnostic) {
@@ -109,23 +117,40 @@ if (opts.costAnalysis) {
   enableCostAnalysis();
 }
 
-if (opts.continue) {
-  const session = loadLatestSession();
-  if (session?.modelId) {
-    const savedModel = findModelById(session.modelId);
-    if (savedModel) {
-      setCurrentModel(savedModel);
-      useChatStore.getState().setSession(session);
+if (opts.serve) {
+  const port = opts.port ? parseInt(opts.port, 10) : 5281;
+  try {
+    await startServer(port);
+  } catch (err) {
+    console.error(`Failed to start server on port ${port}`);
+    process.exit(1);
+  }
+  console.log(`Server running at http://localhost:${port}`);
+
+  if (opts.web) {
+    const {exec} = await import('node:child_process');
+    const cmd = process.platform === 'win32'
+      ? 'start'
+      : process.platform === 'darwin'
+      ? 'open'
+      : 'xdg-open';
+    exec(`${cmd} http://localhost:${port}`);
+  }
+
+  process.on('SIGINT', () => process.exit(0));
+} else {
+  if (opts.continue) {
+    const session = loadLatestSession();
+    if (session?.modelId) {
+      const savedModel = findModelById(session.modelId);
+      if (savedModel) {
+        setCurrentModel(savedModel);
+        useChatStore.getState().setSession(session);
+      }
     }
   }
+
+  process.stdout.write('\x1Bc');
+
+  render(<ChatView />, {exitOnCtrlC: false});
 }
-
-initializeInputHistory();
-
-process.stdout.write('\x1Bc');
-
-render(<ChatView />, {exitOnCtrlC: false});
-
-process.on('exit', () => {
-  mcpManager.shutdown();
-});

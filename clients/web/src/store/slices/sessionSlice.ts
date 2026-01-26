@@ -1,0 +1,72 @@
+import type { StateCreator } from 'zustand';
+import {
+  fetchSession,
+  fetchSessions,
+  loadSession,
+  newSession,
+} from '../../services/sessionService';
+import type { Session, SessionSummary } from '../../types/session';
+import type { UIMessage } from '../../types/uiMessage';
+import type { ChatState } from '../chatStore';
+
+function preprocessMessages(messages: UIMessage[]): UIMessage[] {
+  const result: UIMessage[] = [];
+  for (const message of messages) {
+    if (message.role === 'tool_result') {
+      const toolCallIndex = result.findLastIndex(item =>
+        item.role === 'tool_call' && item.toolCallId === message.toolCallId
+      );
+      if (toolCallIndex !== -1) {
+        result[toolCallIndex] = {...result[toolCallIndex], toolResult: message.content};
+        continue;
+      }
+    }
+    result.push(message);
+  }
+  return result;
+}
+
+export interface SessionSlice {
+  currentSession: Session | null;
+  sessions: SessionSummary[];
+  getSession: () => Promise<void>;
+  getSessions: () => Promise<void>;
+  loadSession: (entry: SessionSummary) => Promise<void>;
+  newSession: () => Promise<void>;
+}
+
+export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> = (set, get) => ({
+  currentSession: null,
+  sessions: [],
+
+  getSession: async () => {
+    const {data, error} = await fetchSession();
+    if (error) set({error});
+    else if (data) {
+      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+    }
+  },
+
+  getSessions: async () => {
+    const {currentModel} = get();
+    if (!currentModel) return;
+    const {data, error} = await fetchSessions();
+    if (data) set({sessions: data});
+    else if (error) set({error});
+  },
+
+  loadSession: async (entry: SessionSummary) => {
+    set({currentSession: null});
+    const {data, error} = await loadSession(entry.id);
+    if (error) set({error});
+    else if (data) {
+      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+    }
+  },
+
+  newSession: async () => {
+    const {data, error} = await newSession();
+    if (error) set({error});
+    else set({currentSession: data});
+  },
+});

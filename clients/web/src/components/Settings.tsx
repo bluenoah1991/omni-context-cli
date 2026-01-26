@@ -1,0 +1,193 @@
+import { Check, Cpu, Sliders, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useChatStore } from '../store/chatStore';
+import { Select } from './Select';
+import { ToggleOption } from './ToggleOption';
+
+interface SettingsProps {
+  onClose: () => void;
+}
+
+type Tab = 'models' | 'preferences';
+
+export default function Settings({onClose}: SettingsProps) {
+  const {models, config, currentModel, setCurrentModel, setConfig} = useChatStore();
+  const [activeTab, setActiveTab] = useState<Tab>('models');
+  const [currentModelId, setCurrentModelId] = useState(currentModel?.id || '');
+  const [defaultModelId, setDefaultModelId] = useState(config?.defaultModelId || '');
+  const [agentModelId, setAgentModelId] = useState(config?.agentModelId || '');
+  const [enableThinking, setEnableThinking] = useState(config?.enableThinking ?? true);
+  const [specialistMode, setSpecialistMode] = useState(config?.specialistMode ?? true);
+  const [memoryEnabled, setMemoryEnabled] = useState(config?.memoryEnabled ?? false);
+  const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (config) {
+      setCurrentModelId(currentModel?.id || '');
+      setDefaultModelId(config.defaultModelId || '');
+      setAgentModelId(config.agentModelId || '');
+      setEnableThinking(config.enableThinking);
+      setSpecialistMode(config.specialistMode);
+      setMemoryEnabled(config.memoryEnabled);
+      setContextEditing(config.contextEditing);
+    }
+  }, [config, currentModel]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await setConfig({
+        defaultModelId: defaultModelId || undefined,
+        agentModelId: agentModelId || undefined,
+        enableThinking,
+        specialistMode,
+        memoryEnabled,
+        contextEditing,
+      });
+      const newModel = models.find(m => m.id === currentModelId);
+      if (newModel) {
+        setCurrentModel(newModel);
+      }
+      onClose();
+    } catch (e) {
+      console.error('Failed to save config:', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tabs = [{id: 'models' as Tab, label: 'Models', icon: Cpu}, {
+    id: 'preferences' as Tab,
+    label: 'Preferences',
+    icon: Sliders,
+  }];
+
+  return (
+    <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm'>
+      <div className='bg-vscode-sidebar border border-vscode-border rounded-xl w-full max-w-md shadow-2xl transform transition-all scale-100 opacity-100 overflow-hidden m-4'>
+        <div className='flex items-center justify-between px-6 py-4 border-b border-vscode-border bg-vscode-element/50'>
+          <h2 className='text-lg font-semibold text-white'>Settings</h2>
+          <button
+            onClick={onClose}
+            className='text-vscode-text-muted hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors'
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className='flex border-b border-vscode-border'>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'text-vscode-accent border-b-2 border-vscode-accent'
+                  : 'text-vscode-text-muted hover:text-vscode-text'
+              }`}
+            >
+              <tab.icon size={16} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className='p-6 space-y-5 max-h-[60vh] overflow-y-auto'>
+          {activeTab === 'models' && (
+            <>
+              <Select
+                label='Current Model'
+                description='The model for this session'
+                value={currentModelId}
+                onChange={setCurrentModelId}
+                options={models.map(model => ({
+                  value: model.id,
+                  label: model.nickname || model.name,
+                }))}
+                placeholder='Select a model'
+              />
+
+              <Select
+                label='Default Model'
+                description='The model for new sessions'
+                value={defaultModelId}
+                onChange={setDefaultModelId}
+                options={models.map(model => ({
+                  value: model.id,
+                  label: model.nickname || model.name,
+                }))}
+                placeholder='Select a model'
+              />
+
+              <Select
+                label='Agent Model'
+                description='Model for agent tasks (defaults to current model)'
+                value={agentModelId}
+                onChange={setAgentModelId}
+                options={models.map(model => ({
+                  value: model.id,
+                  label: model.nickname || model.name,
+                }))}
+                placeholder='Use main model'
+              />
+            </>
+          )}
+
+          {activeTab === 'preferences' && (
+            <>
+              <ToggleOption
+                label='Specialist Mode'
+                description='Enable specialized agent routing for complex tasks'
+                enabled={specialistMode}
+                onChange={setSpecialistMode}
+              />
+
+              <ToggleOption
+                label='Extended Thinking'
+                description='Enable chain-of-thought reasoning'
+                enabled={enableThinking}
+                onChange={setEnableThinking}
+              />
+
+              <ToggleOption
+                label='Memory'
+                description='Persist key information across sessions'
+                enabled={memoryEnabled}
+                onChange={setMemoryEnabled}
+              />
+
+              <ToggleOption
+                label='Context Editing'
+                description='Allow context modification during conversation'
+                enabled={contextEditing}
+                onChange={setContextEditing}
+              />
+            </>
+          )}
+        </div>
+
+        <div className='flex justify-end gap-3 px-6 py-4 border-t border-vscode-border bg-vscode-element/30'>
+          <button
+            onClick={onClose}
+            className='px-4 py-2 text-sm font-medium text-vscode-text hover:bg-vscode-border rounded-lg transition-colors'
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className='px-6 py-2 text-sm font-medium bg-vscode-accent text-white rounded-lg hover:brightness-110 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-vscode-accent/20 flex items-center gap-2'
+          >
+            {saving ? ('Saving...') : (
+              <>
+                <Check size={16} />
+                <span>Save</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -9,6 +9,7 @@ export type ChatMessage = OpenAIMessage | AnthropicMessage | GeminiMessage | Res
 export interface Session {
   id: string;
   title: string;
+  provider: Provider;
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
@@ -24,6 +25,7 @@ export interface RewindPoint {
 }
 
 export type SessionIndexEntry = {
+  id: string;
   path: string;
   title: string;
   provider: Provider;

@@ -232,7 +232,12 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           onSelect={setSelectIndex}
           onConfirm={i => {
             if (config.models[i]) {
+              const previousModel = getCurrentModel();
               setCurrentModel(config.models[i]);
+              if (previousModel && previousModel.provider !== config.models[i].provider) {
+                process.stdout.write('\x1Bc');
+                useChatStore.getState().createNewSession();
+              }
               onClose();
             }
           }}
@@ -728,7 +733,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
               const truncated = truncateSession(session, rewindPoints[i].index);
               process.stdout.write('\x1Bc');
               useChatStore.getState().setSession(truncated);
-              saveSession(truncated, currentModel.provider);
+              saveSession(truncated);
             }
             onClose();
           }}

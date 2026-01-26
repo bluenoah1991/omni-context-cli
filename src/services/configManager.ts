@@ -1,6 +1,5 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { useChatStore } from '../store/chatStore';
 import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig } from '../types/config';
 import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
 
@@ -164,12 +163,7 @@ export function getCurrentModel(): ModelConfig | undefined {
 }
 
 export function setCurrentModel(model: ModelConfig | undefined): void {
-  const previousProvider = currentModel?.provider;
   currentModel = model;
-  if (previousProvider && previousProvider !== model?.provider) {
-    process.stdout.write('\x1Bc');
-    useChatStore.getState().createNewSession();
-  }
 }
 
 export function findModelById(modelId: string): ModelConfig | undefined {
