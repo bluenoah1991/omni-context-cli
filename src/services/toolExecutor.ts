@@ -1,12 +1,12 @@
 import { ToolDefinition, ToolExecutionResult, ToolFilter, ToolHandler } from '../types/tool';
 import { getAgentModel, loadAppConfig } from './configManager';
-import { mcpManager } from './mcpManager';
+import { executeMCPTool, getAllMCPToolDefinitions, isMCPTool } from './mcpManager';
 
 const tools: Map<string, {definition: ToolDefinition; handler: ToolHandler;}> = new Map();
 
 export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[]> {
   const localTools = Array.from(tools.values()).map(t => t.definition);
-  const mcpTools = mcpManager.getAllToolDefinitions();
+  const mcpTools = getAllMCPToolDefinitions();
   let allTools = [...localTools, ...mcpTools];
 
   const agentModel = getAgentModel(loadAppConfig());
@@ -60,9 +60,9 @@ export async function executeTool(
   args: any,
   signal?: AbortSignal,
 ): Promise<ToolExecutionResult> {
-  if (mcpManager.isMCPTool(toolName)) {
+  if (isMCPTool(toolName)) {
     try {
-      const result = await mcpManager.executeTool(toolName, args);
+      const result = await executeMCPTool(toolName, args);
       return {success: true, result};
     } catch (error) {
       return {success: false, error: String(error)};

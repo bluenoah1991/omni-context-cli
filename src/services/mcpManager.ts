@@ -11,114 +11,110 @@ import { ideIntegration } from './ideIntegration.js';
 const USER_MCP_CONFIG = getOmxFilePath('mcp.json');
 const LOCAL_MCP_CONFIG = getLocalOmxFilePath('mcp.json');
 
-class MCPManager {
-  private clients: Map<string, Client> = new Map();
-  private tools: Map<string, Tool> = new Map();
-  private configs: Map<string, MCPServerConfig> = new Map();
+const clients: Map<string, Client> = new Map();
+const tools: Map<string, Tool> = new Map();
+const configs: Map<string, MCPServerConfig> = new Map();
 
-  async initialize(): Promise<void> {
-    await ideIntegration.initialize();
+export async function initializeMCP(): Promise<void> {
+  await ideIntegration.initialize();
 
-    const config = this.loadConfig();
-    if (!config) return;
-    for (const [id, serverConfig] of Object.entries(config.mcpServers)) {
-      this.configs.set(id, serverConfig);
-      await this.connectServer(id, serverConfig);
-    }
-  }
-
-  private loadConfig(): MCPConfig | null {
-    const finalConfig: MCPConfig = {mcpServers: {}};
-
-    for (const file of [USER_MCP_CONFIG, LOCAL_MCP_CONFIG]) {
-      if (fs.existsSync(file)) {
-        try {
-          const content = fs.readFileSync(file, 'utf-8');
-          const config: MCPConfig = JSON.parse(content);
-          Object.assign(finalConfig.mcpServers, config.mcpServers);
-        } catch {}
-      }
-    }
-
-    return Object.keys(finalConfig.mcpServers).length > 0 ? finalConfig : null;
-  }
-
-  getAllToolDefinitions(): ToolDefinition[] {
-    const tools: ToolDefinition[] = [];
-    for (const [key, tool] of this.tools) {
-      tools.push({
-        name: `mcp_${key}`,
-        description: tool.description || '',
-        parameters: {
-          properties: (tool.inputSchema as any).properties || {},
-          required: (tool.inputSchema as any).required,
-        },
-      });
-    }
-    for (const ideTool of ideIntegration.getToolDefinitions()) {
-      tools.push({
-        name: ideTool.name,
-        description: ideTool.description,
-        parameters: ideTool.parameters,
-      });
-    }
-    return tools;
-  }
-
-  async executeTool(toolName: string, args: any): Promise<any> {
-    if (ideIntegration.isMCPTool(toolName)) {
-      return ideIntegration.executeTool(toolName, args);
-    }
-    const parts = toolName.split('_');
-    if (parts.length < 3 || parts[0] !== 'mcp') {
-      throw new Error('Invalid MCP tool name format');
-    }
-    const serverId = parts[1];
-    const originalToolName = parts.slice(2).join('_');
-    const client = this.clients.get(serverId);
-    if (!client) {
-      throw new Error(`MCP server not connected: ${serverId}`);
-    }
-    return client.callTool({name: originalToolName, arguments: args || {}});
-  }
-
-  isMCPTool(toolName: string): boolean {
-    return toolName.startsWith('mcp_');
-  }
-
-  private async connectServer(id: string, config: MCPServerConfig): Promise<void> {
-    try {
-      const client = new Client({name: 'omx', version: '1.0.0'}, {capabilities: {}});
-      if (config.url) {
-        const transport = new StreamableHTTPClientTransport(new URL(config.url), {
-          requestInit: {headers: config.headers || {}},
-        });
-        await client.connect(transport);
-      } else if (config.command) {
-        const transport = new StdioClientTransport({
-          command: config.command,
-          args: config.args || [],
-          env: {...process.env, ...config.env} as Record<string, string>,
-          stderr: 'ignore',
-        });
-        await client.connect(transport);
-      } else {
-        return;
-      }
-      this.clients.set(id, client);
-      await this.loadServerTools(id, client);
-    } catch {}
-  }
-
-  private async loadServerTools(serverId: string, client: Client): Promise<void> {
-    try {
-      const response = await client.listTools();
-      const tools = response.tools || [];
-      for (const tool of tools) {
-        this.tools.set(`${serverId}_${tool.name}`, tool);
-      }
-    } catch {}
+  const config = loadConfig();
+  if (!config) return;
+  for (const [id, serverConfig] of Object.entries(config.mcpServers)) {
+    configs.set(id, serverConfig);
+    await connectServer(id, serverConfig);
   }
 }
 
-export const mcpManager = new MCPManager();
+function loadConfig(): MCPConfig | null {
+  const finalConfig: MCPConfig = {mcpServers: {}};
+
+  for (const file of [USER_MCP_CONFIG, LOCAL_MCP_CONFIG]) {
+    if (fs.existsSync(file)) {
+      try {
+        const content = fs.readFileSync(file, 'utf-8');
+        const config: MCPConfig = JSON.parse(content);
+        Object.assign(finalConfig.mcpServers, config.mcpServers);
+      } catch {}
+    }
+  }
+
+  return Object.keys(finalConfig.mcpServers).length > 0 ? finalConfig : null;
+}
+
+export function getAllMCPToolDefinitions(): ToolDefinition[] {
+  const result: ToolDefinition[] = [];
+  for (const [key, tool] of tools) {
+    result.push({
+      name: `mcp_${key}`,
+      description: tool.description || '',
+      parameters: {
+        properties: (tool.inputSchema as any).properties || {},
+        required: (tool.inputSchema as any).required,
+      },
+    });
+  }
+  for (const ideTool of ideIntegration.getToolDefinitions()) {
+    result.push({
+      name: ideTool.name,
+      description: ideTool.description,
+      parameters: ideTool.parameters,
+    });
+  }
+  return result;
+}
+
+export async function executeMCPTool(toolName: string, args: any): Promise<any> {
+  if (ideIntegration.isMCPTool(toolName)) {
+    return ideIntegration.executeTool(toolName, args);
+  }
+  const parts = toolName.split('_');
+  if (parts.length < 3 || parts[0] !== 'mcp') {
+    throw new Error('Invalid MCP tool name format');
+  }
+  const serverId = parts[1];
+  const originalToolName = parts.slice(2).join('_');
+  const client = clients.get(serverId);
+  if (!client) {
+    throw new Error(`MCP server not connected: ${serverId}`);
+  }
+  return client.callTool({name: originalToolName, arguments: args || {}});
+}
+
+export function isMCPTool(toolName: string): boolean {
+  return toolName.startsWith('mcp_');
+}
+
+async function connectServer(id: string, config: MCPServerConfig): Promise<void> {
+  try {
+    const client = new Client({name: 'omx', version: '1.0.0'}, {capabilities: {}});
+    if (config.url) {
+      const transport = new StreamableHTTPClientTransport(new URL(config.url), {
+        requestInit: {headers: config.headers || {}},
+      });
+      await client.connect(transport);
+    } else if (config.command) {
+      const transport = new StdioClientTransport({
+        command: config.command,
+        args: config.args || [],
+        env: {...process.env, ...config.env} as Record<string, string>,
+        stderr: 'ignore',
+      });
+      await client.connect(transport);
+    } else {
+      return;
+    }
+    clients.set(id, client);
+    await loadServerTools(id, client);
+  } catch {}
+}
+
+async function loadServerTools(serverId: string, client: Client): Promise<void> {
+  try {
+    const response = await client.listTools();
+    const serverTools = response.tools || [];
+    for (const tool of serverTools) {
+      tools.set(`${serverId}_${tool.name}`, tool);
+    }
+  } catch {}
+}

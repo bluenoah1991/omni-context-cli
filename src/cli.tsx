@@ -15,7 +15,7 @@ import { enableCostAnalysis } from './services/costAnalysis.js';
 import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInputHistory } from './services/inputHistoryManager.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
-import { mcpManager } from './services/mcpManager.js';
+import { initializeMCP } from './services/mcpManager.js';
 import {
   addProviderModels,
   getAllModelProviders,
@@ -110,7 +110,7 @@ initializeCurrentModel();
 initializeInterceptors();
 initializeTools();
 initializeInputHistory();
-mcpManager.initialize();
+initializeMCP();
 
 if (opts.diagnostic) {
   enableDiagnostic();
