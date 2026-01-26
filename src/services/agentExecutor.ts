@@ -53,10 +53,7 @@ export async function executeAgent(
   );
 
   if (capturedError) {
-    return {
-      result: capturedError,
-      displayText: `Agent ${agent.name} failed: ${capturedError.slice(0, 100)}`,
-    };
+    throw new Error(capturedError);
   }
 
   const lastMessage = result.messages[result.messages.length - 1];
