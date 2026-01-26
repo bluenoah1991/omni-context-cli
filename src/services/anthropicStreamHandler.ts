@@ -87,7 +87,7 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       const text = data.delta.text;
       this.accumulatedContent += text;
       if (this.accumulatedContent.trim()) {
-        this.callbacks.onContent(text);
+        this.callbacks.onContent?.(text);
       }
     }
 
@@ -96,7 +96,7 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       this.currentThinking += thinking;
       this.accumulatedThinking += thinking;
       if (this.accumulatedThinking.trim()) {
-        this.callbacks.onThinking(thinking);
+        this.callbacks.onThinking?.(thinking);
       }
     }
 

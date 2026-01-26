@@ -1,11 +1,11 @@
 import { Session } from './session';
 
 export interface StreamCallbacks {
-  onContent: (content: string) => void;
+  onContent?: (content: string) => void;
   onError?: (errorText: string) => void;
-  onThinking: (thinking: string) => void;
-  onToolCall: (toolCall: ToolCall) => void;
-  onToolResult: (toolResult: ToolResult) => void;
+  onThinking?: (thinking: string) => void;
+  onToolCall?: (toolCall: ToolCall) => void;
+  onToolResult?: (toolResult: ToolResult) => void;
   onSessionUpdate?: (session: Session) => void;
 }
 

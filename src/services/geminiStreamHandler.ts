@@ -63,7 +63,7 @@ export class GeminiStreamHandler extends BaseStreamHandler {
     if (part.thought && part.text) {
       this.accumulatedThinking += part.text;
       if (this.accumulatedThinking.trim()) {
-        this.callbacks.onThinking(part.text);
+        this.callbacks.onThinking?.(part.text);
       }
       return;
     }
@@ -71,7 +71,7 @@ export class GeminiStreamHandler extends BaseStreamHandler {
     if (part.text !== undefined && !part.thought) {
       this.accumulatedContent += part.text;
       if (this.accumulatedContent.trim()) {
-        this.callbacks.onContent(part.text);
+        this.callbacks.onContent?.(part.text);
       }
     }
 

@@ -90,7 +90,7 @@ export class ResponsesStreamHandler extends BaseStreamHandler {
     this.accumulatedContent += delta;
 
     if (this.accumulatedContent.trim()) {
-      this.callbacks.onContent(delta);
+      this.callbacks.onContent?.(delta);
     }
   }
 
@@ -119,7 +119,7 @@ export class ResponsesStreamHandler extends BaseStreamHandler {
     this.accumulatedThinking += delta;
 
     if (this.accumulatedThinking.trim()) {
-      this.callbacks.onThinking(delta);
+      this.callbacks.onThinking?.(delta);
     }
   }
 

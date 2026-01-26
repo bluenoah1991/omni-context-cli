@@ -35,9 +35,15 @@ export async function executeAgent(
     agentModel.provider,
   );
 
+  let capturedError: string | null = null;
+
   const result = await runConversation(
     sessionWithMessage,
-    undefined,
+    {
+      onError: error => {
+        capturedError = error;
+      },
+    },
     signal,
     {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},
     agentModel,
@@ -45,6 +51,13 @@ export async function executeAgent(
     false,
     true,
   );
+
+  if (capturedError) {
+    return {
+      result: capturedError,
+      displayText: `Agent ${agent.name} failed: ${capturedError.slice(0, 100)}`,
+    };
+  }
 
   const lastMessage = result.messages[result.messages.length - 1];
   const fullText = extractTextContent(lastMessage);

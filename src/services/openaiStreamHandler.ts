@@ -55,7 +55,7 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
       this.accumulatedContent += delta.content;
 
       if (this.accumulatedContent.trim()) {
-        this.callbacks.onContent(delta.content);
+        this.callbacks.onContent?.(delta.content);
       }
     }
 
@@ -105,7 +105,7 @@ export class OpenAIStreamHandler extends BaseStreamHandler {
     if (thinking) {
       this.accumulatedThinking += thinking;
       if (this.accumulatedThinking.trim()) {
-        this.callbacks.onThinking(thinking);
+        this.callbacks.onThinking?.(thinking);
       }
     }
 

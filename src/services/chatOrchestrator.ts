@@ -109,12 +109,12 @@ async function processToolCalls(
       break;
     }
 
-    callbacks.onToolCall({id: toolCall.id, name: toolCall.name, input: toolCall.input});
+    callbacks.onToolCall?.({id: toolCall.id, name: toolCall.name, input: toolCall.input});
 
     const result = await executeTool(toolCall.name, toolCall.input, signal);
     const {dataUrl, ...resultWithoutDataUrl} = result;
     const content = JSON.stringify(resultWithoutDataUrl);
-    callbacks.onToolResult({id: toolCall.id, name: toolCall.name, content});
+    callbacks.onToolResult?.({id: toolCall.id, name: toolCall.name, content});
     toolResults.push({id: toolCall.id, name: toolCall.name, content, dataUrl});
     executedIds.add(toolCall.id);
   }
@@ -134,13 +134,6 @@ async function processToolCalls(
   };
 }
 
-const noopCallbacks: StreamCallbacks = {
-  onContent: () => {},
-  onThinking: () => {},
-  onToolCall: () => {},
-  onToolResult: () => {},
-};
-
 export async function runConversation(
   session: Session,
   callbacks?: StreamCallbacks,
@@ -152,7 +145,7 @@ export async function runConversation(
   useDefaultTtl?: boolean,
 ): Promise<Session> {
   let currentSession = session;
-  const finalCallbacks = callbacks ?? noopCallbacks;
+  const finalCallbacks = callbacks ?? {};
   const model = preferredModel ?? getCurrentModel();
   if (!model) {
     throw new Error('Cannot run conversation without a configured model');
