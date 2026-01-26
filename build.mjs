@@ -56,7 +56,7 @@ const buildOptions = {
   target: 'node18',
   format: 'esm',
   outfile: 'dist/cli.js',
-  external: ['figlet'],
+  external: ['figlet', 'node-notifier'],
   banner: {
     js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },

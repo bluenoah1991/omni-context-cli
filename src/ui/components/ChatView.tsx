@@ -1,4 +1,5 @@
 import { Box, useStdout } from 'ink';
+import notifier from 'node-notifier';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
@@ -24,6 +25,8 @@ import { MediaContextBar } from './MediaContextBar';
 import { Menu, View } from './Menu';
 import { MessageList } from './MessageList';
 import { StatusBar } from './StatusBar';
+
+const NOTIFICATION_THRESHOLD_MS = 60000;
 
 export function ChatView(): React.ReactElement {
   const {
@@ -104,6 +107,8 @@ export function ChatView(): React.ReactElement {
     if (useChatStore.getState().isLoading) return;
 
     if (!model) return;
+
+    const startTime = Date.now();
 
     const slashCommand = parseSlashCommand(text);
     if (slashCommand) {
@@ -286,6 +291,10 @@ export function ChatView(): React.ReactElement {
       saveSession(finalSession);
     } finally {
       setLoading(false);
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= NOTIFICATION_THRESHOLD_MS) {
+        notifier.notify({title: 'OmniContext CLI', message: 'Response complete'});
+      }
     }
   }, [
     model,
