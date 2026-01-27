@@ -74,6 +74,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     stopGeneration,
     config,
     currentModel,
+    models,
     currentSession,
     ideContext,
     inputHistory,
@@ -274,7 +275,10 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     }
   };
 
-  const modelName = currentModel?.nickname || currentModel?.name || 'Not Set';
+  const agentModel = config?.agentModelId ? models.find(m => m.id === config.agentModelId) : null;
+  const currentModelName = currentModel?.nickname || currentModel?.name || 'Not Set';
+  const showAgentModel = agentModel && agentModel.id !== currentModel?.id;
+  const agentModelName = agentModel?.nickname || agentModel?.name;
   const contextLimit = (currentModel?.contextSize || 200) * 1024;
   const totalTokens = (currentSession?.inputTokens || 0) + (currentSession?.outputTokens || 0);
   const contextPercent = contextLimit > 0 ? ((totalTokens / contextLimit) * 100).toFixed(1) : '0';
@@ -349,17 +353,25 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           />
 
           <div className='flex items-center justify-between px-3 pb-2 pt-1'>
-            <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none'>
+            <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none overflow-hidden'>
               <div
-                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default'
-                title='Current Model'
+                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default min-w-0 max-w-48 truncate'
+                title={showAgentModel
+                  ? `${currentModelName} / ${agentModelName}`
+                  : currentModelName}
               >
-                <span className='text-vscode-text font-medium'>{modelName}</span>
+                <span className='text-vscode-text font-medium truncate'>{currentModelName}</span>
+                {showAgentModel && (
+                  <>
+                    <span className='text-vscode-text-muted shrink-0'>/</span>
+                    <span className='text-vscode-text-muted truncate'>{agentModelName}</span>
+                  </>
+                )}
               </div>
 
-              <div className='w-px h-3 bg-vscode-border' />
+              <div className='w-px h-3 bg-vscode-border shrink-0' />
 
-              <div className='flex items-center gap-0.5'>
+              <div className='flex items-center gap-0.5 shrink-0'>
                 <StatusIcon
                   icon={Sparkles}
                   active={config?.specialistMode}
@@ -378,9 +390,9 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                 />
               </div>
 
-              <div className='w-px h-3 bg-vscode-border' />
+              <div className='w-px h-3 bg-vscode-border shrink-0' />
 
-              <div className='flex items-center gap-2' title='Token Usage'>
+              <div className='flex items-center gap-2 shrink-0' title='Token Usage'>
                 <span className={Number(contextPercent) > 80 ? 'text-vscode-warning' : ''}>
                   {contextPercent}%
                 </span>
