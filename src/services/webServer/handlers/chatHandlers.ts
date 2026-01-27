@@ -233,6 +233,15 @@ export async function handleChat(
             sendSseEvent(res, 'error', {error});
           }
         },
+        onSessionUpdate: updatedSession => {
+          if (!res.writableEnded) {
+            sendSseEvent(res, 'usage', {
+              inputTokens: updatedSession.inputTokens ?? 0,
+              outputTokens: updatedSession.outputTokens ?? 0,
+              cachedTokens: updatedSession.cachedTokens ?? 0,
+            });
+          }
+        },
       },
       controller.signal,
       toolFilter,

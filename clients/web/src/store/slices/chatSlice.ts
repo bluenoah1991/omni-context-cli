@@ -106,6 +106,12 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
         onSessionUpdated: session =>
           set(state => ({...updateSession(state, session, true), isCompacting: false})),
         onCompacting: () => set({isCompacting: true}),
+        onTokenUsage: usage =>
+          set(state => ({
+            currentSession: state.currentSession
+              ? {...state.currentSession, ...usage}
+              : state.currentSession,
+          })),
       });
     } catch (err) {
       if (err instanceof Error) set({error: err.message});

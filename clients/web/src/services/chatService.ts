@@ -11,6 +11,9 @@ interface ChatCallbacks {
   onDone: (session: Session) => void;
   onSessionUpdated?: (session: Session) => void;
   onCompacting?: () => void;
+  onTokenUsage?: (
+    usage: {inputTokens: number; outputTokens: number; cachedTokens: number;},
+  ) => void;
 }
 
 let cachedSlashCommands: SlashCommand[] | null = null;
@@ -130,6 +133,11 @@ function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {
       break;
     case 'session_updated':
       callbacks.onSessionUpdated?.(data as Session);
+      break;
+    case 'usage':
+      callbacks.onTokenUsage?.(
+        data as {inputTokens: number; outputTokens: number; cachedTokens: number;},
+      );
       break;
   }
 }

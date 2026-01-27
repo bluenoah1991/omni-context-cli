@@ -1,38 +1,41 @@
 import { AlertCircle, MessageSquare } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
 import { MessageItem } from './MessageItem';
 
+const SCROLL_THRESHOLD = 150;
+
 export default function MessageList() {
   const {currentSession, isLoading, isCompacting, error} = useChatStore();
   const messages = currentSession?.messages ?? [];
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTargetRef = useRef<HTMLDivElement>(null);
-  const prevLoadingRef = useRef(isLoading);
+  const isNearBottomRef = useRef(true);
   const prevSessionIdRef = useRef(currentSession?.id);
 
-  useEffect(() => {
-    const isLoadingJustEnded = prevLoadingRef.current && !isLoading;
-    prevLoadingRef.current = isLoading;
+  const checkIfNearBottom = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return true;
+    const {scrollTop, scrollHeight, clientHeight} = container;
+    return scrollHeight - scrollTop - clientHeight < SCROLL_THRESHOLD;
+  }, []);
 
-    if (isLoadingJustEnded) {
-      setTimeout(() => {
-        scrollTargetRef.current?.scrollIntoView({behavior: 'smooth'});
-      }, 300);
-    }
-  }, [isLoading]);
+  const handleScroll = useCallback(() => {
+    isNearBottomRef.current = checkIfNearBottom();
+  }, [checkIfNearBottom]);
 
   useEffect(() => {
     const sessionChanged = prevSessionIdRef.current !== currentSession?.id;
     prevSessionIdRef.current = currentSession?.id;
 
     if (sessionChanged) {
+      isNearBottomRef.current = true;
       scrollTargetRef.current?.scrollIntoView({behavior: 'instant'});
       return;
     }
 
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'user') {
+    if (isNearBottomRef.current) {
       scrollTargetRef.current?.scrollIntoView({behavior: 'smooth'});
     }
   }, [currentSession?.id, messages]);
@@ -51,11 +54,12 @@ export default function MessageList() {
     );
   }
 
-  const lastRole = messages[messages.length - 1]?.role;
-  const showLoading = isLoading && lastRole !== 'thinking' && lastRole !== 'tool_call';
-
   return (
-    <div className='flex-1 overflow-y-auto px-4 [scrollbar-gutter:stable_both-edges]'>
+    <div
+      ref={scrollContainerRef}
+      onScroll={handleScroll}
+      className='flex-1 overflow-y-auto px-4 [scrollbar-gutter:stable_both-edges]'
+    >
       <div className='max-w-4xl mx-auto py-6 space-y-4'>
         {messages.map((message, index) => (
           <MessageItem
@@ -64,7 +68,7 @@ export default function MessageList() {
             isLoading={isLoading && index === messages.length - 1}
           />
         ))}
-        {showLoading && <LoadingIndicator compacting={isCompacting} />}
+        {isLoading && <LoadingIndicator compacting={isCompacting} />}
         {error && (
           <div className='flex items-center gap-3 px-4 py-2.5 bg-vscode-error/10 border border-vscode-error/50 rounded-md text-vscode-text'>
             <AlertCircle size={14} className='shrink-0 text-vscode-error' />
