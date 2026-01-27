@@ -17,7 +17,7 @@ export const MessageItem = memo(
         return <UserBlock content={message.content} />;
 
       case 'assistant':
-        return <AssistantBlock content={message.content} />;
+        return <AssistantBlock content={message.content} isLoading={isLoading} />;
 
       case 'thinking':
         return <ThinkingBlock content={message.content} loading={isLoading} />;
