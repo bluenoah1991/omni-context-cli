@@ -44,7 +44,7 @@ export const AssistantBlock = memo(function AssistantBlock({content}: AssistantB
   }), [codeStyle]);
 
   return (
-    <div className='animate-fade-in flex justify-start'>
+    <div className='flex justify-start'>
       <div className='rounded-md py-2 text-vscode-text prose prose-sm prose-invert light:prose-neutral max-w-none markdown-content'>
         <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
           {content}
