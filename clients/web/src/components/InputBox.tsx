@@ -286,7 +286,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const hasContext = ideContext || images.length > 0;
 
   return (
-    <div className='border-t border-vscode-element bg-vscode-bg pb-6 pt-4'>
+    <div className='bg-vscode-bg pb-6 pt-4'>
       <div className='max-w-4xl mx-auto space-y-3'>
         {hasContext && (
           <div className='flex flex-wrap gap-2 animate-fade-in'>

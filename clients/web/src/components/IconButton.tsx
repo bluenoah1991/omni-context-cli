@@ -15,7 +15,7 @@ export const IconButton = memo(
         type='button'
         onClick={onClick}
         disabled={disabled}
-        className={`px-2.5 py-2.5 rounded-md transition-all duration-200 shrink-0 border border-transparent ${
+        className={`p-2.5 rounded-md transition-all duration-200 shrink-0 border border-transparent ${
           disabled
             ? 'text-vscode-text-muted cursor-not-allowed opacity-50'
             : 'text-vscode-text-muted hover:text-vscode-text hover:bg-vscode-element'

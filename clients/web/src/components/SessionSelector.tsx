@@ -29,7 +29,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
           type='button'
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`group w-full flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 border border-vscode-border bg-vscode-sidebar ${
+          className={`group w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 border border-vscode-border bg-vscode-sidebar ${
             disabled
               ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-vscode-element text-vscode-text hover:border-vscode-border-active'
@@ -83,7 +83,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
       <button
         onClick={() => newSession()}
         disabled={disabled}
-        className={`px-2.5 py-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-lg transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
+        className={`p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-lg transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         title='New chat'

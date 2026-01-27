@@ -45,22 +45,22 @@ export default function App() {
 
   return (
     <div className='flex flex-col h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
-      <header className='flex-none py-4 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
+      <header className='flex-none pt-6 pb-4 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
         <div className='flex items-center justify-between w-full'>
+          <div className='w-80'>
+            <SessionSelector disabled={isLoading} />
+          </div>
           <div className='flex items-center gap-4'>
             <span className='hidden sm:block text-vscode-text font-medium uppercase'>
               {config?.projectName}
             </span>
-            <div className='w-80'>
-              <SessionSelector disabled={isLoading} />
-            </div>
+            <IconButton
+              icon={SettingsIcon}
+              title='Settings'
+              onClick={() => setIsSettingsOpen(true)}
+              disabled={isLoading}
+            />
           </div>
-          <IconButton
-            icon={SettingsIcon}
-            title='Settings'
-            onClick={() => setIsSettingsOpen(true)}
-            disabled={isLoading}
-          />
         </div>
       </header>
 
@@ -68,7 +68,7 @@ export default function App() {
         <MessageList />
       </main>
 
-      <div className='flex-none bg-vscode-bg px-4'>
+      <div className='flex-none bg-vscode-bg px-4 border-t border-vscode-element'>
         <InputBox disabled={!currentModel} />
       </div>
 
