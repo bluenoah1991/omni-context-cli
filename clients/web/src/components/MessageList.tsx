@@ -1,4 +1,4 @@
-import { AlertCircle, MessageSquare } from 'lucide-react';
+import { AlertCircle, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
@@ -49,9 +49,7 @@ export default function MessageList() {
   if (messages.length === 0) {
     return (
       <div className='flex-1 flex flex-col items-center justify-center text-vscode-text-muted p-8'>
-        <div className='w-16 h-16 bg-vscode-element rounded-full flex items-center justify-center mb-6'>
-          <MessageSquare size={32} className='opacity-50' />
-        </div>
+        <Sparkles size={48} className='opacity-40 mb-6' />
         <h3 className='text-lg font-medium text-vscode-text mb-2'>OmniContext</h3>
         <p className='text-center max-w-sm text-sm opacity-80'>
           Ready to help with your coding tasks. Pick a model in settings to get started.
