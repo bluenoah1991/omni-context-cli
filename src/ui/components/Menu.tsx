@@ -663,7 +663,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   }
 
   if (view === 'pref-context-editing') {
-    const items: SelectItem[] = [{id: 'on', label: '✓ Trim old context to save tokens'}, {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Slim down the conversation history'}, {
       id: 'off',
       label: '✗ Keep full context',
     }];
