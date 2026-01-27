@@ -9,6 +9,7 @@ export default function MessageList() {
   const messages = currentSession?.messages ?? [];
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const prevLoadingRef = useRef(isLoading);
+  const prevSessionIdRef = useRef(currentSession?.id);
 
   useEffect(() => {
     const isLoadingJustEnded = prevLoadingRef.current && !isLoading;
@@ -22,11 +23,19 @@ export default function MessageList() {
   }, [isLoading]);
 
   useEffect(() => {
+    const sessionChanged = prevSessionIdRef.current !== currentSession?.id;
+    prevSessionIdRef.current = currentSession?.id;
+
+    if (sessionChanged) {
+      scrollTargetRef.current?.scrollIntoView({behavior: 'instant'});
+      return;
+    }
+
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.role === 'user') {
       scrollTargetRef.current?.scrollIntoView({behavior: 'smooth'});
     }
-  }, [messages]);
+  }, [currentSession?.id, messages]);
 
   if (messages.length === 0) {
     return (
