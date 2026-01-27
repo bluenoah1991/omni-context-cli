@@ -12,10 +12,9 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fetchSlashCommands } from '../services/chatService';
 import { useChatStore } from '../store/chatStore';
-import type { SlashCommand } from '../types/slash';
-
+import type { RewindPoint } from '../types/rewind';
+import RewindPicker from './RewindPicker';
 import SlashCommandPicker from './SlashCommandPicker';
 import { StatusIcon } from './StatusIcon';
 
@@ -62,16 +61,28 @@ function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: numb
 export default function InputBox({disabled = false}: InputBoxProps) {
   const [message, setMessage] = useState('');
   const [images, setImages] = useState<PastedImage[]>([]);
-  const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [pickerCancelled, setPickerCancelled] = useState(false);
+  const [rewindPoints, setRewindPoints] = useState<RewindPoint[] | null>(null);
+  const [rewindIndex, setRewindIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const {isLoading, sendMessage, stopGeneration, config, currentModel, currentSession, ideContext} =
-    useChatStore();
+  const {
+    isLoading,
+    sendMessage,
+    stopGeneration,
+    config,
+    currentModel,
+    currentSession,
+    ideContext,
+    slashCommands,
+    getSlashCommands,
+    getRewindPoints,
+    rewind,
+  } = useChatStore();
 
   useEffect(() => {
-    fetchSlashCommands().then(setSlashCommands);
-  }, []);
+    getSlashCommands();
+  }, [getSlashCommands]);
 
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -104,6 +115,8 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   useEffect(() => {
     setPickerCancelled(false);
     setSelectedIndex(0);
+    setRewindPoints(null);
+    setRewindIndex(0);
   }, [message]);
 
   const handleSelectCommand = useCallback((commandName: string) => {
@@ -138,9 +151,25 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     setImages(prev => prev.filter(image => image.id !== id));
   };
 
-  const handleSend = () => {
+  const showRewindPicker = rewindPoints !== null;
+
+  const handleRewind = useCallback(async (index: number) => {
+    await rewind(index);
+    setMessage('');
+    setRewindPoints(null);
+  }, [rewind]);
+
+  const handleSend = async () => {
     if (message.trim() && !isLoading && !disabled) {
       const text = message.trim();
+
+      if (text === '/rewind') {
+        const points = await getRewindPoints();
+        setRewindPoints(points);
+        setRewindIndex(0);
+        return;
+      }
+
       const imageData = images.map(img => ({base64: img.base64, mediaType: img.mediaType}));
       sendMessage(text, imageData.length > 0 ? imageData : undefined);
       setMessage('');
@@ -149,6 +178,34 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (rewindPoints !== null) {
+      if (rewindPoints.length > 0) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setRewindIndex(index => (index <= 0 ? rewindPoints.length - 1 : index - 1));
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setRewindIndex(index => (index >= rewindPoints.length - 1 ? 0 : index + 1));
+          return;
+        }
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (rewindPoints[rewindIndex]) {
+            handleRewind(rewindPoints[rewindIndex].index);
+          }
+          return;
+        }
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setRewindPoints(null);
+        return;
+      }
+      return;
+    }
+
     if (showPicker) {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -224,7 +281,14 @@ export default function InputBox({disabled = false}: InputBoxProps) {
               : 'border-vscode-border focus-within:border-vscode-accent focus-within:ring-1 focus-within:ring-vscode-accent/30'
           }`}
         >
-          {showPicker && (
+          {showRewindPicker && (
+            <RewindPicker
+              points={rewindPoints ?? []}
+              selectedIndex={rewindIndex}
+              onSelect={handleRewind}
+            />
+          )}
+          {showPicker && !showRewindPicker && (
             <SlashCommandPicker
               commands={filteredCommands}
               selectedIndex={selectedIndex}

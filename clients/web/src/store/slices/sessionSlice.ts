@@ -1,10 +1,12 @@
 import type { StateCreator } from 'zustand';
+import { fetchRewindPoints, rewindSession } from '../../services/chatService';
 import {
   fetchSession,
   fetchSessions,
   loadSession,
   newSession,
 } from '../../services/sessionService';
+import type { RewindPoint } from '../../types/rewind';
 import type { Session, SessionSummary } from '../../types/session';
 import type { UIMessage } from '../../types/uiMessage';
 import type { ChatState } from '../chatStore';
@@ -29,15 +31,21 @@ function preprocessMessages(messages: UIMessage[]): UIMessage[] {
 export interface SessionSlice {
   currentSession: Session | null;
   sessions: SessionSummary[];
+  getRewindPoints: () => Promise<RewindPoint[]>;
   getSession: () => Promise<void>;
   getSessions: () => Promise<void>;
   loadSession: (entry: SessionSummary) => Promise<void>;
   newSession: () => Promise<void>;
+  rewind: (index: number) => Promise<void>;
 }
 
 export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> = (set, get) => ({
   currentSession: null,
   sessions: [],
+
+  getRewindPoints: async () => {
+    return fetchRewindPoints();
+  },
 
   getSession: async () => {
     const {data, error} = await fetchSession();
@@ -68,5 +76,10 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
     const {data, error} = await newSession();
     if (error) set({error});
     else set({currentSession: data});
+  },
+
+  rewind: async (index: number) => {
+    const session = await rewindSession(index);
+    set({currentSession: {...session, messages: preprocessMessages(session.messages || [])}});
   },
 });

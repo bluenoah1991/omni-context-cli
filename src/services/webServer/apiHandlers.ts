@@ -3,7 +3,9 @@ import { getWebSession } from '../webSessionManager';
 import {
   handleChat,
   handleGetIDEContext,
+  handleGetRewindPoints,
   handleGetSlashCommands,
+  handleRewind,
   handleStopGeneration,
 } from './handlers/chatHandlers';
 import {
@@ -56,6 +58,10 @@ export async function handleAPI(
   }
   if (route === 'session/new' && method === 'POST') return handleNewSession(res, webSession);
   if (route === 'chat' && method === 'POST') return handleChat(req, res, webSession);
+  if (route === 'chat/rewind' && method === 'POST') return handleRewind(req, res, webSession);
+  if (route === 'chat/rewindPoints' && method === 'GET') {
+    return handleGetRewindPoints(res, webSession);
+  }
   if (route === 'chat/slashCommands' && method === 'GET') return handleGetSlashCommands(res);
   if (route === 'chat/stopGeneration' && method === 'POST') {
     return handleStopGeneration(res, webSession);

@@ -7,7 +7,13 @@ import { loadAppConfig } from '../../configManager';
 import { generateMemory, injectMemory } from '../../memoryManager';
 import { sessionMessagesToUI } from '../../messageConverter';
 import { injectProjectInstructions } from '../../projectInstructionsManager';
-import { addUserMessage, createSession, saveSession } from '../../sessionManager';
+import {
+  addUserMessage,
+  createSession,
+  getRewindPoints,
+  saveSession,
+  truncateSession,
+} from '../../sessionManager';
 import { getAllSlashCommands, parseSlashCommand } from '../../slashManager';
 import { WebSession } from '../../webSessionManager';
 import {
@@ -273,6 +279,46 @@ export function handleGetSlashCommands(res: http.ServerResponse): boolean {
     !EXCLUDED_SLASH_COMMANDS.includes(command.name)
   ).map(command => ({name: command.name, description: command.description, type: command.type}));
   sendJsonResponse(res, commands);
+  return true;
+}
+
+export function handleGetRewindPoints(res: http.ServerResponse, webSession: WebSession): boolean {
+  if (!webSession.chatSession) {
+    sendJsonResponse(res, []);
+    return true;
+  }
+  const points = getRewindPoints(webSession.chatSession);
+  sendJsonResponse(res, points);
+  return true;
+}
+
+export async function handleRewind(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  webSession: WebSession,
+): Promise<boolean> {
+  const {index} = await parseRequestBody(req) as {index: number;};
+
+  if (!webSession.chatSession) {
+    sendErrorResponse(res, 'No active session');
+    return true;
+  }
+
+  const truncated = truncateSession(webSession.chatSession, index);
+  webSession.chatSession = truncated;
+  saveSession(truncated);
+
+  sendJsonResponse(res, {
+    id: truncated.id,
+    title: truncated.title,
+    provider: truncated.provider,
+    messages: sessionMessagesToUI(truncated.messages, truncated.provider),
+    createdAt: truncated.createdAt,
+    updatedAt: truncated.updatedAt,
+    inputTokens: truncated.inputTokens ?? 0,
+    outputTokens: truncated.outputTokens ?? 0,
+    cachedTokens: truncated.cachedTokens ?? 0,
+  });
   return true;
 }
 

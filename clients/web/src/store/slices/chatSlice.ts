@@ -1,12 +1,19 @@
 import type { StateCreator } from 'zustand';
-import { sendChat, stopGeneration as apiStopGeneration } from '../../services/chatService';
+import {
+  fetchSlashCommands,
+  sendChat,
+  stopGeneration as apiStopGeneration,
+} from '../../services/chatService';
 import type { Session } from '../../types/session';
+import type { SlashCommand } from '../../types/slash';
 import type { UIMessage } from '../../types/uiMessage';
 import type { ChatState } from '../chatStore';
 
 export interface ChatSlice {
   isLoading: boolean;
   isCompacting: boolean;
+  slashCommands: SlashCommand[];
+  getSlashCommands: () => Promise<void>;
   sendMessage: (
     content: string,
     images?: Array<{base64: string; mediaType: string;}>,
@@ -54,6 +61,12 @@ function updateSession(state: ChatState, session: Session, overwrite = false): P
 export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set, get) => ({
   isLoading: false,
   isCompacting: false,
+  slashCommands: [],
+
+  getSlashCommands: async () => {
+    const commands = await fetchSlashCommands();
+    set({slashCommands: commands});
+  },
 
   sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
     const {isLoading, currentModel, currentSession} = get();

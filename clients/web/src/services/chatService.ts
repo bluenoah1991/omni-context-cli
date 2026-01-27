@@ -1,4 +1,5 @@
 import type { IDEContext } from '../types/ide';
+import type { RewindPoint } from '../types/rewind';
 import type { Session } from '../types/session';
 import type { SlashCommand } from '../types/slash';
 import type { UIMessage } from '../types/uiMessage';
@@ -76,6 +77,21 @@ export async function sendChat(
       }
     }
   }
+}
+
+export async function fetchRewindPoints(): Promise<RewindPoint[]> {
+  const res = await fetch(apiUrl('chat/rewindPoints'));
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function rewindSession(index: number): Promise<Session> {
+  const res = await fetch(apiUrl('chat/rewind'), {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({index}),
+  });
+  return res.json();
 }
 
 export async function stopGeneration(): Promise<void> {
