@@ -5,7 +5,7 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { MessageItem } from './MessageItem';
 
 export default function MessageList() {
-  const {currentSession, isLoading, error} = useChatStore();
+  const {currentSession, isLoading, isCompacting, error} = useChatStore();
   const messages = currentSession?.messages ?? [];
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const prevLoadingRef = useRef(isLoading);
@@ -55,7 +55,7 @@ export default function MessageList() {
             isLoading={isLoading && index === messages.length - 1}
           />
         ))}
-        {showLoading && <LoadingIndicator />}
+        {showLoading && <LoadingIndicator compacting={isCompacting} />}
         {error && (
           <div className='flex items-center gap-3 px-4 py-2.5 bg-vscode-error/10 border border-vscode-error/50 rounded-md text-vscode-text'>
             <AlertCircle size={14} className='shrink-0 text-vscode-error' />

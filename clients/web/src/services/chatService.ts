@@ -1,5 +1,6 @@
 import type { IDEContext } from '../types/ide';
 import type { Session } from '../types/session';
+import type { SlashCommand } from '../types/slash';
 import type { UIMessage } from '../types/uiMessage';
 import { apiUrl } from '../utils/webSession';
 
@@ -7,6 +8,30 @@ interface ChatCallbacks {
   onMessage: (message: UIMessage) => void;
   onError: (error: string) => void;
   onDone: (session: Session) => void;
+  onSessionUpdated?: (session: Session) => void;
+  onCompacting?: () => void;
+}
+
+let cachedSlashCommands: SlashCommand[] | null = null;
+
+export async function fetchIDEContext(): Promise<IDEContext | null> {
+  const res = await fetch(apiUrl('ide/context'));
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+export async function fetchSlashCommands(): Promise<SlashCommand[]> {
+  if (cachedSlashCommands) {
+    return cachedSlashCommands;
+  }
+
+  const response = await fetch(apiUrl('chat/slashCommands'));
+  if (!response.ok) {
+    return [];
+  }
+
+  cachedSlashCommands = await response.json();
+  return cachedSlashCommands || [];
 }
 
 export async function sendChat(
@@ -53,28 +78,28 @@ export async function sendChat(
   }
 }
 
+export async function stopGeneration(): Promise<void> {
+  await fetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
+}
+
 function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {
   switch (event) {
-    case 'message':
-      callbacks.onMessage(data as UIMessage);
+    case 'compacting':
+      callbacks.onCompacting?.();
+      break;
+    case 'done':
+      callbacks.onDone(data as Session);
       break;
     case 'error': {
       const error = (data as {error?: string;}).error;
       if (error) callbacks.onError(error);
       break;
     }
-    case 'done':
-      callbacks.onDone(data as Session);
+    case 'message':
+      callbacks.onMessage(data as UIMessage);
+      break;
+    case 'session_updated':
+      callbacks.onSessionUpdated?.(data as Session);
       break;
   }
-}
-
-export async function stopGeneration(): Promise<void> {
-  await fetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
-}
-
-export async function fetchIDEContext(): Promise<IDEContext | null> {
-  const res = await fetch(apiUrl('ide/context'));
-  if (res.status === 204) return null;
-  return res.json();
 }

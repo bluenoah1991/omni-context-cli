@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism } from 'react-syntax-highlighter';
 import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { useChatStore } from '../store/chatStore';
 
@@ -45,7 +46,9 @@ export const AssistantBlock = memo(function AssistantBlock({content}: AssistantB
   return (
     <div className='animate-fade-in flex justify-start'>
       <div className='rounded-md py-2 text-vscode-text prose prose-sm prose-invert light:prose-neutral max-w-none markdown-content'>
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
+          {content}
+        </ReactMarkdown>
       </div>
     </div>
   );

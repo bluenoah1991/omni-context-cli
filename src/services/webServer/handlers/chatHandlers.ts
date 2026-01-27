@@ -1,12 +1,14 @@
 import http from 'node:http';
 import { useIDEStore } from '../../../store/ideStore';
-import { wrapIDEContext } from '../../../utils/messagePreprocessor';
+import { wrapDualMessage, wrapIDEContext } from '../../../utils/messagePreprocessor';
 import { runConversation } from '../../chatOrchestrator';
+import { generateSummary, injectSummary, shouldAutoCompact } from '../../compactionManager';
 import { loadAppConfig } from '../../configManager';
-import { injectMemory } from '../../memoryManager';
+import { generateMemory, injectMemory } from '../../memoryManager';
 import { sessionMessagesToUI } from '../../messageConverter';
 import { injectProjectInstructions } from '../../projectInstructionsManager';
 import { addUserMessage, createSession, saveSession } from '../../sessionManager';
+import { getAllSlashCommands, parseSlashCommand } from '../../slashManager';
 import { WebSession } from '../../webSessionManager';
 import {
   parseRequestBody,
@@ -47,8 +49,6 @@ export async function handleChat(
 
   const model = webSession.currentModel;
   let session = webSession.chatSession;
-  session.provider = model.provider;
-  session.modelId = model.id;
 
   startSseStream(res);
 
@@ -60,28 +60,121 @@ export async function handleChat(
     webSession.abortController = null;
   });
 
-  const config = loadAppConfig();
-  const processedContent = wrapIDEContext(content, useIDEStore.getState().selection);
+  let text = content;
+  const slashCommand = parseSlashCommand(text);
 
-  const isNewSession = session.messages.length === 0;
-  if (isNewSession) {
-    if (config.memoryEnabled) {
-      session = injectMemory(session, model.provider);
+  if (slashCommand) {
+    if (slashCommand.type === 'functional' && slashCommand.execute) {
+      sendSseEvent(res, 'message', {role: 'user', content, timestamp: Date.now()});
+      const result = await slashCommand.execute(controller.signal);
+      if (result.message) {
+        sendSseEvent(res, 'message', {
+          role: 'assistant',
+          content: result.message,
+          timestamp: Date.now(),
+        });
+      }
+      sendSseEvent(res, 'done', {});
+      res.end();
+      return true;
     }
-    session = injectProjectInstructions(session, model.provider);
 
-    const uiMessages = sessionMessagesToUI(session.messages, model.provider);
-    uiMessages.forEach(message => sendSseEvent(res, 'message', message));
+    if (slashCommand.type === 'prompt' && slashCommand.prompt) {
+      text = wrapDualMessage(text, slashCommand.prompt);
+    }
   }
 
-  const media = images?.map(image => ({
+  const config = loadAppConfig();
+  const currentSelection = useIDEStore.getState().selection;
+  if (config.ideContext && currentSelection) {
+    text = wrapIDEContext(text, currentSelection);
+  }
+
+  const userMedia = images?.map(image => ({
     dataUrl: `data:${image.mediaType};base64,${image.base64}`,
     mimeType: image.mediaType,
   }));
-  session = addUserMessage(session, processedContent, model.provider, media);
-  webSession.chatSession = session;
 
-  sendSseEvent(res, 'message', {role: 'user', content, timestamp: Date.now()});
+  if (slashCommand?.name === 'compact' || shouldAutoCompact(model, session)) {
+    sendSseEvent(res, 'message', {role: 'user', content, timestamp: Date.now()});
+    sendSseEvent(res, 'compacting', {});
+    try {
+      const [summary, memory] = await Promise.all([
+        generateSummary(model, session.messages, controller.signal),
+        config.memoryEnabled
+          ? generateMemory(model, session, controller.signal)
+          : Promise.resolve(undefined),
+      ]);
+
+      if (controller.signal.aborted) {
+        sendSseEvent(res, 'error', {error: 'Compaction cancelled'});
+        res.end();
+        return true;
+      }
+
+      session = createSession(model);
+      if (config.memoryEnabled) {
+        session = injectMemory(session, model.provider, memory);
+      }
+      session = injectProjectInstructions(session, model.provider);
+      session = injectSummary(session, summary, model.provider);
+
+      if (slashCommand?.name !== 'compact') {
+        session = addUserMessage(session, text, model.provider, userMedia);
+      }
+      webSession.chatSession = session;
+      sendSseEvent(res, 'session_updated', {
+        id: session.id,
+        title: session.title,
+        provider: session.provider,
+        messages: sessionMessagesToUI(session.messages, session.provider),
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        inputTokens: session.inputTokens ?? 0,
+        outputTokens: session.outputTokens ?? 0,
+        cachedTokens: session.cachedTokens ?? 0,
+      });
+
+      if (slashCommand?.name === 'compact') {
+        sendSseEvent(res, 'done', {
+          id: session.id,
+          title: session.title,
+          provider: session.provider,
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
+          inputTokens: session.inputTokens ?? 0,
+          outputTokens: session.outputTokens ?? 0,
+          cachedTokens: session.cachedTokens ?? 0,
+        });
+        res.end();
+        return true;
+      }
+    } catch (error) {
+      sendSseEvent(res, 'error', {error: `Compaction failed: ${error}`});
+      res.end();
+      return true;
+    }
+  } else {
+    if (session.messages.length === 0) {
+      if (config.memoryEnabled) {
+        session = injectMemory(session, model.provider);
+      }
+      session = injectProjectInstructions(session, model.provider);
+    }
+    session = addUserMessage(session, text, model.provider, userMedia);
+    webSession.chatSession = session;
+    sendSseEvent(res, 'session_updated', {
+      id: session.id,
+      title: session.title,
+      provider: session.provider,
+      messages: sessionMessagesToUI(session.messages, session.provider),
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      inputTokens: session.inputTokens ?? 0,
+      outputTokens: session.outputTokens ?? 0,
+      cachedTokens: session.cachedTokens ?? 0,
+    });
+  }
 
   const specialistMode = config.specialistMode ?? true;
 
@@ -158,14 +251,6 @@ export async function handleChat(
   return true;
 }
 
-export function handleStopGeneration(res: http.ServerResponse, webSession: WebSession): boolean {
-  if (webSession.abortController) {
-    webSession.abortController.abort();
-  }
-  sendJsonResponse(res, {ok: true});
-  return true;
-}
-
 export function handleGetIDEContext(res: http.ServerResponse): boolean {
   const selection = useIDEStore.getState().selection;
   if (!selection) {
@@ -178,5 +263,23 @@ export function handleGetIDEContext(res: http.ServerResponse): boolean {
     lineStart: selection.lineStart,
     lineEnd: selection.lineEnd,
   });
+  return true;
+}
+
+const EXCLUDED_SLASH_COMMANDS = ['exit', 'model', 'session'];
+
+export function handleGetSlashCommands(res: http.ServerResponse): boolean {
+  const commands = getAllSlashCommands().filter(command =>
+    !EXCLUDED_SLASH_COMMANDS.includes(command.name)
+  ).map(command => ({name: command.name, description: command.description, type: command.type}));
+  sendJsonResponse(res, commands);
+  return true;
+}
+
+export function handleStopGeneration(res: http.ServerResponse, webSession: WebSession): boolean {
+  if (webSession.abortController) {
+    webSession.abortController.abort();
+  }
+  sendJsonResponse(res, {ok: true});
   return true;
 }

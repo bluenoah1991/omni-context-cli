@@ -11,9 +11,12 @@ import {
   Square,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { fetchSlashCommands } from '../services/chatService';
 import { useChatStore } from '../store/chatStore';
+import type { SlashCommand } from '../types/slash';
 
+import SlashCommandPicker from './SlashCommandPicker';
 import { StatusIcon } from './StatusIcon';
 
 interface PastedImage {
@@ -59,9 +62,16 @@ function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: numb
 export default function InputBox({disabled = false}: InputBoxProps) {
   const [message, setMessage] = useState('');
   const [images, setImages] = useState<PastedImage[]>([]);
+  const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [pickerCancelled, setPickerCancelled] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const {isLoading, sendMessage, stopGeneration, config, currentModel, currentSession, ideContext} =
     useChatStore();
+
+  useEffect(() => {
+    fetchSlashCommands().then(setSlashCommands);
+  }, []);
 
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -75,6 +85,31 @@ export default function InputBox({disabled = false}: InputBoxProps) {
       textareaRef.current.focus();
     }
   }, [isLoading, disabled]);
+
+  const filteredCommands = useMemo(() => {
+    if (!message || !message.startsWith('/') || message.includes('\n')) return [];
+    const query = message.slice(1).toLowerCase();
+    if (!query) return slashCommands;
+    return slashCommands.filter(command => command.name.toLowerCase().startsWith(query));
+  }, [message, slashCommands]);
+
+  const hasExactMatch = useMemo(() => {
+    if (!message || !message.startsWith('/')) return false;
+    const query = message.slice(1).toLowerCase();
+    return slashCommands.some(command => command.name.toLowerCase() === query);
+  }, [message, slashCommands]);
+
+  const showPicker = !pickerCancelled && !hasExactMatch && filteredCommands.length > 0;
+
+  useEffect(() => {
+    setPickerCancelled(false);
+    setSelectedIndex(0);
+  }, [message]);
+
+  const handleSelectCommand = useCallback((commandName: string) => {
+    setMessage(`/${commandName} `);
+    textareaRef.current?.focus();
+  }, []);
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
@@ -114,6 +149,30 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showPicker) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(index => (index <= 0 ? filteredCommands.length - 1 : index - 1));
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(index => (index >= filteredCommands.length - 1 ? 0 : index + 1));
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        if (filteredCommands[selectedIndex]) {
+          handleSelectCommand(filteredCommands[selectedIndex].name);
+        }
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setPickerCancelled(true);
+        return;
+      }
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       if (e.nativeEvent.isComposing) return;
       e.preventDefault();
@@ -159,12 +218,19 @@ export default function InputBox({disabled = false}: InputBoxProps) {
         )}
 
         <div
-          className={`relative bg-vscode-sidebar border transition-colors rounded-xl overflow-hidden ${
+          className={`relative bg-vscode-sidebar border transition-colors rounded-xl ${
             isLoading
               ? 'border-vscode-border'
               : 'border-vscode-border focus-within:border-vscode-accent focus-within:ring-1 focus-within:ring-vscode-accent/30'
           }`}
         >
+          {showPicker && (
+            <SlashCommandPicker
+              commands={filteredCommands}
+              selectedIndex={selectedIndex}
+              onSelect={handleSelectCommand}
+            />
+          )}
           <textarea
             ref={textareaRef}
             value={message}

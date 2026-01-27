@@ -6,6 +6,7 @@ import type { ChatState } from '../chatStore';
 
 export interface ChatSlice {
   isLoading: boolean;
+  isCompacting: boolean;
   sendMessage: (
     content: string,
     images?: Array<{base64: string; mediaType: string;}>,
@@ -40,10 +41,10 @@ function appendMessage(session: Session, message: UIMessage): Session {
   return {...session, messages: messageList};
 }
 
-function updateSession(state: ChatState, session: Session): Partial<ChatState> {
+function updateSession(state: ChatState, session: Session, overwrite = false): Partial<ChatState> {
   const exists = state.sessions.some(s => s.id === session.id);
   return {
-    currentSession: {...state.currentSession!, ...session},
+    currentSession: overwrite ? session : {...state.currentSession!, ...session},
     sessions: exists
       ? state.sessions.map(s => (s.id === session.id ? session : s))
       : [session, ...state.sessions],
@@ -52,10 +53,16 @@ function updateSession(state: ChatState, session: Session): Partial<ChatState> {
 
 export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set, get) => ({
   isLoading: false,
+  isCompacting: false,
 
   sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
     const {isLoading, currentModel, currentSession} = get();
     if (isLoading || !currentModel || !currentSession) return;
+
+    if (content.trim() === '/clear') {
+      get().newSession();
+      return;
+    }
 
     set({isLoading: true, error: null});
 
@@ -65,11 +72,14 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
           set(state => ({currentSession: appendMessage(state.currentSession!, message)})),
         onError: error => set({error}),
         onDone: session => set(state => updateSession(state, session)),
+        onSessionUpdated: session =>
+          set(state => ({...updateSession(state, session, true), isCompacting: false})),
+        onCompacting: () => set({isCompacting: true}),
       });
     } catch (err) {
       if (err instanceof Error) set({error: err.message});
     } finally {
-      set({isLoading: false});
+      set({isLoading: false, isCompacting: false});
     }
   },
 

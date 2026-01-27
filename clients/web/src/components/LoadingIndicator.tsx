@@ -29,12 +29,18 @@ function useLoadingText() {
   return text;
 }
 
-export function LoadingIndicator() {
+interface LoadingIndicatorProps {
+  compacting?: boolean;
+}
+
+export function LoadingIndicator({compacting}: LoadingIndicatorProps) {
   const text = useLoadingText();
   return (
     <div className='flex items-center gap-2 text-vscode-text-muted'>
       <Loader2 size={16} className='animate-spin' />
-      <span className='text-sm'>{text}...</span>
+      <span className='text-sm'>
+        {compacting ? 'Compacting conversation history...' : `${text}...`}
+      </span>
     </div>
   );
 }
