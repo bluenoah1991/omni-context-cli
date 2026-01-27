@@ -13,7 +13,6 @@ export default function MessageList() {
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const prevSessionIdRef = useRef(currentSession?.id);
-
   const checkIfNearBottom = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return true;
@@ -24,6 +23,13 @@ export default function MessageList() {
   const handleScroll = useCallback(() => {
     isNearBottomRef.current = checkIfNearBottom();
   }, [checkIfNearBottom]);
+
+  useEffect(() => {
+    if (isLoading) {
+      isNearBottomRef.current = true;
+      scrollTargetRef.current?.scrollIntoView({behavior: 'instant'});
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     const sessionChanged = prevSessionIdRef.current !== currentSession?.id;
