@@ -1,4 +1,4 @@
-import { Maximize2 } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import mermaid from 'mermaid';
 import panzoom, { PanZoom } from 'panzoom';
 import { memo, useEffect, useRef, useState } from 'react';
@@ -109,7 +109,7 @@ export const MermaidBlock = memo(function MermaidBlock({code, isLoading}: Mermai
           className='flex items-center justify-center px-2 py-1 bg-vscode-bg border border-vscode-border rounded text-vscode-text cursor-pointer transition-colors hover:bg-vscode-border'
           title='Reset'
         >
-          <Maximize2 size={16} />
+          <RotateCcw size={14} />
         </button>
       </div>
       <div
