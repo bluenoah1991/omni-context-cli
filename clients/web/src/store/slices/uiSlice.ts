@@ -6,9 +6,11 @@ import type { ChatState } from '../chatStore';
 export interface UISlice {
   error: string | null;
   theme: 'light' | 'dark';
+  thinkingExpanded: boolean;
   ideContext: IDEContext | null;
   pollInterval: ReturnType<typeof setInterval> | null;
   setTheme: (theme: 'light' | 'dark') => void;
+  setThinkingExpanded: (expanded: boolean) => void;
   startPolling: () => void;
   stopPolling: () => void;
 }
@@ -16,10 +18,16 @@ export interface UISlice {
 export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get) => ({
   error: null,
   theme: 'dark',
+  thinkingExpanded: localStorage.getItem('thinkingExpanded') !== 'false',
   ideContext: null,
   pollInterval: null,
 
   setTheme: theme => set({theme}),
+
+  setThinkingExpanded: expanded => {
+    localStorage.setItem('thinkingExpanded', String(expanded));
+    set({thinkingExpanded: expanded});
+  },
 
   startPolling: () => {
     const {pollInterval} = get();

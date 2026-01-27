@@ -12,7 +12,15 @@ interface SettingsProps {
 type Tab = 'models' | 'preferences' | 'appearance';
 
 export default function Settings({onClose}: SettingsProps) {
-  const {models, config, currentModel, setCurrentModel, setConfig} = useChatStore();
+  const {
+    models,
+    config,
+    currentModel,
+    setCurrentModel,
+    setConfig,
+    thinkingExpanded,
+    setThinkingExpanded,
+  } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('models');
   const [currentModelId, setCurrentModelId] = useState(currentModel?.id || '');
   const [defaultModelId, setDefaultModelId] = useState(config?.defaultModelId || '');
@@ -183,13 +191,22 @@ export default function Settings({onClose}: SettingsProps) {
           )}
 
           {activeTab === 'appearance' && (
-            <SegmentedControl
-              label='Color Theme'
-              description='Select interface appearance'
-              options={['dark', 'light', 'auto'] as const}
-              value={webTheme}
-              onChange={setWebTheme}
-            />
+            <>
+              <SegmentedControl
+                label='Color Theme'
+                description='Select interface appearance'
+                options={['dark', 'light', 'auto'] as const}
+                value={webTheme}
+                onChange={setWebTheme}
+              />
+
+              <ToggleOption
+                label='Expand Thinking by Default'
+                description='Show thinking process content expanded'
+                enabled={thinkingExpanded}
+                onChange={setThinkingExpanded}
+              />
+            </>
           )}
         </div>
 

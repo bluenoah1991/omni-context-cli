@@ -7,6 +7,7 @@ interface CollapsibleBlockProps {
   content?: string;
   loading?: boolean;
   expandableWhileLoading?: boolean;
+  defaultExpanded?: boolean;
   variant: 'purple' | 'blue' | 'red';
 }
 
@@ -33,10 +34,17 @@ const variantStyles = {
 
 export const CollapsibleBlock = memo(
   function CollapsibleBlock(
-    {icon, title, content, loading = false, expandableWhileLoading = false, variant}:
-      CollapsibleBlockProps,
+    {
+      icon,
+      title,
+      content,
+      loading = false,
+      expandableWhileLoading = false,
+      defaultExpanded = false,
+      variant,
+    }: CollapsibleBlockProps,
   ) {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
     const hasContent = content !== undefined && content !== '';
     const canExpand = hasContent && (!loading || expandableWhileLoading);
     const styles = variantStyles[variant];

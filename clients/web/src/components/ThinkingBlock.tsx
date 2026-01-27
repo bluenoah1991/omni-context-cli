@@ -1,5 +1,6 @@
 import { Brain } from 'lucide-react';
 import { memo } from 'react';
+import { useChatStore } from '../store/chatStore';
 import { CollapsibleBlock } from './CollapsibleBlock';
 
 interface ThinkingBlockProps {
@@ -9,6 +10,8 @@ interface ThinkingBlockProps {
 
 export const ThinkingBlock = memo(
   function ThinkingBlock({content, loading = false}: ThinkingBlockProps) {
+    const thinkingExpanded = useChatStore(state => state.thinkingExpanded);
+
     return (
       <CollapsibleBlock
         icon={<Brain size={14} />}
@@ -16,6 +19,7 @@ export const ThinkingBlock = memo(
         content={content}
         loading={loading}
         expandableWhileLoading
+        defaultExpanded={thinkingExpanded}
         variant='purple'
       />
     );
