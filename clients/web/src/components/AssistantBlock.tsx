@@ -1,10 +1,15 @@
+import 'katex/dist/katex.min.css';
 import { memo, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism } from 'react-syntax-highlighter';
 import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import rehypeKatex from 'rehype-katex';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import { useChatStore } from '../store/chatStore';
+import { LatexBlock } from './LatexBlock';
+import { MermaidBlock } from './MermaidBlock';
 
 interface AssistantBlockProps {
   content: string;
@@ -22,6 +27,15 @@ export const AssistantBlock = memo(function AssistantBlock({content}: AssistantB
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
       const isInline = !match;
+      const code = String(children).replace(/\n$/, '');
+
+      if (language === 'mermaid') {
+        return <MermaidBlock code={code} />;
+      }
+
+      if (language === 'latex' || language === 'tex' || language === 'math') {
+        return <LatexBlock code={code} />;
+      }
 
       return !isInline && language
         ? (
@@ -35,7 +49,7 @@ export const AssistantBlock = memo(function AssistantBlock({content}: AssistantB
               PreTag='div'
               customStyle={{margin: 0, padding: '1rem', background: 'var(--color-vscode-bg)'}}
             >
-              {String(children).replace(/\n$/, '')}
+              {code}
             </Prism>
           </div>
         )
@@ -44,9 +58,13 @@ export const AssistantBlock = memo(function AssistantBlock({content}: AssistantB
   }), [codeStyle]);
 
   return (
-    <div className='flex justify-start'>
+    <div className='w-full'>
       <div className='rounded-md py-2 text-vscode-text prose prose-sm prose-invert light:prose-neutral max-w-none markdown-content'>
-        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+          components={components}
+        >
           {content}
         </ReactMarkdown>
       </div>
