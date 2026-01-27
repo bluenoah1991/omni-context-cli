@@ -56,7 +56,7 @@ export default function MessageList() {
 
   return (
     <div className='flex-1 overflow-y-auto px-4 [scrollbar-gutter:stable_both-edges]'>
-      <div className='max-w-4xl mx-auto py-6 space-y-6'>
+      <div className='max-w-4xl mx-auto py-6 space-y-4'>
         {messages.map((message, index) => (
           <MessageItem
             key={`${message.timestamp}-${index}`}
