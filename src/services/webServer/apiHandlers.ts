@@ -1,8 +1,10 @@
 import http from 'node:http';
 import { getWebSession } from '../webSessionManager';
 import {
+  handleAddInputHistory,
   handleChat,
   handleGetIDEContext,
+  handleGetInputHistory,
   handleGetRewindPoints,
   handleGetSlashCommands,
   handleRewind,
@@ -58,6 +60,8 @@ export async function handleAPI(
   }
   if (route === 'session/new' && method === 'POST') return handleNewSession(res, webSession);
   if (route === 'chat' && method === 'POST') return handleChat(req, res, webSession);
+  if (route === 'chat/inputHistory' && method === 'GET') return handleGetInputHistory(res);
+  if (route === 'chat/inputHistory' && method === 'POST') return handleAddInputHistory(req, res);
   if (route === 'chat/rewind' && method === 'POST') return handleRewind(req, res, webSession);
   if (route === 'chat/rewindPoints' && method === 'GET') {
     return handleGetRewindPoints(res, webSession);

@@ -21,6 +21,20 @@ export async function fetchIDEContext(): Promise<IDEContext | null> {
   return res.json();
 }
 
+export async function fetchInputHistory(): Promise<string[]> {
+  const res = await fetch(apiUrl('chat/inputHistory'));
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function addInputHistory(input: string): Promise<void> {
+  await fetch(apiUrl('chat/inputHistory'), {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({input}),
+  });
+}
+
 export async function fetchSlashCommands(): Promise<SlashCommand[]> {
   if (cachedSlashCommands) {
     return cachedSlashCommands;

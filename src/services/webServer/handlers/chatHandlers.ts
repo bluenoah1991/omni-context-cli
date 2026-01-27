@@ -4,6 +4,7 @@ import { wrapDualMessage, wrapIDEContext } from '../../../utils/messagePreproces
 import { runConversation } from '../../chatOrchestrator';
 import { generateSummary, injectSummary, shouldAutoCompact } from '../../compactionManager';
 import { loadAppConfig } from '../../configManager';
+import { addToInputHistory, getInputHistory } from '../../inputHistoryManager';
 import { generateMemory, injectMemory } from '../../memoryManager';
 import { sessionMessagesToUI } from '../../messageConverter';
 import { injectProjectInstructions } from '../../projectInstructionsManager';
@@ -269,6 +270,21 @@ export function handleGetIDEContext(res: http.ServerResponse): boolean {
     lineStart: selection.lineStart,
     lineEnd: selection.lineEnd,
   });
+  return true;
+}
+
+export function handleGetInputHistory(res: http.ServerResponse): boolean {
+  sendJsonResponse(res, getInputHistory());
+  return true;
+}
+
+export async function handleAddInputHistory(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): Promise<boolean> {
+  const {input} = await parseRequestBody(req) as {input: string;};
+  addToInputHistory(input);
+  sendJsonResponse(res, {ok: true});
   return true;
 }
 

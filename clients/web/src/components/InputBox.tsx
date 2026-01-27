@@ -65,6 +65,8 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const [pickerCancelled, setPickerCancelled] = useState(false);
   const [rewindPoints, setRewindPoints] = useState<RewindPoint[] | null>(null);
   const [rewindIndex, setRewindIndex] = useState(0);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [savedInput, setSavedInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const {
     isLoading,
@@ -74,15 +76,18 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     currentModel,
     currentSession,
     ideContext,
+    inputHistory,
     slashCommands,
+    getInputHistory,
     getSlashCommands,
     getRewindPoints,
     rewind,
   } = useChatStore();
 
   useEffect(() => {
+    getInputHistory();
     getSlashCommands();
-  }, [getSlashCommands]);
+  }, [getInputHistory, getSlashCommands]);
 
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -174,6 +179,8 @@ export default function InputBox({disabled = false}: InputBoxProps) {
       sendMessage(text, imageData.length > 0 ? imageData : undefined);
       setMessage('');
       setImages([]);
+      setHistoryIndex(-1);
+      setSavedInput('');
     }
   };
 
@@ -230,6 +237,36 @@ export default function InputBox({disabled = false}: InputBoxProps) {
         return;
       }
     }
+
+    if (e.key === 'ArrowUp' && inputHistory.length > 0) {
+      const textarea = textareaRef.current;
+      const isFirstLine = !textarea || textarea.selectionStart === 0
+        || !message.substring(0, textarea.selectionStart).includes('\n');
+      if (isFirstLine) {
+        e.preventDefault();
+        const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
+        if (newIndex !== historyIndex) {
+          if (historyIndex === -1) setSavedInput(message);
+          setHistoryIndex(newIndex);
+          setMessage(inputHistory[inputHistory.length - 1 - newIndex]);
+        }
+        return;
+      }
+    }
+
+    if (e.key === 'ArrowDown' && historyIndex >= 0) {
+      const textarea = textareaRef.current;
+      const isLastLine = !textarea || textarea.selectionStart === message.length
+        || !message.substring(textarea.selectionStart).includes('\n');
+      if (isLastLine) {
+        e.preventDefault();
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setMessage(newIndex === -1 ? savedInput : inputHistory[inputHistory.length - 1 - newIndex]);
+        return;
+      }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       if (e.nativeEvent.isComposing) return;
       e.preventDefault();

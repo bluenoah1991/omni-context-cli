@@ -1,5 +1,7 @@
 import type { StateCreator } from 'zustand';
 import {
+  addInputHistory,
+  fetchInputHistory,
   fetchSlashCommands,
   sendChat,
   stopGeneration as apiStopGeneration,
@@ -12,7 +14,9 @@ import type { ChatState } from '../chatStore';
 export interface ChatSlice {
   isLoading: boolean;
   isCompacting: boolean;
+  inputHistory: string[];
   slashCommands: SlashCommand[];
+  getInputHistory: () => Promise<void>;
   getSlashCommands: () => Promise<void>;
   sendMessage: (
     content: string,
@@ -61,7 +65,13 @@ function updateSession(state: ChatState, session: Session, overwrite = false): P
 export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set, get) => ({
   isLoading: false,
   isCompacting: false,
+  inputHistory: [],
   slashCommands: [],
+
+  getInputHistory: async () => {
+    const history = await fetchInputHistory();
+    set({inputHistory: history});
+  },
 
   getSlashCommands: async () => {
     const commands = await fetchSlashCommands();
@@ -69,12 +79,20 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
   },
 
   sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
-    const {isLoading, currentModel, currentSession} = get();
+    const {isLoading, currentModel, currentSession, inputHistory} = get();
     if (isLoading || !currentModel || !currentSession) return;
 
-    if (content.trim() === '/clear') {
+    const trimmed = content.trim();
+    if (trimmed === '/clear') {
       get().newSession();
       return;
+    }
+
+    if (
+      trimmed && (inputHistory.length === 0 || inputHistory[inputHistory.length - 1] !== trimmed)
+    ) {
+      set({inputHistory: [...inputHistory, trimmed]});
+      addInputHistory(trimmed);
     }
 
     set({isLoading: true, error: null});
