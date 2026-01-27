@@ -47,11 +47,35 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('-w, --web', 'Open web UI in browser (requires --serve)').option(
   '-p, --port <port>',
   'Port for server mode (default: 5281)',
+).option('--parent-pid <pid>', 'Exit when parent process dies (requires --serve)').option(
+  '--install-vscode-extension',
+  'Install VS Code extension',
 ).parse();
 
 const opts = program.opts();
 
 initializeProviders();
+
+if (opts.installVscodeExtension) {
+  const {execSync} = await import('node:child_process');
+  const {existsSync} = await import('node:fs');
+  const {dirname, join} = await import('node:path');
+  const {fileURLToPath} = await import('node:url');
+  const distDir = dirname(fileURLToPath(import.meta.url));
+  const vsixPath = join(distDir, 'clients', 'extension.vsix');
+  if (!existsSync(vsixPath)) {
+    console.error('VS Code extension not found.');
+    process.exit(1);
+  }
+  try {
+    execSync(`code --install-extension "${vsixPath}"`, {stdio: 'inherit'});
+    console.log('VS Code extension installed successfully.');
+  } catch {
+    console.error('Failed to install VS Code extension.');
+    process.exit(1);
+  }
+  process.exit(0);
+}
 
 if (opts.listProviders) {
   const providers = getAllModelProviders();
@@ -138,6 +162,18 @@ if (opts.serve) {
       ? 'open'
       : 'xdg-open';
     exec(`${cmd} http://localhost:${port}`);
+  }
+
+  if (opts.parentPid) {
+    const parentPid = parseInt(opts.parentPid, 10);
+    const checkParent = () => {
+      try {
+        process.kill(parentPid, 0);
+      } catch {
+        process.exit(0);
+      }
+    };
+    setInterval(checkParent, 2000);
   }
 
   process.on('SIGINT', () => process.exit(0));

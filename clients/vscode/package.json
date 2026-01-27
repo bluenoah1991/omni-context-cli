@@ -1,0 +1,54 @@
+{
+  "name": "omni-context-vscode-extension",
+  "displayName": "OmniContext",
+  "description": "OmniContext is a small, helpful, zero-telemetry coding assistant.",
+  "version": "0.0.1",
+  "publisher": "bluenoah1991",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bluenoah1991/omni-context-cli-landing"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "omni-context",
+          "title": "OmniContext",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "omni-context": [
+        {
+          "type": "webview",
+          "id": "omni-context.webview",
+          "name": "OmniContext"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
+    "package": "vsce package",
+    "install:local": "npm run build && vsce package -o extension.vsix && code --install-extension extension.vsix",
+    "dist": "npm run build && vsce package -o ../../dist/clients/extension.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.0"
+  }
+}

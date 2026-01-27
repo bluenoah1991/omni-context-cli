@@ -13,7 +13,7 @@ export function getLocalOmxDir(): string {
 }
 
 export function getProjectDir(): string {
-  const encoded = Buffer.from(process.cwd()).toString('base64url');
+  const encoded = Buffer.from(process.cwd().toLowerCase()).toString('base64url');
   return path.join(OMX_DIR, 'projects', encoded);
 }
 
