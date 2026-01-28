@@ -8,7 +8,8 @@ import { serveStatic } from './staticServer.js';
 let server: http.Server | null = null;
 
 async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-  const pathname = new URL(req.url || '/', `http://${req.headers.host}`).pathname;
+  const url = new URL(req.url || '/', `http://${req.headers.host}`);
+  const pathname = url.pathname;
   const method = req.method || 'GET';
 
   if (pathname.startsWith('/api/')) {
@@ -21,7 +22,8 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
 
   if (pathname === '/') {
     const webSession = createWebSession();
-    sendRedirectResponse(res, `/webSession/${webSession.id}`);
+    const qs = url.search;
+    sendRedirectResponse(res, `/webSession/${webSession.id}${qs}`);
     return;
   }
 

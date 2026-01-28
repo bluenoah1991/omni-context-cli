@@ -7,6 +7,8 @@ import SessionSelector from './components/SessionSelector';
 import Settings from './components/Settings';
 import { useChatStore } from './store/chatStore';
 
+const isEmbed = new URLSearchParams(window.location.search).has('embed');
+
 export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
@@ -45,7 +47,11 @@ export default function App() {
 
   return (
     <div className='flex flex-col h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
-      <header className='flex-none pt-6 pb-4 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
+      <header
+        className={`flex-none ${
+          isEmbed ? 'pt-3 pb-2' : 'pt-6 pb-4'
+        } bg-vscode-bg z-10 px-4 border-b border-vscode-element`}
+      >
         <div className='flex items-center justify-between w-full'>
           <div className='w-80'>
             <SessionSelector disabled={isLoading} />
