@@ -47,10 +47,10 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('-w, --web', 'Open web UI in browser (requires --serve)').option(
   '-p, --port <port>',
   'Port for server mode (default: 5281)',
-).option('--parent-pid <pid>', 'Exit when parent process dies (requires --serve)').option(
-  '--install-vscode-extension',
-  'Install VS Code extension',
-).parse();
+).option('-H, --host <host>', 'Host for server mode (default: localhost)').option(
+  '--parent-pid <pid>',
+  'Exit when parent process dies (requires --serve)',
+).option('--install-vscode-extension', 'Install VS Code extension').parse();
 
 const opts = program.opts();
 
@@ -146,13 +146,14 @@ if (opts.costAnalysis) {
 
 if (opts.serve) {
   const port = opts.port ? parseInt(opts.port, 10) : 5281;
+  const host = opts.host || 'localhost';
   try {
-    await startServer(port);
+    await startServer(port, host);
   } catch (err) {
-    console.error(`Failed to start server on port ${port}`);
+    console.error(`Failed to start server on ${host}:${port}`);
     process.exit(1);
   }
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at http://${host}:${port}`);
 
   if (opts.web) {
     const {exec} = await import('node:child_process');
@@ -161,7 +162,7 @@ if (opts.serve) {
       : process.platform === 'darwin'
       ? 'open'
       : 'xdg-open';
-    exec(`${cmd} http://localhost:${port}`);
+    exec(`${cmd} http://${host}:${port}`);
   }
 
   if (opts.parentPid) {

@@ -45,10 +45,10 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   }
 }
 
-export async function startServer(port = 5281): Promise<void> {
+export async function startServer(port = 5281, host = 'localhost'): Promise<void> {
   server = http.createServer(handleRequest);
 
-  server.listen(port);
+  server.listen(port, host);
   await Promise.race([
     once(server, 'listening'),
     once(server, 'error').then(([err]) => {
