@@ -9,6 +9,7 @@ import {
 import type { Session } from '../../types/session';
 import type { SlashCommand } from '../../types/slash';
 import type { UIMessage } from '../../types/uiMessage';
+import { preprocessMessages } from '../../utils/messagePreprocessor';
 import type { ChatState } from '../chatStore';
 
 export interface ChatSlice {
@@ -54,11 +55,14 @@ function appendMessage(session: Session, message: UIMessage): Session {
 
 function updateSession(state: ChatState, session: Session, overwrite = false): Partial<ChatState> {
   const exists = state.sessions.some(s => s.id === session.id);
+  const processed = session.messages
+    ? {...session, messages: preprocessMessages(session.messages)}
+    : session;
   return {
-    currentSession: overwrite ? session : {...state.currentSession!, ...session},
+    currentSession: overwrite ? processed : {...state.currentSession!, ...processed},
     sessions: exists
-      ? state.sessions.map(s => (s.id === session.id ? session : s))
-      : [session, ...state.sessions],
+      ? state.sessions.map(s => (s.id === session.id ? processed : s))
+      : [processed, ...state.sessions],
   };
 }
 

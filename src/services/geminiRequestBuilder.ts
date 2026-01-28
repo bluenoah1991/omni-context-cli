@@ -30,7 +30,7 @@ export async function buildGeminiRequest(
         return {...part, functionCall: {...part.functionCall}};
       }
       if (part.functionResponse) {
-        const {displayText, ...rest} = part.functionResponse.response as any;
+        const {displayText, diffs, ...rest} = part.functionResponse.response as any;
         return {...part, functionResponse: {...part.functionResponse, response: rest}};
       }
       return {...part};

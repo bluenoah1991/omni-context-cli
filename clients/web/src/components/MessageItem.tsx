@@ -24,7 +24,11 @@ export const MessageItem = memo(
 
       case 'tool_call':
         return (
-          <ToolCallBlock toolName={message.toolName || 'Tool'} toolResult={message.toolResult} />
+          <ToolCallBlock
+            toolName={message.toolName || 'Tool'}
+            toolCallId={message.toolCallId}
+            toolResult={message.toolResult}
+          />
         );
 
       default:

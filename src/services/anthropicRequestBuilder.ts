@@ -42,7 +42,7 @@ export async function buildAnthropicRequest(
             if (block.type === 'tool_result') {
               if (typeof block.content === 'string') {
                 try {
-                  const {displayText, ...rest} = JSON.parse(block.content);
+                  const {displayText, diffs, ...rest} = JSON.parse(block.content);
                   return {...block, content: JSON.stringify(rest)};
                 } catch {
                   return {...block};
@@ -52,7 +52,7 @@ export async function buildAnthropicRequest(
                 const content = block.content.map(part => {
                   if (part.type === 'text') {
                     try {
-                      const {displayText, ...rest} = JSON.parse(part.text);
+                      const {displayText, diffs, ...rest} = JSON.parse(part.text);
                       return {...part, text: JSON.stringify(rest)};
                     } catch {
                       return part;

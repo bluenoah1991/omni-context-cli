@@ -46,14 +46,14 @@ export async function buildOpenAIRequest(
         if (message.role === 'tool') {
           if (typeof content === 'string') {
             try {
-              const {displayText, ...rest} = JSON.parse(content);
+              const {displayText, diffs, ...rest} = JSON.parse(content);
               content = JSON.stringify(rest);
             } catch {}
           } else if (Array.isArray(content)) {
             content = content.map(part => {
               if (part.type === 'text') {
                 try {
-                  const {displayText, ...rest} = JSON.parse(part.text);
+                  const {displayText, diffs, ...rest} = JSON.parse(part.text);
                   return {...part, text: JSON.stringify(rest)};
                 } catch {
                   return part;

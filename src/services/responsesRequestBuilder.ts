@@ -49,7 +49,7 @@ export async function buildResponsesRequest(
           const funcOutput = item as ResponsesFunctionCallOutput;
           if (typeof funcOutput.output === 'string') {
             try {
-              const {displayText, ...rest} = JSON.parse(funcOutput.output);
+              const {displayText, diffs, ...rest} = JSON.parse(funcOutput.output);
               input.push({...funcOutput, output: JSON.stringify(rest)});
             } catch {
               input.push(item);
@@ -58,7 +58,7 @@ export async function buildResponsesRequest(
             const output = funcOutput.output.map(part => {
               if (part.type === 'input_text') {
                 try {
-                  const {displayText, ...rest} = JSON.parse(part.text);
+                  const {displayText, diffs, ...rest} = JSON.parse(part.text);
                   return {...part, text: JSON.stringify(rest)};
                 } catch {
                   return part;

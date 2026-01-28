@@ -1,3 +1,4 @@
+import { createTwoFilesPatch } from 'diff';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { normalizePath } from '../../utils/wsl';
@@ -104,7 +105,20 @@ export function registerEditTool(): void {
       const newContent = replace(content, oldString, newString, replaceAll);
       await fs.writeFile(absolutePath, newContent, 'utf-8');
 
-      return {result: `Edited ${absolutePath}`, displayText: 'File edited'};
+      const patch = createTwoFilesPatch(
+        absolutePath,
+        absolutePath,
+        content,
+        newContent,
+        'before',
+        'after',
+      );
+
+      return {
+        result: `Edited ${absolutePath}`,
+        displayText: 'File edited',
+        diffs: [{filePath: absolutePath, patch}],
+      };
     },
   );
 }

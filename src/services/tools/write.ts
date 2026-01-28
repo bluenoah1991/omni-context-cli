@@ -1,3 +1,4 @@
+import { createTwoFilesPatch } from 'diff';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { normalizePath } from '../../utils/wsl';
@@ -62,13 +63,28 @@ export function registerWriteTool(): void {
       const dir = path.dirname(absolutePath);
       await fs.mkdir(dir, {recursive: true});
 
+      let oldContent = '';
+      try {
+        oldContent = await fs.readFile(absolutePath, 'utf-8');
+      } catch {}
+
       await fs.writeFile(absolutePath, content, 'utf-8');
+
+      const patch = createTwoFilesPatch(
+        absolutePath,
+        absolutePath,
+        oldContent,
+        content,
+        'before',
+        'after',
+      );
 
       const lines = content.split('\n').length;
       const action = createOnly ? 'Created' : 'Wrote';
       return {
         result: `${action} ${lines} lines to ${absolutePath}`,
         displayText: `${action} ${lines} lines`,
+        diffs: [{filePath: absolutePath, patch}],
       };
     },
   );

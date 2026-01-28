@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
-import { ToolHandlerResult } from '../types/tool';
+import { FileDiff, ToolHandlerResult } from '../types/tool';
 import { extractTextContent } from '../utils/messageUtils';
 import { injectAgentInstructions } from './agentInstructionsManager';
 import { runConversation } from './chatOrchestrator';
@@ -36,12 +36,21 @@ export async function executeAgent(
   );
 
   let capturedError: string | null = null;
+  const collectedDiffs: FileDiff[] = [];
 
   const result = await runConversation(
     sessionWithMessage,
     {
       onError: error => {
         capturedError = error;
+      },
+      onToolResult: toolResult => {
+        try {
+          const parsed = JSON.parse(toolResult.content);
+          if (parsed.success && parsed.diffs) {
+            collectedDiffs.push(...parsed.diffs);
+          }
+        } catch {}
       },
     },
     signal,
@@ -76,5 +85,6 @@ export async function executeAgent(
     displayText: `Agent ${agent.name} done: ${displayText.slice(0, 200)}${
       displayText.length > 200 ? '...' : ''
     }`,
+    ...(collectedDiffs.length > 0 && {diffs: collectedDiffs}),
   };
 }

@@ -6,10 +6,16 @@ export interface ToolDefinition {
   builtin?: boolean;
 }
 
+export interface FileDiff {
+  filePath: string;
+  patch: string;
+}
+
 export interface ToolHandlerResult {
   result: any;
   displayText: string;
   dataUrl?: string;
+  diffs?: FileDiff[];
 }
 
 export type ToolHandler = (args: any, signal?: AbortSignal) => Promise<ToolHandlerResult>;
@@ -20,6 +26,7 @@ export interface ToolExecutionResult {
   error?: string;
   displayText?: string;
   dataUrl?: string;
+  diffs?: FileDiff[];
 }
 
 export interface PendingToolCall {

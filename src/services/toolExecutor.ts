@@ -82,6 +82,7 @@ export async function executeTool(
       result: result.result,
       displayText: result.displayText,
       dataUrl: result.dataUrl,
+      diffs: result.diffs,
     };
   } catch (error) {
     return {success: false, error: String(error)};

@@ -1,5 +1,6 @@
 import { Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { DiffPanel } from './components/DiffPanel';
 import { IconButton } from './components/IconButton';
 import InputBox from './components/InputBox';
 import MessageList from './components/MessageList';
@@ -46,37 +47,37 @@ export default function App() {
   }, [currentModel?.provider, getSessions]);
 
   return (
-    <div className='flex flex-col h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
-      <header
-        className={`flex-none ${
-          isEmbed ? 'pt-3 pb-2' : 'pt-6 pb-4'
-        } bg-vscode-bg z-10 px-4 border-b border-vscode-element`}
-      >
-        <div className='flex items-center justify-between w-full'>
-          <div className='w-80'>
-            <SessionSelector disabled={isLoading} />
+    <div className='flex h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
+      <div className='flex-1 flex flex-col min-w-0'>
+        <header className='flex-none pt-3 pb-2 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
+          <div className='flex items-center justify-between w-full'>
+            <div className='w-80'>
+              <SessionSelector disabled={isLoading} />
+            </div>
+            <div className='flex items-center gap-4'>
+              <span className='hidden sm:block text-vscode-text font-medium uppercase'>
+                {config?.projectName}
+              </span>
+              <IconButton
+                icon={SettingsIcon}
+                title='Settings'
+                onClick={() => setIsSettingsOpen(true)}
+                disabled={isLoading}
+              />
+            </div>
           </div>
-          <div className='flex items-center gap-4'>
-            <span className='hidden sm:block text-vscode-text font-medium uppercase'>
-              {config?.projectName}
-            </span>
-            <IconButton
-              icon={SettingsIcon}
-              title='Settings'
-              onClick={() => setIsSettingsOpen(true)}
-              disabled={isLoading}
-            />
-          </div>
+        </header>
+
+        <main className='flex-1 flex flex-col min-h-0 relative'>
+          <MessageList />
+        </main>
+
+        <div className='flex-none bg-vscode-bg px-4 border-t border-vscode-element'>
+          <InputBox disabled={!currentModel} />
         </div>
-      </header>
-
-      <main className='flex-1 flex flex-col min-h-0 relative'>
-        <MessageList />
-      </main>
-
-      <div className='flex-none bg-vscode-bg px-4 border-t border-vscode-element'>
-        <InputBox disabled={!currentModel} />
       </div>
+
+      {!isEmbed && <DiffPanel />}
 
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>

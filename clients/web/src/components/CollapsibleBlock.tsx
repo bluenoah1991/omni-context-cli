@@ -8,7 +8,8 @@ interface CollapsibleBlockProps {
   loading?: boolean;
   expandableWhileLoading?: boolean;
   defaultExpanded?: boolean;
-  variant: 'purple' | 'blue' | 'red';
+  variant: 'purple' | 'blue' | 'red' | 'green';
+  clickable?: boolean;
 }
 
 const variantStyles = {
@@ -30,6 +31,12 @@ const variantStyles = {
     header: 'text-red-400 light:text-red-600',
     content: 'text-red-300/90 light:text-red-700',
   },
+  green: {
+    container:
+      'bg-vscode-element/30 border-green-500/20 hover:border-green-500/40 light:bg-green-100/50 light:border-green-400/30 light:hover:border-green-400/50',
+    header: 'text-green-400 light:text-green-600',
+    content: 'text-green-300/90 light:text-green-700',
+  },
 };
 
 export const CollapsibleBlock = memo(
@@ -42,6 +49,7 @@ export const CollapsibleBlock = memo(
       expandableWhileLoading = false,
       defaultExpanded = false,
       variant,
+      clickable = false,
     }: CollapsibleBlockProps,
   ) {
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -51,7 +59,9 @@ export const CollapsibleBlock = memo(
 
     return (
       <div
-        className={`rounded-md border text-sm transition-all duration-200 overflow-hidden w-full ${styles.container}`}
+        className={`rounded-md border text-sm transition-all duration-200 overflow-hidden w-full ${styles.container} ${
+          clickable ? 'ring-1 ring-blue-400/50' : ''
+        }`}
       >
         <div
           onClick={() => canExpand && setIsExpanded(!isExpanded)}

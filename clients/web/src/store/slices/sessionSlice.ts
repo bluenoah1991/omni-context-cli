@@ -8,25 +8,8 @@ import {
 } from '../../services/sessionService';
 import type { RewindPoint } from '../../types/rewind';
 import type { Session, SessionSummary } from '../../types/session';
-import type { UIMessage } from '../../types/uiMessage';
+import { preprocessMessages } from '../../utils/messagePreprocessor';
 import type { ChatState } from '../chatStore';
-
-function preprocessMessages(messages: UIMessage[]): UIMessage[] {
-  const result: UIMessage[] = [];
-  for (const message of messages) {
-    if (message.role === 'tool_result') {
-      const toolCallIndex = result.findLastIndex(item =>
-        item.role === 'tool_call' && item.toolCallId === message.toolCallId
-      );
-      if (toolCallIndex !== -1) {
-        result[toolCallIndex] = {...result[toolCallIndex], toolResult: message.content};
-        continue;
-      }
-    }
-    result.push(message);
-  }
-  return result;
-}
 
 export interface SessionSlice {
   currentSession: Session | null;
