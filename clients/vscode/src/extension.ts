@@ -2,6 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import * as net from 'net';
 import * as vscode from 'vscode';
 
+import { loadTemplate } from './utils';
 import { WebviewProvider } from './webviewProvider';
 
 let serverProcess: ChildProcess | null = null;
@@ -47,11 +48,36 @@ function stopServer() {
   serverPort = null;
 }
 
+async function openInEditor() {
+  const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!cwd) {
+    vscode.window.showErrorMessage('No workspace folder open');
+    return;
+  }
+
+  const panel = vscode.window.createWebviewPanel(
+    'omni-context.editor',
+    'OmniContext',
+    vscode.ViewColumn.One,
+    {enableScripts: true, retainContextWhenHidden: true},
+  );
+
+  panel.webview.html = loadTemplate('loading');
+
+  try {
+    const port = await startServer(cwd);
+    panel.webview.html = loadTemplate('webview', {port: String(port)});
+  } catch (err) {
+    panel.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(WebviewProvider.viewType, new WebviewProvider(), {
       webviewOptions: {retainContextWhenHidden: true},
     }),
+    vscode.commands.registerCommand('omni-context.openInEditor', openInEditor),
     {dispose: stopServer},
   );
 }

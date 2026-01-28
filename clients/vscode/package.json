@@ -34,7 +34,13 @@
           "name": "OmniContext"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+        "command": "omni-context.openInEditor",
+        "title": "OmniContext: Open in Editor"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run build",

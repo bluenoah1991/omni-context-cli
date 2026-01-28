@@ -1,16 +1,7 @@
-import { readFileSync } from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { startServer } from './extension';
-
-function loadTemplate(name: string, vars: Record<string, string> = {}): string {
-  let content = readFileSync(path.join(__dirname, '..', 'templates', `${name}.html`), 'utf8');
-  for (const [key, value] of Object.entries(vars)) {
-    content = content.replace(`{{${key}}}`, value);
-  }
-  return content;
-}
+import { loadTemplate } from './utils';
 
 export class WebviewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = 'omni-context.webview';

@@ -78,6 +78,9 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   },
 
   openDiffPanel: diff => {
+    const minWidth = 800;
+    if (window.innerWidth < minWidth) return;
+
     const {diffTabs, diffPanelOpen, diffPanelWidth} = get();
     const existingIndex = diffTabs.findIndex(t =>
       t.filePath === diff.filePath && t.toolUseId === diff.toolUseId
