@@ -1,6 +1,8 @@
 import { Box, useStdout } from 'ink';
 import notifier from 'node-notifier';
+import { dirname, join } from 'path';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { fileURLToPath } from 'url';
 import { useShallow } from 'zustand/react/shallow';
 import { runConversation } from '../../services/chatOrchestrator';
 import {
@@ -27,6 +29,7 @@ import { MessageList } from './MessageList';
 import { StatusBar } from './StatusBar';
 
 const NOTIFICATION_THRESHOLD_MS = 60000;
+const NOTIFICATION_ICON = join(dirname(fileURLToPath(import.meta.url)), 'assets/cone@128.png');
 
 export function ChatView(): React.ReactElement {
   const {
@@ -297,7 +300,11 @@ export function ChatView(): React.ReactElement {
       setLoading(false);
       const elapsed = Date.now() - startTime;
       if (notificationEnabled && elapsed >= NOTIFICATION_THRESHOLD_MS) {
-        notifier.notify({title: 'OmniContext CLI', message: 'Response complete'});
+        notifier.notify({
+          title: 'OmniContext',
+          message: 'Response complete',
+          icon: NOTIFICATION_ICON,
+        });
       }
     }
   }, [
