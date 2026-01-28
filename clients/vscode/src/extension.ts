@@ -1,5 +1,8 @@
 import { ChildProcess, spawn } from 'child_process';
+import * as fs from 'fs';
 import * as net from 'net';
+import * as os from 'os';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { loadTemplate } from './utils';
@@ -7,6 +10,18 @@ import { WebviewProvider } from './webviewProvider';
 
 let serverProcess: ChildProcess | null = null;
 let serverPort: number | null = null;
+
+function getExecutableInfo(): {node: string; script: string;} | null {
+  const execFile = path.join(os.homedir(), '.omx', 'executable');
+  if (fs.existsSync(execFile)) {
+    try {
+      return JSON.parse(fs.readFileSync(execFile, 'utf-8'));
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 async function findFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -42,13 +57,13 @@ export async function startServer(cwd: string): Promise<number> {
   const port = await findFreePort();
   serverPort = port;
 
-  serverProcess = spawn('omni-context-cli', [
-    '--serve',
-    '--port',
-    String(port),
-    '--parent-pid',
-    String(process.pid),
-  ], {cwd, stdio: 'ignore', shell: true, windowsHide: true});
+  const execInfo = getExecutableInfo();
+  const command = execInfo ? execInfo.node : 'node';
+  const args = execInfo
+    ? [execInfo.script, '--serve', '--port', String(port), '--parent-pid', String(process.pid)]
+    : ['omni-context-cli', '--serve', '--port', String(port), '--parent-pid', String(process.pid)];
+
+  serverProcess = spawn(command, args, {cwd, stdio: 'ignore', shell: !execInfo, windowsHide: true});
 
   serverProcess.on('exit', () => {
     serverProcess = null;

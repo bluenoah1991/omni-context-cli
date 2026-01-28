@@ -58,7 +58,8 @@ initializeProviders();
 
 if (opts.installVscodeExtension) {
   const {execSync} = await import('node:child_process');
-  const {existsSync} = await import('node:fs');
+  const {existsSync, mkdirSync, writeFileSync} = await import('node:fs');
+  const {homedir} = await import('node:os');
   const {dirname, join} = await import('node:path');
   const {fileURLToPath} = await import('node:url');
   const distDir = dirname(fileURLToPath(import.meta.url));
@@ -69,6 +70,13 @@ if (opts.installVscodeExtension) {
   }
   try {
     execSync(`code --install-extension "${vsixPath}"`, {stdio: 'inherit'});
+    const omxDir = join(homedir(), '.omx');
+    if (!existsSync(omxDir)) mkdirSync(omxDir, {recursive: true});
+    writeFileSync(
+      join(omxDir, 'executable'),
+      JSON.stringify({node: process.argv[0], script: process.argv[1]}),
+      'utf-8',
+    );
     console.log('VS Code extension installed successfully.');
   } catch {
     console.error('Failed to install VS Code extension.');

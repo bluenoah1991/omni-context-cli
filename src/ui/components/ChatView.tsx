@@ -300,11 +300,13 @@ export function ChatView(): React.ReactElement {
       setLoading(false);
       const elapsed = Date.now() - startTime;
       if (notificationEnabled && elapsed >= NOTIFICATION_THRESHOLD_MS) {
-        notifier.notify({
-          title: 'OmniContext',
-          message: 'Response complete',
-          icon: NOTIFICATION_ICON,
-        });
+        try {
+          notifier.notify({
+            title: 'OmniContext',
+            message: 'Response complete',
+            icon: NOTIFICATION_ICON,
+          });
+        } catch {}
       }
     }
   }, [
