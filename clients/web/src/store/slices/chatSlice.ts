@@ -53,6 +53,18 @@ function appendMessage(session: Session, message: UIMessage): Session {
   return {...session, messages: messageList};
 }
 
+function autoOpenDiff(message: UIMessage, state: ChatState): void {
+  if (message.role !== 'tool_result' || !state.autoDiffPanel) return;
+  try {
+    const parsed = JSON.parse(message.content);
+    if (parsed.success && parsed.diffs) {
+      parsed.diffs.forEach((diff: any) =>
+        state.openDiffPanel({...diff, toolUseId: message.toolCallId})
+      );
+    }
+  } catch {}
+}
+
 function updateSession(state: ChatState, session: Session, overwrite = false): Partial<ChatState> {
   const exists = state.sessions.some(s => s.id === session.id);
   const processed = session.messages
@@ -83,13 +95,18 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
   },
 
   sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
-    const {isLoading, currentModel, currentSession, inputHistory} = get();
+    const {isLoading, currentModel, currentSession, inputHistory, autoDiffPanel, closeDiffPanel} =
+      get();
     if (isLoading || !currentModel || !currentSession) return;
 
     const trimmed = content.trim();
     if (trimmed === '/clear') {
       get().newSession();
       return;
+    }
+
+    if (autoDiffPanel) {
+      closeDiffPanel();
     }
 
     if (
@@ -103,8 +120,10 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
 
     try {
       await sendChat({content, images}, {
-        onMessage: message =>
-          set(state => ({currentSession: appendMessage(state.currentSession!, message)})),
+        onMessage: message => {
+          set(state => ({currentSession: appendMessage(state.currentSession!, message)}));
+          autoOpenDiff(message, get());
+        },
         onError: error => set({error}),
         onDone: session => set(state => updateSession(state, session)),
         onSessionUpdated: session =>

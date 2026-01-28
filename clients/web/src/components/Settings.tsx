@@ -20,6 +20,8 @@ export default function Settings({onClose}: SettingsProps) {
     setConfig,
     thinkingExpanded,
     setThinkingExpanded,
+    autoDiffPanel,
+    setAutoDiffPanel,
   } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('models');
   const [currentModelId, setCurrentModelId] = useState(currentModel?.id || '');
@@ -205,6 +207,13 @@ export default function Settings({onClose}: SettingsProps) {
                 description='Show thinking process content expanded'
                 enabled={thinkingExpanded}
                 onChange={setThinkingExpanded}
+              />
+
+              <ToggleOption
+                label='Auto Open Diff Panel'
+                description='Automatically show file changes when editing'
+                enabled={autoDiffPanel}
+                onChange={setAutoDiffPanel}
               />
             </>
           )}
