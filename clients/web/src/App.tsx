@@ -59,9 +59,11 @@ export default function App() {
               <SessionSelector disabled={isLoading} />
             </div>
             <div className='flex items-center gap-4'>
-              <span className='hidden sm:block text-vscode-text font-medium uppercase'>
-                {config?.projectName}
-              </span>
+              {!isEmbed && (
+                <span className='hidden sm:block text-vscode-text font-medium uppercase'>
+                  {config?.projectName}
+                </span>
+              )}
               <IconButton
                 icon={SettingsIcon}
                 title='Settings'
@@ -81,7 +83,7 @@ export default function App() {
         </div>
       </div>
 
-      {!isEmbed && <DiffPanel />}
+      <DiffPanel />
 
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>
