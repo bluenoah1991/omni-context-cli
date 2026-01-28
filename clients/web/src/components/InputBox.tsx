@@ -291,7 +291,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
         {hasContext && (
           <div className='flex flex-wrap gap-2 animate-fade-in'>
             {ideContext && (
-              <div className='flex items-center gap-1.5 px-2.5 py-1.5 bg-vscode-element border border-vscode-accent rounded text-xs text-vscode-text'>
+              <div className='flex items-center gap-1.5 px-2.5 py-1.5 bg-vscode-element border border-vscode-accent rounded-md text-xs text-vscode-text'>
                 <FileCode size={12} className='text-vscode-accent' />
                 <span className='max-w-50 truncate' title={ideContext.path}>
                   {formatFileLabel(ideContext)}
@@ -301,7 +301,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
             {images.map(image => (
               <div
                 key={image.id}
-                className='relative group rounded overflow-hidden border border-vscode-border'
+                className='relative group rounded-md overflow-hidden border border-vscode-border'
               >
                 <img src={image.dataUrl} alt='Attached' className='w-10 h-10 object-cover' />
                 <button
@@ -355,7 +355,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           <div className='flex items-center justify-between px-3 pb-2 pt-1'>
             <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none overflow-hidden'>
               <div
-                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default min-w-0 max-w-48 truncate'
+                className='flex items-center gap-1.5 px-1.5 py-0.5 rounded-md hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default min-w-0 max-w-48 truncate'
                 title={showAgentModel
                   ? `${currentModelName} / ${agentModelName}`
                   : currentModelName}

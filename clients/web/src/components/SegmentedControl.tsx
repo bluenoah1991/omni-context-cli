@@ -13,7 +13,7 @@ export default function SegmentedControl<T extends string>(
   return (
     <div className='flex items-center justify-between p-3 rounded-lg hover:bg-vscode-element/50 transition-colors'>
       <div className='flex flex-col gap-1'>
-        <span className='font-medium text-vscode-text'>{label}</span>
+        <span className='text-sm font-medium text-vscode-text'>{label}</span>
         <span className='text-xs text-vscode-text-muted'>{description}</span>
       </div>
       <div className='flex bg-vscode-element border border-vscode-border rounded-lg overflow-hidden p-0.5'>

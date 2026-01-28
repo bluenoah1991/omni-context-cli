@@ -145,7 +145,7 @@ export const DiffPanel = memo(function DiffPanel() {
         <div className='flex items-center gap-3 pt-3 pb-2 px-4 border-b border-vscode-element'>
           <button
             onClick={closeDiffPanel}
-            className='p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-lg border border-vscode-border hover:border-vscode-border-active'
+            className='p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-md border border-vscode-border hover:border-vscode-border-active'
             title='Close panel'
           >
             <ChevronLeft size={16} />
@@ -172,7 +172,7 @@ export const DiffPanel = memo(function DiffPanel() {
                   e.stopPropagation();
                   closeDiffTab(i);
                 }}
-                className='p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-vscode-element text-vscode-text-muted'
+                className='p-0.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-vscode-element text-vscode-text-muted'
               >
                 <X size={14} />
               </button>

@@ -106,7 +106,7 @@ export const MermaidBlock = memo(function MermaidBlock({code, isLoading}: Mermai
         <span className='text-xs text-vscode-text-muted'>Scroll to zoom, drag to pan</span>
         <button
           onClick={handleReset}
-          className='flex items-center justify-center px-2 py-1 bg-vscode-bg border border-vscode-border rounded text-vscode-text cursor-pointer transition-colors hover:bg-vscode-border'
+          className='flex items-center justify-center px-2 py-1 bg-vscode-bg border border-vscode-border rounded-md text-vscode-text cursor-pointer transition-colors hover:bg-vscode-border'
           title='Reset'
         >
           <RotateCcw size={14} />

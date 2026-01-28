@@ -48,7 +48,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
         </button>
 
         {isOpen && (
-          <div className='absolute top-full left-0 z-50 w-full mt-2 bg-vscode-sidebar border border-vscode-border rounded-lg shadow-xl overflow-hidden animate-fade-in backdrop-blur-sm'>
+          <div className='absolute top-full left-0 z-50 w-full mt-2 bg-vscode-sidebar border border-vscode-border rounded-lg shadow-lg overflow-hidden animate-fade-in backdrop-blur-sm'>
             {sessions.length === 0
               ? (
                 <div className='px-4 py-3 text-sm text-vscode-text-muted text-center'>
@@ -83,7 +83,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
       <button
         onClick={() => newSession()}
         disabled={disabled}
-        className={`p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-lg transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
+        className={`p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-md transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         title='New chat'
