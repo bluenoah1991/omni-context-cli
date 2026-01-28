@@ -1,3 +1,4 @@
+import { exec } from 'child_process';
 import { Box, useStdout } from 'ink';
 import notifier from 'node-notifier';
 import { dirname, join } from 'path';
@@ -301,11 +302,17 @@ export function ChatView(): React.ReactElement {
       const elapsed = Date.now() - startTime;
       if (notificationEnabled && elapsed >= NOTIFICATION_THRESHOLD_MS) {
         try {
-          notifier.notify({
-            title: 'OmniContext',
-            message: 'Response complete',
-            icon: NOTIFICATION_ICON,
-          });
+          if (process.platform === 'darwin') {
+            exec(
+              `osascript -e 'display notification "Response complete" with title "OmniContext CLI"'`,
+            );
+          } else {
+            notifier.notify({
+              title: 'OmniContext CLI',
+              message: 'Response complete',
+              icon: NOTIFICATION_ICON,
+            });
+          }
         } catch {}
       }
     }
