@@ -49,7 +49,9 @@ function stopServer() {
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(WebviewProvider.viewType, new WebviewProvider()),
+    vscode.window.registerWebviewViewProvider(WebviewProvider.viewType, new WebviewProvider(), {
+      webviewOptions: {retainContextWhenHidden: true},
+    }),
     {dispose: stopServer},
   );
 }
