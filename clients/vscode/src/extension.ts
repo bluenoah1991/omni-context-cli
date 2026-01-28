@@ -19,6 +19,23 @@ async function findFreePort(): Promise<number> {
   });
 }
 
+async function waitForPort(port: number, timeout = 10000): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const ok = await new Promise<boolean>(resolve => {
+      const socket = net.createConnection(port, '127.0.0.1');
+      socket.once('connect', () => {
+        socket.destroy();
+        resolve(true);
+      });
+      socket.once('error', () => resolve(false));
+    });
+    if (ok) return true;
+    await new Promise(r => setTimeout(r, 200));
+  }
+  return false;
+}
+
 export async function startServer(cwd: string): Promise<number> {
   if (serverProcess) return serverPort!;
 
@@ -38,7 +55,8 @@ export async function startServer(cwd: string): Promise<number> {
     serverPort = null;
   });
 
-  await new Promise(r => setTimeout(r, 1500));
+  const ready = await waitForPort(port);
+  if (!ready) throw new Error('Server failed to start');
   return port;
 }
 
