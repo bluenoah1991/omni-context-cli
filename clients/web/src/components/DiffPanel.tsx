@@ -156,7 +156,7 @@ export const DiffPanel = memo(function DiffPanel() {
         <div className='flex border-b border-vscode-element overflow-x-auto'>
           {diffTabs.map((tab, i) => (
             <div
-              key={tab.filePath}
+              key={`${tab.filePath}:${tab.toolUseId ?? i}`}
               className={`group flex items-center gap-2 px-4 py-2.5 cursor-pointer border-b-2 -mb-px ${
                 i === activeDiffTab
                   ? 'border-vscode-accent text-vscode-text'
