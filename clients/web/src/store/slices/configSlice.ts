@@ -43,6 +43,7 @@ export const createConfigSlice: StateCreator<ChatState, [], [], ConfigSlice> = (
     const isProviderChanged = previousModel?.provider !== model.provider;
     if (isProviderChanged) {
       set({currentSession: null, sessions: []});
+      get().getSession();
       get().getSessions();
     }
   },
