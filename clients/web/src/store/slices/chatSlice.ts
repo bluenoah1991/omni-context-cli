@@ -85,13 +85,15 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
   slashCommands: [],
 
   getInputHistory: async () => {
-    const history = await fetchInputHistory();
-    set({inputHistory: history});
+    const {data, error} = await fetchInputHistory();
+    if (data) set({inputHistory: data});
+    else if (error) set({error});
   },
 
   getSlashCommands: async () => {
-    const commands = await fetchSlashCommands();
-    set({slashCommands: commands});
+    const {data, error} = await fetchSlashCommands();
+    if (data) set({slashCommands: data});
+    else if (error) set({error});
   },
 
   sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
@@ -144,8 +146,6 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
   },
 
   stopGeneration: async () => {
-    try {
-      await apiStopGeneration();
-    } catch {}
+    await apiStopGeneration();
   },
 });

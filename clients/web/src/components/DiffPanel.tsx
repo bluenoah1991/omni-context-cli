@@ -29,10 +29,10 @@ function parsePatch(patch: string): DiffLine[] {
       result.push({type: 'add', content: line.slice(1), newLineNum: newLine++});
     } else if (line.startsWith('-')) {
       result.push({type: 'remove', content: line.slice(1), oldLineNum: oldLine++});
-    } else if (line.startsWith(' ') || line === '') {
+    } else if (line.startsWith(' ')) {
       result.push({
         type: 'context',
-        content: line.slice(1) || '',
+        content: line.slice(1),
         oldLineNum: oldLine++,
         newLineNum: newLine++,
       });

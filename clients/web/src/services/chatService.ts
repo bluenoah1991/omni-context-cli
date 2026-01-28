@@ -1,3 +1,4 @@
+import type { ApiResult } from '../types/api';
 import type { IDEContext } from '../types/ide';
 import type { RewindPoint } from '../types/rewind';
 import type { Session } from '../types/session';
@@ -18,38 +19,52 @@ interface ChatCallbacks {
 
 let cachedSlashCommands: SlashCommand[] | null = null;
 
-export async function fetchIDEContext(): Promise<IDEContext | null> {
-  const res = await fetch(apiUrl('ide/context'));
-  if (res.status === 204) return null;
-  return res.json();
+export async function fetchIDEContext(): Promise<ApiResult<IDEContext | null>> {
+  try {
+    const res = await fetch(apiUrl('ide/context'));
+    if (res.status === 204) return {data: null, error: null};
+    return {data: await res.json(), error: null};
+  } catch {
+    return {data: null, error: 'Failed to fetch IDE context'};
+  }
 }
 
-export async function fetchInputHistory(): Promise<string[]> {
-  const res = await fetch(apiUrl('chat/inputHistory'));
-  if (!res.ok) return [];
-  return res.json();
+export async function fetchInputHistory(): Promise<ApiResult<string[]>> {
+  try {
+    const res = await fetch(apiUrl('chat/inputHistory'));
+    if (!res.ok) return {data: [], error: null};
+    return {data: await res.json(), error: null};
+  } catch {
+    return {data: null, error: 'Failed to fetch input history'};
+  }
 }
 
-export async function addInputHistory(input: string): Promise<void> {
-  await fetch(apiUrl('chat/inputHistory'), {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({input}),
-  });
+export async function addInputHistory(input: string): Promise<ApiResult<void>> {
+  try {
+    await fetch(apiUrl('chat/inputHistory'), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({input}),
+    });
+    return {data: undefined, error: null};
+  } catch {
+    return {data: null, error: 'Failed to add input history'};
+  }
 }
 
-export async function fetchSlashCommands(): Promise<SlashCommand[]> {
+export async function fetchSlashCommands(): Promise<ApiResult<SlashCommand[]>> {
   if (cachedSlashCommands) {
-    return cachedSlashCommands;
+    return {data: cachedSlashCommands, error: null};
   }
 
-  const response = await fetch(apiUrl('chat/slashCommands'));
-  if (!response.ok) {
-    return [];
+  try {
+    const res = await fetch(apiUrl('chat/slashCommands'));
+    if (!res.ok) return {data: [], error: null};
+    cachedSlashCommands = await res.json();
+    return {data: cachedSlashCommands || [], error: null};
+  } catch {
+    return {data: null, error: 'Failed to fetch slash commands'};
   }
-
-  cachedSlashCommands = await response.json();
-  return cachedSlashCommands || [];
 }
 
 export async function sendChat(
@@ -96,23 +111,36 @@ export async function sendChat(
   }
 }
 
-export async function fetchRewindPoints(): Promise<RewindPoint[]> {
-  const res = await fetch(apiUrl('chat/rewindPoints'));
-  if (!res.ok) return [];
-  return res.json();
+export async function fetchRewindPoints(): Promise<ApiResult<RewindPoint[]>> {
+  try {
+    const res = await fetch(apiUrl('chat/rewindPoints'));
+    if (!res.ok) return {data: [], error: null};
+    return {data: await res.json(), error: null};
+  } catch {
+    return {data: null, error: 'Failed to fetch rewind points'};
+  }
 }
 
-export async function rewindSession(index: number): Promise<Session> {
-  const res = await fetch(apiUrl('chat/rewind'), {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({index}),
-  });
-  return res.json();
+export async function rewindSession(index: number): Promise<ApiResult<Session>> {
+  try {
+    const res = await fetch(apiUrl('chat/rewind'), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({index}),
+    });
+    return {data: await res.json(), error: null};
+  } catch {
+    return {data: null, error: 'Failed to rewind session'};
+  }
 }
 
-export async function stopGeneration(): Promise<void> {
-  await fetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
+export async function stopGeneration(): Promise<ApiResult<void>> {
+  try {
+    await fetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
+    return {data: undefined, error: null};
+  } catch {
+    return {data: null, error: 'Failed to stop generation'};
+  }
 }
 
 function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {

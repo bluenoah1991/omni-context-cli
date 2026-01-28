@@ -1,8 +1,7 @@
+import type { ApiResult } from '../types/api';
 import type { Config } from '../types/config';
 import type { Model } from '../types/model';
 import { apiUrl } from '../utils/webSession';
-
-export type ApiResult<T> = {data: T; error: null;} | {data: null; error: string;};
 
 export async function fetchModel(): Promise<ApiResult<Model | null>> {
   try {

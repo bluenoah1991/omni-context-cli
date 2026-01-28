@@ -58,10 +58,8 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
     const poll = async () => {
       const {config} = get();
       if (!config?.ideContext) return;
-      try {
-        const context = await fetchIDEContext();
-        set({ideContext: context});
-      } catch {}
+      const {data} = await fetchIDEContext();
+      set({ideContext: data});
     };
 
     poll();

@@ -27,7 +27,8 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
   sessions: [],
 
   getRewindPoints: async () => {
-    return fetchRewindPoints();
+    const {data} = await fetchRewindPoints();
+    return data || [];
   },
 
   getSession: async () => {
@@ -62,7 +63,10 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
   },
 
   rewind: async (index: number) => {
-    const session = await rewindSession(index);
-    set({currentSession: {...session, messages: preprocessMessages(session.messages || [])}});
+    const {data, error} = await rewindSession(index);
+    if (error) set({error});
+    else if (data) {
+      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+    }
   },
 });

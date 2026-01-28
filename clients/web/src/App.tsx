@@ -44,7 +44,7 @@ export default function App() {
     if (currentModel) {
       getSessions();
     }
-  }, [currentModel?.provider, getSessions]);
+  }, [currentModel?.provider]);
 
   useEffect(() => {
     document.title = config?.projectName || 'OmniContext CLI';

@@ -1,6 +1,6 @@
+import type { ApiResult } from '../types/api';
 import type { Session, SessionSummary } from '../types/session';
 import { apiUrl } from '../utils/webSession';
-import type { ApiResult } from './configService';
 
 export async function fetchSession(): Promise<ApiResult<Session>> {
   try {
