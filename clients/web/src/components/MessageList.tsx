@@ -10,7 +10,6 @@ export default function MessageList() {
   const {currentSession, isLoading, isCompacting, error} = useChatStore();
   const messages = currentSession?.messages ?? [];
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTargetRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const prevSessionIdRef = useRef(currentSession?.id);
   const checkIfNearBottom = useCallback(() => {
@@ -27,7 +26,10 @@ export default function MessageList() {
   useEffect(() => {
     if (isLoading) {
       isNearBottomRef.current = true;
-      scrollTargetRef.current?.scrollIntoView({behavior: 'instant'});
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [isLoading]);
 
@@ -35,14 +37,17 @@ export default function MessageList() {
     const sessionChanged = prevSessionIdRef.current !== currentSession?.id;
     prevSessionIdRef.current = currentSession?.id;
 
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
     if (sessionChanged) {
       isNearBottomRef.current = true;
-      scrollTargetRef.current?.scrollIntoView({behavior: 'instant'});
+      container.scrollTop = container.scrollHeight;
       return;
     }
 
     if (isNearBottomRef.current) {
-      scrollTargetRef.current?.scrollIntoView({behavior: 'smooth'});
+      container.scrollTo({top: container.scrollHeight, behavior: 'smooth'});
     }
   }, [currentSession?.id, messages]);
 
@@ -79,7 +84,7 @@ export default function MessageList() {
             <div className='text-sm'>{error}</div>
           </div>
         )}
-        <div ref={scrollTargetRef} className='h-4' />
+        <div className='h-4' />
       </div>
     </div>
   );
