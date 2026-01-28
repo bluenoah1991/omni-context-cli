@@ -124,5 +124,5 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
 
   setActiveDiffTab: index => set({activeDiffTab: index}),
 
-  setDiffPanelWidth: width => set({diffPanelWidth: Math.max(300, Math.min(1200, width))}),
+  setDiffPanelWidth: width => set({diffPanelWidth: Math.max(300, width)}),
 });
