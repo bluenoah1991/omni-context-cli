@@ -5,11 +5,13 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import { IdeServer } from './mcp/server';
 import { loadTemplate } from './utils';
 import { WebviewProvider } from './webviewProvider';
 
 let serverProcess: ChildProcess | null = null;
 let serverPort: number | null = null;
+let ideServer: IdeServer | null = null;
 
 function getExecutableInfo(): {node: string; script: string;} | null {
   const execFile = path.join(os.homedir(), '.omx', 'executable');
@@ -139,15 +141,20 @@ async function openInEditor() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  ideServer = new IdeServer();
+  ideServer.start().catch(() => {});
+
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(WebviewProvider.viewType, new WebviewProvider(), {
       webviewOptions: {retainContextWhenHidden: true},
     }),
     vscode.commands.registerCommand('omni-context.openInEditor', openInEditor),
     {dispose: stopServer},
+    {dispose: () => ideServer?.stop()},
   );
 }
 
 export function deactivate() {
   stopServer();
+  ideServer?.stop();
 }

@@ -58,7 +58,7 @@ class IDEWebSocketTransport implements Transport {
     }
     return new Promise((resolve, reject) => {
       this.socket = new WebSocket(this.url, ['mcp'], {
-        headers: {'x-claude-code-ide-authorization': this.authToken},
+        headers: {'x-omni-context-ide-authorization': this.authToken},
       });
 
       this.socket.onerror = event => {
@@ -114,11 +114,7 @@ class IDEIntegrationManager {
   private connectionTimer: NodeJS.Timeout | null = null;
 
   private getLockDir(): string {
-    const claudeConfigDir = process.env.CLAUDE_CONFIG_DIR;
-    if (claudeConfigDir) {
-      return path.join(claudeConfigDir, 'ide');
-    }
-    return path.join(os.homedir(), '.claude', 'ide');
+    return path.join(os.homedir(), '.omx', 'ide');
   }
 
   private readLockFile(lockPath: string): LockFileData | null {
@@ -221,7 +217,9 @@ class IDEIntegrationManager {
 
   private async connectToIDE(port: number, lockData: LockFileData): Promise<void> {
     try {
-      const client = new Client({name: 'omx', version: '1.0.0'}, {capabilities: {}});
+      const client = new Client({name: `omni_context_${process.pid}`, version: '1.0.0'}, {
+        capabilities: {},
+      });
 
       const transport = new IDEWebSocketTransport(`ws://127.0.0.1:${port}`, lockData.authToken);
 
