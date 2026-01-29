@@ -2,7 +2,7 @@
   "name": "omni-context-vscode-extension",
   "displayName": "OmniContext for VS Code",
   "description": "OmniContext is a small, helpful, zero-telemetry coding assistant.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "bluenoah1991",
   "repository": {
     "type": "git",
