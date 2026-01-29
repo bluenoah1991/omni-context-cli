@@ -12,9 +12,28 @@
       color: var(--vscode-editor-foreground);
       font-family: var(--vscode-font-family);
     }
+    .spinner {
+      width: 1em;
+      height: 1em;
+      border: 2px solid var(--vscode-editor-foreground);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .container {
+      display: flex;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
-  <div>Starting OmniContext...</div>
+  <div class="container">
+    <div class="spinner"></div>
+    <div>{{status}}</div>
+  </div>
 </body>
 </html>

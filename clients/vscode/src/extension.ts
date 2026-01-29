@@ -34,7 +34,7 @@ async function findFreePort(): Promise<number> {
   });
 }
 
-async function waitForPort(port: number, timeout = 10000): Promise<boolean> {
+async function waitForPort(port: number, timeout = 60000): Promise<boolean> {
   const start = Date.now();
   while (Date.now() - start < timeout) {
     const ok = await new Promise<boolean>(resolve => {
@@ -51,7 +51,10 @@ async function waitForPort(port: number, timeout = 10000): Promise<boolean> {
   return false;
 }
 
-export async function startServer(cwd: string): Promise<string> {
+export async function startServer(
+  cwd: string,
+  onStatus?: (status: string) => void,
+): Promise<string> {
   if (serverProcess && serverPort) {
     const externalUri = await vscode.env.asExternalUri(
       vscode.Uri.parse(`http://localhost:${serverPort}`),
@@ -59,24 +62,45 @@ export async function startServer(cwd: string): Promise<string> {
     return externalUri.toString();
   }
 
+  onStatus?.('Finding available port...');
   const port = await findFreePort();
   serverPort = port;
 
+  onStatus?.('Launching server process...');
   const execInfo = getExecutableInfo();
   const command = execInfo ? execInfo.node : 'node';
   const args = execInfo
     ? [execInfo.script, '--serve', '--port', String(port), '--parent-pid', String(process.pid)]
     : ['omni-context-cli', '--serve', '--port', String(port), '--parent-pid', String(process.pid)];
 
-  serverProcess = spawn(command, args, {cwd, stdio: 'ignore', shell: !execInfo, windowsHide: true});
+  let stderrOutput = '';
+  serverProcess = spawn(command, args, {
+    cwd,
+    stdio: ['ignore', 'ignore', 'pipe'],
+    shell: !execInfo,
+    windowsHide: true,
+  });
 
-  serverProcess.on('exit', () => {
+  serverProcess.stderr?.on('data', (data: Buffer) => {
+    stderrOutput += data.toString();
+  });
+
+  serverProcess.on('exit', code => {
+    if (code !== 0 && stderrOutput) {
+      console.error('[OmniContext] Server stderr:', stderrOutput);
+    }
     serverProcess = null;
     serverPort = null;
   });
 
+  onStatus?.('Waiting for server to be ready...');
   const ready = await waitForPort(port);
-  if (!ready) throw new Error('Server failed to start');
+  if (!ready) {
+    const errMsg = stderrOutput
+      ? `Server error: ${stderrOutput.slice(0, 200)}`
+      : 'Server failed to start';
+    throw new Error(errMsg);
+  }
 
   const externalUri = await vscode.env.asExternalUri(vscode.Uri.parse(`http://localhost:${port}`));
   return externalUri.toString();
@@ -102,10 +126,12 @@ async function openInEditor() {
     {enableScripts: true, retainContextWhenHidden: true},
   );
 
-  panel.webview.html = loadTemplate('loading');
+  panel.webview.html = loadTemplate('loading', {status: 'Starting server...'});
 
   try {
-    const serverUrl = await startServer(cwd);
+    const serverUrl = await startServer(cwd, status => {
+      panel.webview.html = loadTemplate('loading', {status});
+    });
     panel.webview.html = loadTemplate('webview', {serverUrl});
   } catch (err) {
     panel.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
