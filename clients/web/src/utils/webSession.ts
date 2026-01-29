@@ -1,7 +1,15 @@
+function getMetaContent(name: string): string | null {
+  const meta = document.querySelector(`meta[name="${name}"]`);
+  return meta?.getAttribute('content') || null;
+}
+
 function getWebSessionId(): string | null {
   const path = window.location.pathname;
   const match = path.match(/^\/webSession\/([a-z0-9-]+)$/);
-  return match ? match[1] : null;
+  if (match) {
+    return match[1];
+  }
+  return getMetaContent('websession-id');
 }
 
 export function apiUrl(route: string): string {
@@ -9,5 +17,6 @@ export function apiUrl(route: string): string {
   if (!wsId) {
     throw new Error('No web session');
   }
-  return `/api/${wsId}/${route}`;
+  const baseUrl = (getMetaContent('server-url') || '').replace(/\/$/, '');
+  return `${baseUrl}/api/${wsId}/${route}`;
 }

@@ -1,13 +1,20 @@
 import * as vscode from 'vscode';
 
 import { startServer } from './extension';
-import { loadTemplate } from './utils';
+import { buildWebviewHtml, loadTemplate } from './utils';
 
 export class WebviewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = 'omni-context.webview';
 
+  private extensionUri: vscode.Uri;
+
+  constructor(extensionUri: vscode.Uri) {
+    this.extensionUri = extensionUri;
+  }
+
   async resolveWebviewView(webviewView: vscode.WebviewView) {
-    webviewView.webview.options = {enableScripts: true};
+    const webviewUri = vscode.Uri.joinPath(this.extensionUri, 'webview');
+    webviewView.webview.options = {enableScripts: true, localResourceRoots: [webviewUri]};
     webviewView.webview.html = loadTemplate('loading', {status: 'Waiting for workspace...'});
 
     const cwd = await this.waitForWorkspace();
@@ -22,7 +29,11 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
       const serverUrl = await startServer(cwd, status => {
         webviewView.webview.html = loadTemplate('loading', {status});
       });
-      webviewView.webview.html = loadTemplate('webview', {serverUrl});
+      webviewView.webview.html = buildWebviewHtml(
+        webviewView.webview,
+        this.extensionUri,
+        serverUrl,
+      );
     } catch (err) {
       webviewView.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
     }

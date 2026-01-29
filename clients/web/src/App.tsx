@@ -8,7 +8,7 @@ import SessionSelector from './components/SessionSelector';
 import Settings from './components/Settings';
 import { useChatStore } from './store/chatStore';
 
-const isEmbed = new URLSearchParams(window.location.search).has('embed');
+const isEmbed = document.querySelector('meta[name="embed"]')?.getAttribute('content') === 'true';
 
 export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

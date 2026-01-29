@@ -1,6 +1,6 @@
 import { once } from 'node:events';
 import http from 'node:http';
-import { createWebSession, getWebSession } from '../webSessionManager.js';
+import { generateSessionId } from '../webSessionManager.js';
 import { handleAPI } from './apiHandlers.js';
 import { sendErrorResponse, sendRedirectResponse } from './httpUtils.js';
 import { serveStatic } from './staticServer.js';
@@ -21,21 +21,14 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   }
 
   if (pathname === '/') {
-    const webSession = createWebSession();
     const qs = url.search;
-    sendRedirectResponse(res, `/webSession/${webSession.id}${qs}`);
+    sendRedirectResponse(res, `/webSession/${generateSessionId()}${qs}`);
     return;
   }
 
   const wsIdMatch = pathname.match(/^\/webSession\/([a-z0-9-]+)$/);
   if (wsIdMatch) {
-    const wsId = wsIdMatch[1];
-    if (getWebSession(wsId)) {
-      if (serveStatic(res, '/index.html')) {
-        return;
-      }
-    } else {
-      sendRedirectResponse(res, '/');
+    if (serveStatic(res, '/index.html')) {
       return;
     }
   }

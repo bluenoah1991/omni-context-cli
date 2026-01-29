@@ -17,6 +17,7 @@ const MIME_TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
 };
 
 export function serveStatic(res: http.ServerResponse, pathname: string): boolean {

@@ -6,9 +6,10 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { IdeServer } from './mcp/server';
-import { loadTemplate } from './utils';
+import { buildWebviewHtml, loadTemplate } from './utils';
 import { WebviewProvider } from './webviewProvider';
 
+let extensionUri: vscode.Uri;
 let serverProcess: ChildProcess | null = null;
 let serverPort: number | null = null;
 let ideServer: IdeServer | null = null;
@@ -121,11 +122,12 @@ async function openInEditor() {
     return;
   }
 
+  const webviewUri = vscode.Uri.joinPath(extensionUri, 'webview');
   const panel = vscode.window.createWebviewPanel(
     'omni-context.editor',
     'OmniContext',
     vscode.ViewColumn.One,
-    {enableScripts: true, retainContextWhenHidden: true},
+    {enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [webviewUri]},
   );
 
   panel.webview.html = loadTemplate('loading', {status: 'Starting server...'});
@@ -134,20 +136,23 @@ async function openInEditor() {
     const serverUrl = await startServer(cwd, status => {
       panel.webview.html = loadTemplate('loading', {status});
     });
-    panel.webview.html = loadTemplate('webview', {serverUrl});
+    panel.webview.html = buildWebviewHtml(panel.webview, extensionUri, serverUrl);
   } catch (err) {
     panel.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
   }
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  extensionUri = context.extensionUri;
   ideServer = new IdeServer();
   ideServer.start().catch(() => {});
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(WebviewProvider.viewType, new WebviewProvider(), {
-      webviewOptions: {retainContextWhenHidden: true},
-    }),
+    vscode.window.registerWebviewViewProvider(
+      WebviewProvider.viewType,
+      new WebviewProvider(extensionUri),
+      {webviewOptions: {retainContextWhenHidden: true}},
+    ),
     vscode.commands.registerCommand('omni-context.openInEditor', openInEditor),
     {dispose: stopServer},
     {dispose: () => ideServer?.stop()},

@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { getWebSession } from '../webSessionManager';
+import { getOrCreateWebSession } from '../webSessionManager';
 import {
   handleAddInputHistory,
   handleChat,
@@ -42,11 +42,7 @@ export async function handleAPI(
   }
 
   const [, wsId, route] = match;
-  const webSession = getWebSession(wsId);
-  if (!webSession) {
-    sendErrorResponse(res, 'Invalid session', 401);
-    return true;
-  }
+  const webSession = getOrCreateWebSession(wsId);
 
   if (route === 'model' && method === 'GET') return handleGetModel(res, webSession);
   if (route === 'models' && method === 'GET') return handleGetModels(res);
