@@ -14,12 +14,24 @@ export function isDiagnosticEnabled(): boolean {
   return diagnosticEnabled;
 }
 
-export function saveRequest(provider: string, body: unknown, isFromAgent?: boolean): void {
+export function saveRequest(
+  provider: string,
+  body: unknown,
+  isFromAgent?: boolean,
+): string | undefined {
   if (!diagnosticEnabled) return;
 
   ensureDir(DIAGNOSTIC_DIR);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `${isFromAgent ? '_' : ''}${provider}-${timestamp}.json`;
-  const filepath = path.join(DIAGNOSTIC_DIR, filename);
+  const requestId = `${isFromAgent ? '_' : ''}${provider}-${timestamp}`;
+  const filepath = path.join(DIAGNOSTIC_DIR, `${requestId}-request.json`);
+  fs.writeFileSync(filepath, JSON.stringify(body, null, 2), 'utf-8');
+  return requestId;
+}
+
+export function saveResponse(requestId: string | undefined, body: unknown): void {
+  if (!diagnosticEnabled || !requestId) return;
+
+  const filepath = path.join(DIAGNOSTIC_DIR, `${requestId}.json`);
   fs.writeFileSync(filepath, JSON.stringify(body, null, 2), 'utf-8');
 }

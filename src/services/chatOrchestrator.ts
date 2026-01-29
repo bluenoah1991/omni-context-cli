@@ -9,7 +9,7 @@ import { buildAnthropicRequest } from './anthropicRequestBuilder';
 import { AnthropicStreamHandler } from './anthropicStreamHandler';
 import { getCurrentModel } from './configManager';
 import { appendTokenUsage } from './costAnalysis';
-import { saveRequest } from './diagnostic';
+import { saveRequest, saveResponse } from './diagnostic';
 import { buildGeminiRequest } from './geminiRequestBuilder';
 import { GeminiStreamHandler } from './geminiStreamHandler';
 import { buildOpenAIRequest } from './openaiRequestBuilder';
@@ -83,9 +83,11 @@ async function streamAIResponse(
     handler = new AnthropicStreamHandler(callbacks);
   }
 
-  saveRequest(model.provider, body, isFromAgent);
+  const requestId = saveRequest(model.provider, body, isFromAgent);
 
-  return handler.stream(headers, body, model, signal);
+  const result = await handler.stream(headers, body, model, signal);
+  saveResponse(requestId, result);
+  return result;
 }
 
 async function processToolCalls(
