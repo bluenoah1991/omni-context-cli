@@ -51,8 +51,13 @@ async function waitForPort(port: number, timeout = 10000): Promise<boolean> {
   return false;
 }
 
-export async function startServer(cwd: string): Promise<number> {
-  if (serverProcess) return serverPort!;
+export async function startServer(cwd: string): Promise<string> {
+  if (serverProcess && serverPort) {
+    const externalUri = await vscode.env.asExternalUri(
+      vscode.Uri.parse(`http://localhost:${serverPort}`),
+    );
+    return externalUri.toString();
+  }
 
   const port = await findFreePort();
   serverPort = port;
@@ -72,7 +77,9 @@ export async function startServer(cwd: string): Promise<number> {
 
   const ready = await waitForPort(port);
   if (!ready) throw new Error('Server failed to start');
-  return port;
+
+  const externalUri = await vscode.env.asExternalUri(vscode.Uri.parse(`http://localhost:${port}`));
+  return externalUri.toString();
 }
 
 function stopServer() {
@@ -98,8 +105,8 @@ async function openInEditor() {
   panel.webview.html = loadTemplate('loading');
 
   try {
-    const port = await startServer(cwd);
-    panel.webview.html = loadTemplate('webview', {port: String(port)});
+    const serverUrl = await startServer(cwd);
+    panel.webview.html = loadTemplate('webview', {serverUrl});
   } catch (err) {
     panel.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
   }

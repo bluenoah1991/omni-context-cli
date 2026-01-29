@@ -18,8 +18,8 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = loadTemplate('loading');
 
     try {
-      const port = await startServer(cwd);
-      webviewView.webview.html = loadTemplate('webview', {port: String(port)});
+      const serverUrl = await startServer(cwd);
+      webviewView.webview.html = loadTemplate('webview', {serverUrl});
     } catch (err) {
       webviewView.webview.html = loadTemplate('error', {message: `Failed to start: ${err}`});
     }

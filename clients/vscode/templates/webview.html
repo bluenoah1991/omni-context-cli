@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; frame-src http://localhost:*; style-src 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; frame-src http: https:; style-src 'unsafe-inline';">
   <style>
     body {
       margin: 0;
@@ -16,6 +16,6 @@
   </style>
 </head>
 <body>
-  <iframe src="http://localhost:{{port}}?embed=1"></iframe>
+  <iframe src="{{serverUrl}}?embed=1"></iframe>
 </body>
 </html>
