@@ -31,6 +31,9 @@ npm start -- --diagnostic
 # Enable cost analysis
 npm start -- --cost-analysis
 
+# Start web server mode
+npm start -- --serve
+
 # Format code
 npm run format
 ```
@@ -41,42 +44,44 @@ OMX follows a layered architecture:
 
 ```
 CLI Entry (cli.tsx)
-    ↓
+    |
 UI Layer (Ink/React) - ChatView, InputBox, Menu, MediaContextBar, OptionPicker
-    ↓
+    |
 Service Layer
-    ├── chatOrchestrator - Main conversation loop
-    ├── agentManager - Loads and executes agents
-    ├── toolExecutor - Dispatches tool calls
-    ├── mcpManager - MCP server integration
-    ├── sessionManager - Session persistence
-    ├── memoryManager - Cross-session memory and key points
-    ├── compactionManager - Auto-summarization at context limits
-    └── skillManager - Skill system management
-    ↓
+    |-- chatOrchestrator - Main conversation loop
+    |-- agentManager - Loads agents from markdown
+    |-- agentExecutor - Executes agents with parameters
+    |-- toolExecutor - Dispatches tool calls
+    |-- mcpManager - MCP server integration
+    |-- sessionManager - Session persistence
+    |-- memoryManager - Cross-session memory and key points
+    |-- compactionManager - Auto-summarization at context limits
+    +-- skillManager - Skill system management
+    |
 Provider Adapters
-    ├── anthropic/openai/gemini/responsesRequestBuilder - Format API requests
-    ├── anthropic/openai/gemini/responsesStreamHandler - Handle streaming responses
-    ├── requestInterceptor - Apply provider-specific interceptors
-    └── modelProviders/ - Model source adapters (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu)
-    ↓
+    |-- anthropic/openai/gemini/responsesRequestBuilder - Format API requests
+    |-- anthropic/openai/gemini/responsesStreamHandler - Handle streaming responses
+    |-- requestInterceptor - Apply provider-specific interceptors
+    +-- modelProviders/ - Model source adapters (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu)
+    |
 Storage/State
-    ├── chatStore - Zustand state management
-    └── File system - Sessions in ~/.omx/projects/
+    |-- chatStore - Zustand state management
+    +-- File system - Sessions in ~/.omx/projects/
 ```
 
 **Key Flows:**
-- User input → parse slash commands → build request → stream response → execute tools → update UI
+- User input -> parse slash commands -> build request -> stream response -> execute tools -> update UI
 - Tool execution runs in parallel when possible
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
-- Request interceptors modify requests for specific providers (Codex, MiniMax, Zenmux, Zhipu)
+- Request interceptors modify requests for specific providers (Codex, MiniMax, Xai, Zenmux, Zhipu)
 - Media files (images) can be attached to user messages across all providers
 
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
 - `CodexInterceptor` - Responses API adjustments
 - `MiniMaxInterceptor` - MiniMax API compatibility
+- `XaiInterceptor` - xAI API compatibility
 - `ZenmuxInterceptor` - Zenmux proxy handling
 - `ZhipuInterceptor` - Zhipu AI compatibility
 
@@ -98,7 +103,7 @@ Provider-specific interceptors modify API requests before sending:
 - **Code Obfuscation**: javascript-obfuscator (production builds only)
 - **Templating**: Handlebars (slash commands)
 - **File Operations**: glob, gray-matter (frontmatter parsing)
-- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting)
+- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting), diff (unified diffs)
 
 ## Development
 
@@ -106,34 +111,37 @@ Provider-specific interceptors modify API requests before sending:
 
 ```
 omx/
-├── src/
-│   ├── cli.tsx                    # Entry point, CLI setup
-│   ├── services/                  # Core business logic
-│   │   ├── chatOrchestrator.ts    # Main conversation orchestration
-│   │   ├── agentManager.ts        # Agent loading and execution
-│   │   ├── toolExecutor.ts        # Tool registry and dispatcher
-│   │   ├── mcpManager.ts          # MCP server lifecycle
-│   │   ├── sessionManager.ts      # Session CRUD and persistence
-│   │   ├── configManager.ts       # Model configuration and API keys
-│   │   ├── slashManager.ts        # Slash command loading
-│   │   ├── memoryManager.ts       # Cross-session memory system
-│   │   ├── compactionManager.ts   # Context summarization
-│   │   ├── skillManager.ts        # Skill system management
-│   │   ├── messageConverter.ts    # Message format conversion between providers
-│   │   ├── modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
-│   │   └── tools/                 # Built-in tool implementations
-│   ├── types/                     # TypeScript definitions
-│   ├── prompts/                   # System prompt templates
-│   ├── store/                     # Zustand state management
-│   ├── ui/                        # React/Ink components
-│   └── utils/                     # Helper utilities (mediaUtils, contextEditor)
-├── agents/                        # Built-in agent definitions (.md)
-├── slash/                         # Built-in slash commands (.md)
-├── bin/                           # Embedded ripgrep binaries
-├── .omx/                          # User-level config and customizations
-├── package.json
-├── tsconfig.json
-└── build.mjs                      # Build script with esbuild
+|-- src/
+|   |-- cli.tsx                    # Entry point, CLI setup
+|   |-- services/                  # Core business logic (34 services)
+|   |   |-- chatOrchestrator.ts    # Main conversation orchestration
+|   |   |-- agentManager.ts        # Agent loading from markdown
+|   |   |-- agentExecutor.ts       # Agent execution with parameters
+|   |   |-- toolExecutor.ts        # Tool registry and dispatcher
+|   |   |-- mcpManager.ts          # MCP server lifecycle
+|   |   |-- sessionManager.ts      # Session CRUD and persistence
+|   |   |-- configManager.ts       # Model configuration and API keys
+|   |   |-- slashManager.ts        # Slash command loading
+|   |   |-- memoryManager.ts       # Cross-session memory system
+|   |   |-- compactionManager.ts   # Context summarization
+|   |   |-- skillManager.ts        # Skill system management
+|   |   |-- messageConverter.ts    # Message format conversion between providers
+|   |   |-- modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
+|   |   |-- interceptors/          # Provider-specific interceptors
+|   |   |-- tools/                 # Built-in tool implementations
+|   |   +-- webServer/             # HTTP API and static server
+|   |-- types/                     # TypeScript definitions (16 type files)
+|   |-- prompts/                   # System prompt templates (16 files)
+|   |-- store/                     # Zustand state management
+|   |-- ui/                        # React/Ink components (23 components)
+|   +-- utils/                     # Helper utilities (7 files)
+|-- agents/                        # Built-in agent definitions (.md)
+|-- slash/                         # Built-in slash commands (.md)
+|-- bin/                           # Embedded ripgrep binaries
+|-- .omx/                          # User-level config and customizations
+|-- package.json
+|-- tsconfig.json
++-- build.mjs                      # Build script with esbuild
 ```
 
 ### Adding Tools
@@ -224,6 +232,27 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 
 MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpManager` connects to servers via stdio or HTTP and exposes their tools as `mcp_<server>_<tool>`.
 
+### Web Server Mode
+
+Start OMX as an HTTP server with `--serve` flag (default port 5281):
+
+```bash
+npm start -- --serve
+npm start -- --serve --port 8080
+```
+
+The web server provides:
+- REST API for chat, sessions, and configuration
+- Static file serving for web UI
+- Server-sent events for streaming responses
+
+Web server components in `src/services/webServer/`:
+- `index.ts` - Server setup and routing
+- `staticServer.ts` - Static file serving
+- `httpUtils.ts` - HTTP utilities
+- `apiHandlers.ts` - API route handlers
+- `handlers/` - Route-specific handlers (chat, sessions, config)
+
 ## Key Files
 
 | File | Purpose |
@@ -232,11 +261,17 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 | `src/services/chatOrchestrator.ts` | Main conversation loop, request/response flow |
 | `src/services/toolExecutor.ts` | Central tool registry and dispatcher |
 | `src/services/agentManager.ts` | Loads agents from markdown, registers as tools |
+| `src/services/agentExecutor.ts` | Executes agents with parameters and allowed tools |
 | `src/services/mcpManager.ts` | MCP server connections and tool bridging |
 | `src/services/sessionManager.ts` | Session persistence to `~/.omx/projects/` |
 | `src/services/configManager.ts` | Model config, API keys, provider settings |
 | `src/services/requestInterceptor.ts` | Applies provider-specific request modifications |
 | `src/services/messageConverter.ts` | Message format conversion between providers |
+| `src/services/baseStreamHandler.ts` | Base class for streaming response handlers |
+| `src/services/anthropicRequestBuilder.ts` | Anthropic API request formatting |
+| `src/services/anthropicStreamHandler.ts` | Anthropic streaming response handling |
+| `src/services/openaiRequestBuilder.ts` | OpenAI API request formatting |
+| `src/services/openaiStreamHandler.ts` | OpenAI streaming response handling |
 | `src/services/geminiRequestBuilder.ts` | Google Gemini API request formatting |
 | `src/services/geminiStreamHandler.ts` | Google Gemini streaming response handling |
 | `src/services/responsesRequestBuilder.ts` | Responses API request formatting |
@@ -245,10 +280,14 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 | `src/services/compactionManager.ts` | Auto-summarization at context limits |
 | `src/services/skillManager.ts` | Skill discovery and loading |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
-| `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Zenmux, Zhipu) |
+| `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Xai, Zenmux, Zhipu) |
+| `src/services/webServer/` | HTTP API and static server components |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
 | `src/utils/mediaUtils.ts` | Media file handling and encoding |
+| `src/utils/messagePreprocessor.ts` | Message preprocessing for display and API calls |
+| `src/utils/omxPaths.ts` | Path utilities for OMX directories |
 | `src/store/chatStore.ts` | Zustand store for chat state |
+| `src/store/ideStore.ts` | Zustand store for IDE integration state |
 | `src/ui/components/ChatView.tsx` | Main terminal UI component |
 | `src/ui/components/MediaContextBar.tsx` | Media attachment preview bar |
 | `src/ui/components/OptionPicker.tsx` | Option selection UI |
@@ -288,7 +327,7 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 ### Prompt Engineering
 
 - Base system prompt in `src/prompts/system.txt`
-- Specialized prompts for specialist mode, skills, compaction
+- Specialized prompts for specialist mode, skills, compaction, memory, agent instructions
 - Dynamic prompt assembly via `systemPromptBuilder.ts`
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 - Context editing via `contextEditor.ts` for configurable message modification rounds
@@ -299,6 +338,7 @@ MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpMana
 - Use specialized tools (Read, Glob, Grep) over Bash when possible
 - Bash for actual system commands only
 - Parallel execution when tools have no dependencies
+- Tool results include `diffs` field for file changes (when success is true)
 
 ### Extension Points
 
