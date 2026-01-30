@@ -1,6 +1,5 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { useCleanedContent } from '../hooks/useCleanedContent';
 import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
@@ -14,9 +13,9 @@ export const ThinkingBlock = React.memo(
     {content, showIcon = false}: ThinkingBlockProps,
   ): React.ReactElement | null {
     const contentWidth = useContentWidth();
-    const cleanContent = useCleanedContent(content);
+    const text = content?.trim();
 
-    if (!cleanContent) {
+    if (!text) {
       return null;
     }
 
@@ -27,7 +26,7 @@ export const ThinkingBlock = React.memo(
           {!showIcon && <Text color={colors.muted}>{' '}</Text>}
         </Box>
         <Box marginRight={3} flexDirection='column' width={contentWidth}>
-          <Text color={colors.muted} wrap='wrap'>{cleanContent}</Text>
+          <Text color={colors.muted} wrap='wrap'>{text}</Text>
         </Box>
       </Box>
     );
