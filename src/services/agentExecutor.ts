@@ -1,5 +1,6 @@
 import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
+import { StreamCallbacks } from '../types/streamCallbacks';
 import { FileDiff, ToolHandlerResult } from '../types/tool';
 import { extractTextContent } from '../utils/messageUtils';
 import { injectAgentInstructions } from './agentInstructionsManager';
@@ -18,6 +19,7 @@ export async function executeAgent(
   agent: AgentDefinition,
   params: Record<string, any>,
   signal?: AbortSignal,
+  callbacks?: StreamCallbacks,
 ): Promise<ToolHandlerResult> {
   const appConfig = loadAppConfig();
 
@@ -52,6 +54,7 @@ export async function executeAgent(
           }
         } catch {}
       },
+      onToolApproval: callbacks?.onToolApproval,
     },
     signal,
     {excludeAgents: true, excludeMcp: false, allowedTools: agent.allowedTools || null},

@@ -1,3 +1,5 @@
+import { StreamCallbacks } from './streamCallbacks';
+
 export interface ToolDefinition {
   name: string;
   description: string;
@@ -18,7 +20,11 @@ export interface ToolHandlerResult {
   diffs?: FileDiff[];
 }
 
-export type ToolHandler = (args: any, signal?: AbortSignal) => Promise<ToolHandlerResult>;
+export type ToolHandler = (
+  args: any,
+  signal?: AbortSignal,
+  callbacks?: StreamCallbacks,
+) => Promise<ToolHandlerResult>;
 
 export interface ToolExecutionResult {
   success: boolean;

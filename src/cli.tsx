@@ -24,6 +24,7 @@ import {
 } from './services/modelProvider.js';
 import { initializeProviders } from './services/modelProviders/index.js';
 import { loadLatestSession } from './services/sessionManager.js';
+import { enableToolApproval } from './services/toolApproval.js';
 import { initializeTools } from './services/tools/index.js';
 import { startServer } from './services/webServer/index.js';
 import { useChatStore } from './store/chatStore.js';
@@ -50,7 +51,10 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('-H, --host <host>', 'Host for server mode (default: localhost)').option(
   '--parent-pid <pid>',
   'Exit when parent process dies (requires --serve)',
-).option('--install-vscode-extension', 'Install VS Code extension').parse();
+).option('--install-vscode-extension', 'Install VS Code extension').option(
+  '--approve-write',
+  'Require user approval before running Bash, Edit, and Write tools',
+).option('--approve-all', 'Require user approval before running any tool').parse();
 
 const opts = program.opts();
 
@@ -150,6 +154,12 @@ if (opts.diagnostic) {
 
 if (opts.costAnalysis) {
   enableCostAnalysis();
+}
+
+if (opts.approveAll) {
+  enableToolApproval('all');
+} else if (opts.approveWrite) {
+  enableToolApproval('write');
 }
 
 if (opts.serve) {

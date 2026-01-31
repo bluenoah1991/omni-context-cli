@@ -6,6 +6,7 @@ export interface StreamCallbacks {
   onThinking?: (thinking: string) => void;
   onToolCall?: (toolCall: ToolCall) => void;
   onToolResult?: (toolResult: ToolResult) => void;
+  onToolApproval?: (toolCall: ToolCall) => Promise<boolean>;
   onSessionUpdate?: (session: Session) => void;
 }
 

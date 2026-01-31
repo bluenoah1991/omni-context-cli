@@ -7,7 +7,9 @@ import {
   getInputHistoryLength,
 } from '../../services/inputHistoryManager';
 import { getAllSlashCommands } from '../../services/slashManager';
+import { formatApprovalPrompt } from '../../services/toolApproval';
 import { useChatStore } from '../../store/chatStore';
+import { ToolCall } from '../../types/streamCallbacks';
 import { extractMediaPath, loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { colors } from '../theme/colors';
 import { OptionPicker } from './OptionPicker';
@@ -16,6 +18,8 @@ import { SlashCommandPicker } from './SlashCommandPicker';
 interface InputBoxProps {
   onSubmit: (text: string) => void;
   disabled?: boolean;
+  pendingToolApproval?: ToolCall | null;
+  onToolApproval?: (approved: boolean) => void;
 }
 
 type State = {
@@ -151,7 +155,9 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElement {
+export function InputBox(
+  {onSubmit, disabled, pendingToolApproval, onToolApproval}: InputBoxProps,
+): React.ReactElement {
   const [state, dispatch] = useReducer(reducer, {
     previousValue: '',
     value: '',
@@ -299,6 +305,17 @@ export function InputBox({onSubmit, disabled}: InputBoxProps): React.ReactElemen
 
   return (
     <Box flexDirection='column' flexGrow={1}>
+      {pendingToolApproval && onToolApproval && (
+        <OptionPicker
+          title={formatApprovalPrompt(pendingToolApproval)}
+          options={[{key: 'approve', label: 'Approve and continue'}, {
+            key: 'reject',
+            label: 'Deny and abort',
+          }]}
+          onSelect={key => onToolApproval(key === 'approve')}
+          onCancel={() => onToolApproval(false)}
+        />
+      )}
       {pendingMediaPath && (
         <OptionPicker
           title='Image file detected'

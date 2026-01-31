@@ -20,6 +20,7 @@ import { useChatStore } from '../../store/chatStore';
 import { useIDEStore } from '../../store/ideStore';
 import { wrapDualMessage, wrapIDEContext } from '../../utils/messagePreprocessor';
 
+import { ToolCall } from '../../types/streamCallbacks';
 import { CompactingIndicator } from './CompactingIndicator';
 import { IDEContextBar } from './IDEContextBar';
 import { InputBox } from './InputBox';
@@ -31,6 +32,11 @@ import { StatusBar } from './StatusBar';
 
 const NOTIFICATION_THRESHOLD_MS = 60000;
 const NOTIFICATION_ICON = join(dirname(fileURLToPath(import.meta.url)), 'assets/cone@128.png');
+
+interface PendingApproval {
+  toolCall: ToolCall;
+  resolve: (approved: boolean) => void;
+}
 
 export function ChatView(): React.ReactElement {
   const {
@@ -76,6 +82,7 @@ export function ChatView(): React.ReactElement {
     loadAppConfig().notificationEnabled
   );
   const ideSelection = useIDEStore(state => state.selection);
+  const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -290,6 +297,10 @@ export function ChatView(): React.ReactElement {
               }]
             );
           },
+          onToolApproval: toolCall =>
+            new Promise(resolve => {
+              setPendingApproval({toolCall, resolve});
+            }),
         },
         abortController.signal,
         toolFilter,
@@ -330,6 +341,13 @@ export function ChatView(): React.ReactElement {
     setError,
   ]);
 
+  const handleToolApproval = useCallback((approved: boolean) => {
+    if (pendingApproval) {
+      pendingApproval.resolve(approved);
+      setPendingApproval(null);
+    }
+  }, [pendingApproval]);
+
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
       <MessageList
@@ -356,9 +374,14 @@ export function ChatView(): React.ReactElement {
           model={model}
           session={session}
           enableThinking={enableThinking}
-          disabled={showMenu}
+          disabled={showMenu || !!pendingApproval}
         />
-        <InputBox onSubmit={handleSubmit} disabled={isLoading || isCompacting || showMenu} />
+        <InputBox
+          onSubmit={handleSubmit}
+          disabled={isLoading || isCompacting || showMenu || !!pendingApproval}
+          pendingToolApproval={pendingApproval?.toolCall}
+          onToolApproval={handleToolApproval}
+        />
         <Box flexDirection='row' gap={2}>
           {ideContextEnabled && <IDEContextBar selection={ideSelection} />}
           <MediaContextBar mediaContexts={mediaContexts} />

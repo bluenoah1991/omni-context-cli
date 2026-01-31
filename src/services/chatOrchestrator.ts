@@ -17,6 +17,7 @@ import { OpenAIStreamHandler } from './openaiStreamHandler';
 import { buildResponsesRequest } from './responsesRequestBuilder';
 import { ResponsesStreamHandler } from './responsesStreamHandler';
 import { addToolResultMessages, getLastAssistantToolCalls } from './sessionManager';
+import { requiresApproval } from './toolApproval';
 import { executeTool } from './toolExecutor';
 
 async function streamAIResponse(
@@ -105,15 +106,24 @@ async function processToolCalls(
   const toolResults: ToolResult[] = [];
 
   const executedIds = new Set<string | undefined>();
+  let userRejected = false;
 
   for (const toolCall of toolCalls) {
-    if (signal?.aborted) {
+    if (signal?.aborted || userRejected) {
       break;
+    }
+
+    if (callbacks.onToolApproval && requiresApproval(toolCall.name)) {
+      const approved = await callbacks.onToolApproval(toolCall);
+      if (!approved) {
+        userRejected = true;
+        break;
+      }
     }
 
     callbacks.onToolCall?.({id: toolCall.id, name: toolCall.name, input: toolCall.input});
 
-    const result = await executeTool(toolCall.name, toolCall.input, signal);
+    const result = await executeTool(toolCall.name, toolCall.input, signal, callbacks);
     const {dataUrl, ...resultWithoutDataUrl} = result;
     const content = JSON.stringify(resultWithoutDataUrl);
     callbacks.onToolResult?.({id: toolCall.id, name: toolCall.name, content});
@@ -121,7 +131,7 @@ async function processToolCalls(
     executedIds.add(toolCall.id);
   }
 
-  if (signal?.aborted) {
+  if (signal?.aborted || userRejected) {
     for (const toolCall of toolCalls) {
       if (!executedIds.has(toolCall.id)) {
         const content = JSON.stringify({success: false, error: 'Execution interrupted'});
@@ -130,9 +140,10 @@ async function processToolCalls(
     }
     callbacks.onError?.('Tool execution interrupted');
   }
+
   return {
     session: addToolResultMessages(session, toolResults, provider),
-    shouldContinue: !signal?.aborted,
+    shouldContinue: !signal?.aborted && !userRejected,
   };
 }
 

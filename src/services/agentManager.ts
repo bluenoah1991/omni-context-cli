@@ -77,8 +77,8 @@ export function registerAgents(): void {
         const formatted = values.map(v => String(v)).join(' ');
         return formatted.length > 50 ? formatted.slice(0, 47) + '...' : formatted;
       },
-    }, async (args, signal) => {
-      return executeAgent(agent, args, signal);
+    }, async (args, signal, callbacks) => {
+      return executeAgent(agent, args, signal, callbacks);
     });
   });
 }

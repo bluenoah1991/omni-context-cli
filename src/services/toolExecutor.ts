@@ -1,3 +1,4 @@
+import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolDefinition, ToolExecutionResult, ToolFilter, ToolHandler } from '../types/tool';
 import { getAgentModel, loadAppConfig } from './configManager';
 import { executeMCPTool, getAllMCPToolDefinitions, isMCPTool } from './mcpManager';
@@ -59,6 +60,7 @@ export async function executeTool(
   toolName: string,
   args: any,
   signal?: AbortSignal,
+  callbacks?: StreamCallbacks,
 ): Promise<ToolExecutionResult> {
   if (isMCPTool(toolName)) {
     try {
@@ -76,7 +78,7 @@ export async function executeTool(
   }
 
   try {
-    const result = await tool.handler(args, signal);
+    const result = await tool.handler(args, signal, callbacks);
     return {
       success: true,
       result: result.result,
