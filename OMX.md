@@ -34,6 +34,12 @@ npm start -- --cost-analysis
 # Start web server mode
 npm start -- --serve
 
+# Require approval for write tools (Bash, Edit, Write)
+npm start -- --approve-write
+
+# Require approval for all tools
+npm start -- --approve-all
+
 # Format code
 npm run format
 ```
@@ -75,7 +81,8 @@ Storage/State
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
 - Request interceptors modify requests for specific providers (Codex, MiniMax, Xai, Zenmux, Zhipu)
-- Media files (images) can be attached to user messages across all providers
+- Media files (images, PDFs, documents) can be attached to user messages across all providers
+- Tool approval system allows requiring user confirmation before tool execution
 
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
@@ -113,13 +120,15 @@ Provider-specific interceptors modify API requests before sending:
 omx/
 |-- src/
 |   |-- cli.tsx                    # Entry point, CLI setup
-|   |-- services/                  # Core business logic (34 services)
+|   |-- services/                  # Core business logic (35 services)
 |   |   |-- chatOrchestrator.ts    # Main conversation orchestration
 |   |   |-- agentManager.ts        # Agent loading from markdown
 |   |   |-- agentExecutor.ts       # Agent execution with parameters
 |   |   |-- toolExecutor.ts        # Tool registry and dispatcher
+|   |   |-- toolApproval.ts        # Tool approval before execution
 |   |   |-- mcpManager.ts          # MCP server lifecycle
 |   |   |-- sessionManager.ts      # Session CRUD and persistence
+|   |   |-- webSessionManager.ts   # Web session state and approval flow
 |   |   |-- configManager.ts       # Model configuration and API keys
 |   |   |-- slashManager.ts        # Slash command loading
 |   |   |-- memoryManager.ts       # Cross-session memory system
@@ -135,8 +144,18 @@ omx/
 |   |-- store/                     # Zustand state management
 |   |-- ui/                        # React/Ink components (23 components)
 |   +-- utils/                     # Helper utilities (7 files)
+|-- clients/
+|   |-- vscode/                    # VS Code extension
+|   |   |-- src/extension.ts       # Extension entry point
+|   |   |-- src/webviewProvider.ts # Webview panel management
+|   |   +-- src/mcp/               # MCP server for IDE integration
+|   +-- web/                       # Web client (React SPA)
+|       |-- src/components/        # UI components
+|       |-- src/services/          # API service layer
+|       +-- src/store/             # Zustand state management
 |-- agents/                        # Built-in agent definitions (.md)
 |-- slash/                         # Built-in slash commands (.md)
+|-- assets/                        # Icons and images
 |-- bin/                           # Embedded ripgrep binaries
 |-- .omx/                          # User-level config and customizations
 |-- package.json
@@ -228,6 +247,17 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `contextEditing` | boolean | true | Enable context editing |
 | `contextEditingRounds` | number | 0 | Number of context editing rounds |
 
+### Tool Approval
+
+Tool approval requires user confirmation before executing potentially destructive tools:
+
+| Flag | Scope | Description |
+|------|-------|-------------|
+| `--approve-write` | Write tools | Requires approval for Bash, Edit, Write |
+| `--approve-all` | All tools | Requires approval for all base tools |
+
+Agent tools (`agent_*`) and MCP tools (`mcp_*`) don't require direct approval - approval happens at the base tool level where actual changes occur.
+
 ### MCP Integration
 
 MCP servers are configured in `~/.omx/mcp.json` or `.omx/mcp.json`. The `mcpManager` connects to servers via stdio or HTTP and exposes their tools as `mcp_<server>_<tool>`.
@@ -252,6 +282,42 @@ Web server components in `src/services/webServer/`:
 - `httpUtils.ts` - HTTP utilities
 - `apiHandlers.ts` - API route handlers
 - `handlers/` - Route-specific handlers (chat, sessions, config)
+
+### VS Code Extension
+
+The VS Code extension (`clients/vscode/`) provides an integrated coding assistant within the IDE:
+
+- Activity bar panel with webview UI
+- MCP server for IDE integration (diagnostics, file operations, diff views)
+- Remote development support with external URIs
+- Lock file-based discovery for CLI-IDE communication
+
+Build the extension:
+```bash
+cd clients/vscode
+npm install
+npm run build
+```
+
+### Web Client
+
+The web client (`clients/web/`) is a React SPA that connects to the OMX server:
+
+- Full chat interface with message history
+- Session management and rewind
+- Settings panel for model configuration
+- Tool approval UI for confirming operations
+- Drag and drop file attachment
+- Document (PDF) and image support
+
+Build the web client:
+```bash
+cd clients/web
+npm install
+npm run build
+```
+
+For VS Code extension embedding, use `npm run build:vscode`.
 
 ## Key Files
 
@@ -279,9 +345,15 @@ Web server components in `src/services/webServer/`:
 | `src/services/memoryManager.ts` | Cross-session memory and key points |
 | `src/services/compactionManager.ts` | Auto-summarization at context limits |
 | `src/services/skillManager.ts` | Skill discovery and loading |
+| `src/services/toolApproval.ts` | Tool approval mode and formatting |
+| `src/services/webSessionManager.ts` | Web session state and approval flow |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
 | `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Xai, Zenmux, Zhipu) |
 | `src/services/webServer/` | HTTP API and static server components |
+| `clients/vscode/src/extension.ts` | VS Code extension entry point |
+| `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
+| `clients/web/src/App.tsx` | Web client main component |
+| `clients/web/src/store/chatStore.ts` | Web client state management |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
 | `src/utils/mediaUtils.ts` | Media file handling and encoding |
 | `src/utils/messagePreprocessor.ts` | Message preprocessing for display and API calls |
@@ -380,4 +452,6 @@ Web server components in `src/services/webServer/`:
 - Development: `npm run dev` watches and rebuilds with source maps
 - Production: `npm run build` bundles, minifies, and obfuscates
 - Output: Single ESM bundle at `dist/cli.js`
-- Includes: agents/, slash/, and bin/ directories copied to dist/
+- Includes: agents/, slash/, assets/, and bin/ directories copied to dist/
+- Web client: Built separately via `npm run build` in `clients/web/`
+- VS Code extension: Built separately via `npm run build` in `clients/vscode/`
