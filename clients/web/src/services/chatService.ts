@@ -75,7 +75,10 @@ export async function fetchSlashCommands(): Promise<ApiResult<SlashCommand[]>> {
 }
 
 export async function sendChat(
-  request: {content: string; images?: Array<{base64: string; mediaType: string;}>;},
+  request: {
+    content: string;
+    attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>;
+  },
   callbacks: ChatCallbacks,
 ): Promise<void> {
   const res = await fetch(apiUrl('chat'), {

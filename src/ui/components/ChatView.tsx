@@ -173,7 +173,11 @@ export function ChatView(): React.ReactElement {
 
     const currentMediaContexts = useChatStore.getState().mediaContexts;
     const userMedia = currentMediaContexts.length > 0
-      ? currentMediaContexts.map(m => ({dataUrl: m.dataUrl, mimeType: m.mimeType}))
+      ? currentMediaContexts.map(m => ({
+        dataUrl: m.dataUrl,
+        mimeType: m.mimeType,
+        fileName: m.fileName,
+      }))
       : undefined;
     if (currentMediaContexts.length > 0) {
       clearMediaContexts();

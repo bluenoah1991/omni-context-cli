@@ -24,7 +24,7 @@ export interface ChatSlice {
   getSlashCommands: () => Promise<void>;
   sendMessage: (
     content: string,
-    images?: Array<{base64: string; mediaType: string;}>,
+    attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>,
   ) => Promise<void>;
   stopGeneration: () => Promise<void>;
   handleToolApproval: (approved: boolean) => Promise<void>;
@@ -101,7 +101,10 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     else if (error) set({error});
   },
 
-  sendMessage: async (content: string, images?: Array<{base64: string; mediaType: string;}>) => {
+  sendMessage: async (
+    content: string,
+    attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>,
+  ) => {
     const {isLoading, currentModel, currentSession, inputHistory, autoDiffPanel, closeDiffPanel} =
       get();
     if (isLoading || !currentModel || !currentSession) return;
@@ -126,7 +129,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     set({isLoading: true, error: null});
 
     try {
-      await sendChat({content, images}, {
+      await sendChat({content, attachments}, {
         onMessage: message => {
           set(state => ({currentSession: appendMessage(state.currentSession!, message)}));
           autoOpenDiff(message, get());

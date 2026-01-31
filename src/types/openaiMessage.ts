@@ -3,7 +3,7 @@ export type OpenAIMessageRole = 'user' | 'assistant' | 'tool';
 export type OpenAIContentPart = {type: 'text'; text: string;} | {
   type: 'image_url';
   image_url: {url: string;};
-};
+} | {type: 'file'; file: {file_data: string; filename: string;};};
 
 export interface OpenAIToolCall {
   id: string;

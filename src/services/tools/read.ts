@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { loadMediaAsBase64 } from '../../utils/mediaUtils';
+import { isDocumentMimeType, loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { normalizePath } from '../../utils/wsl';
 import { registerTool } from '../toolExecutor';
 
@@ -12,7 +12,7 @@ export function registerReadTool(): void {
     name: 'Read',
     builtin: true,
     description:
-      `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content". Also supports reading images (PNG, JPG, GIF, WEBP) for visual inspection.`,
+      `Read file contents with line numbers. Great for previewing files, reviewing code before edits, or checking specific sections of large files. Returns numbered lines for easy reference. For large files, use offset and limit—start at the top, then read more as needed. Format: line number prefix like "00001| content". Also supports reading images (PNG, JPG, GIF, WEBP) and PDF files.`,
     formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
     parameters: {
       properties: {
@@ -70,9 +70,11 @@ export function registerReadTool(): void {
 
     const mediaData = loadMediaAsBase64(absolutePath);
     if (mediaData) {
+      const isDocument = isDocumentMimeType(mediaData.mimeType);
+      const fileType = isDocument ? 'Document' : 'Image';
       return {
-        result: `Image file: ${absolutePath}`,
-        displayText: `Read image`,
+        result: `${fileType} file: ${absolutePath}`,
+        displayText: `Read ${fileType.toLowerCase()}`,
         dataUrl: mediaData.dataUrl,
       };
     }

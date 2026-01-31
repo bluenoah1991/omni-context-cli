@@ -20,8 +20,9 @@ import RewindPicker from './RewindPicker';
 import SlashCommandPicker from './SlashCommandPicker';
 import { StatusIcon } from './StatusIcon';
 
-interface PastedImage {
+interface Attachment {
   id: string;
+  fileName: string;
   dataUrl: string;
   base64: string;
   mediaType: string;
@@ -31,7 +32,7 @@ interface InputBoxProps {
   disabled?: boolean;
 }
 
-function processFile(file: File): Promise<PastedImage> {
+function processFile(file: File): Promise<Attachment> {
   return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -41,6 +42,7 @@ function processFile(file: File): Promise<PastedImage> {
 
       resolve({
         id: Date.now().toString() + Math.random().toString(36).substring(2),
+        fileName: file.name,
         dataUrl: result,
         base64,
         mediaType,
@@ -48,6 +50,18 @@ function processFile(file: File): Promise<PastedImage> {
     };
     reader.readAsDataURL(file);
   });
+}
+
+function isImageType(mediaType: string): boolean {
+  return mediaType.startsWith('image/');
+}
+
+function isDocumentType(mediaType: string): boolean {
+  return mediaType === 'application/pdf';
+}
+
+function isSupportedType(mediaType: string): boolean {
+  return isImageType(mediaType) || isDocumentType(mediaType);
 }
 
 function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: number;}): string {
@@ -62,7 +76,7 @@ function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: numb
 
 export default function InputBox({disabled = false}: InputBoxProps) {
   const [message, setMessage] = useState('');
-  const [images, setImages] = useState<PastedImage[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [pickerCancelled, setPickerCancelled] = useState(false);
   const [rewindPoints, setRewindPoints] = useState<RewindPoint[] | null>(null);
@@ -138,27 +152,27 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     const items = e.clipboardData?.items;
     if (!items) return;
 
-    const newImages: PastedImage[] = [];
+    const newAttachments: Attachment[] = [];
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.startsWith('image/')) {
+      if (isSupportedType(item.type)) {
         e.preventDefault();
         const file = item.getAsFile();
         if (file) {
-          const image = await processFile(file);
-          newImages.push(image);
+          const attachment = await processFile(file);
+          newAttachments.push(attachment);
         }
       }
     }
 
-    if (newImages.length > 0) {
-      setImages(prev => [...prev, ...newImages]);
+    if (newAttachments.length > 0) {
+      setAttachments(prev => [...prev, ...newAttachments]);
     }
   };
 
-  const removeImage = (id: string) => {
-    setImages(prev => prev.filter(image => image.id !== id));
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(a => a.id !== id));
   };
 
   const showRewindPicker = rewindPoints !== null;
@@ -180,10 +194,14 @@ export default function InputBox({disabled = false}: InputBoxProps) {
         return;
       }
 
-      const imageData = images.map(img => ({base64: img.base64, mediaType: img.mediaType}));
-      sendMessage(text, imageData.length > 0 ? imageData : undefined);
+      const attachmentData = attachments.map(a => ({
+        base64: a.base64,
+        mediaType: a.mediaType,
+        fileName: a.fileName,
+      }));
+      sendMessage(text, attachmentData.length > 0 ? attachmentData : undefined);
       setMessage('');
-      setImages([]);
+      setAttachments([]);
       setHistoryIndex(-1);
       setSavedInput('');
     }
@@ -287,7 +305,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const totalTokens = (currentSession?.inputTokens || 0) + (currentSession?.outputTokens || 0);
   const contextPercent = contextLimit > 0 ? ((totalTokens / contextLimit) * 100).toFixed(1) : '0';
 
-  const hasContext = ideContext || images.length > 0;
+  const hasContext = ideContext || attachments.length > 0;
 
   return (
     <div className='bg-vscode-bg pb-6 pt-4'>
@@ -302,14 +320,26 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                 </span>
               </div>
             )}
-            {images.map(image => (
+            {attachments.map(attachment => (
               <div
-                key={image.id}
+                key={attachment.id}
                 className='relative group rounded-md overflow-hidden border border-vscode-border'
               >
-                <img src={image.dataUrl} alt='Attached' className='w-10 h-10 object-cover' />
+                {isImageType(attachment.mediaType)
+                  ? (
+                    <img
+                      src={attachment.dataUrl}
+                      alt='Attached'
+                      className='w-10 h-10 object-cover'
+                    />
+                  )
+                  : (
+                    <div className='w-10 h-10 flex items-center justify-center bg-vscode-element text-vscode-text text-xs'>
+                      PDF
+                    </div>
+                  )}
                 <button
-                  onClick={() => removeImage(image.id)}
+                  onClick={() => removeAttachment(attachment.id)}
                   className='absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'
                 >
                   <X size={14} className='text-white' />

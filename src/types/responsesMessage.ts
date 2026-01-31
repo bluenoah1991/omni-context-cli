@@ -9,6 +9,12 @@ export interface ResponsesInputImage {
   detail: 'auto';
 }
 
+export interface ResponsesInputFile {
+  type: 'input_file';
+  file_data: string;
+  filename: string;
+}
+
 export interface ResponsesOutputText {
   type: 'output_text';
   text: string;
@@ -17,7 +23,9 @@ export interface ResponsesOutputText {
 export interface ResponsesMessageItem {
   type: 'message';
   role: 'user' | 'assistant' | 'system' | 'developer';
-  content: string | Array<ResponsesInputText | ResponsesOutputText | ResponsesInputImage>;
+  content:
+    | string
+    | Array<ResponsesInputText | ResponsesOutputText | ResponsesInputImage | ResponsesInputFile>;
   status?: 'in_progress' | 'completed' | 'incomplete';
   id?: string;
 }
@@ -34,7 +42,7 @@ export interface ResponsesFunctionCall {
 export interface ResponsesFunctionCallOutput {
   type: 'function_call_output';
   call_id: string;
-  output: string | (ResponsesInputText | ResponsesInputImage)[];
+  output: string | (ResponsesInputText | ResponsesInputImage | ResponsesInputFile)[];
   id?: string;
 }
 

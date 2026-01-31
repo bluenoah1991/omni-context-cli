@@ -7,6 +7,7 @@ import { OpenAIContentPart, OpenAIMessage } from '../types/openaiMessage';
 import {
   ResponsesContentItem,
   ResponsesFunctionCall,
+  ResponsesInputFile,
   ResponsesInputImage,
   ResponsesInputText,
   ResponsesMessage,
@@ -21,7 +22,7 @@ import {
 } from '../types/session';
 
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
-import { parseDataUrl } from '../utils/mediaUtils';
+import { isDocumentMimeType, parseDataUrl } from '../utils/mediaUtils';
 import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
@@ -94,6 +95,7 @@ export function createSession(model?: ModelConfig): Session {
 export interface UserMessageMedia {
   dataUrl: string;
   mimeType: string;
+  fileName?: string;
 }
 
 export function addUserMessage(
@@ -105,13 +107,21 @@ export function addUserMessage(
   let message: ChatMessage;
 
   if (provider === 'responses') {
-    const contentItems: (ResponsesInputText | ResponsesInputImage)[] = [{
+    const contentItems: (ResponsesInputText | ResponsesInputImage | ResponsesInputFile)[] = [{
       type: 'input_text',
       text: content,
     }];
     if (media) {
       for (const item of media) {
-        contentItems.push({type: 'input_image', image_url: item.dataUrl, detail: 'auto'});
+        if (isDocumentMimeType(item.mimeType)) {
+          contentItems.push({
+            type: 'input_file',
+            file_data: item.dataUrl,
+            filename: item.fileName || 'document.pdf',
+          });
+        } else {
+          contentItems.push({type: 'input_image', image_url: item.dataUrl, detail: 'auto'});
+        }
       }
     }
     const responsesMessage: ResponsesMessageItem = {
@@ -129,7 +139,14 @@ export function addUserMessage(
     if (media && media.length > 0) {
       const parts: OpenAIContentPart[] = [{type: 'text', text: content}];
       for (const item of media) {
-        parts.push({type: 'image_url', image_url: {url: item.dataUrl}});
+        if (isDocumentMimeType(item.mimeType)) {
+          parts.push({
+            type: 'file',
+            file: {file_data: item.dataUrl, filename: item.fileName || 'document.pdf'},
+          });
+        } else {
+          parts.push({type: 'image_url', image_url: {url: item.dataUrl}});
+        }
       }
       message = {role: 'user', content: parts} as OpenAIMessage;
     } else {
@@ -152,10 +169,17 @@ export function addUserMessage(
       for (const item of media) {
         const parsed = parseDataUrl(item.dataUrl);
         if (parsed) {
-          contentBlocks.push({
-            type: 'image',
-            source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
-          });
+          if (isDocumentMimeType(parsed.mediaType)) {
+            contentBlocks.push({
+              type: 'document',
+              source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
+            });
+          } else {
+            contentBlocks.push({
+              type: 'image',
+              source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
+            });
+          }
         }
       }
     }
@@ -241,13 +265,24 @@ export function addToolResultMessages(
 
   if (provider === 'responses') {
     toolResultMessages = toolResults.map(result => {
-      const output: string | (ResponsesInputText | ResponsesInputImage)[] = result.dataUrl
-        ? [{type: 'input_text', text: result.content}, {
-          type: 'input_image',
-          image_url: result.dataUrl,
-          detail: 'auto',
-        }]
-        : result.content;
+      let output: string | (ResponsesInputText | ResponsesInputImage | ResponsesInputFile)[] =
+        result.content;
+      if (result.dataUrl) {
+        const parsed = parseDataUrl(result.dataUrl);
+        if (parsed && isDocumentMimeType(parsed.mediaType)) {
+          output = [{type: 'input_text', text: result.content}, {
+            type: 'input_file',
+            file_data: result.dataUrl,
+            filename: 'document.pdf',
+          }];
+        } else {
+          output = [{type: 'input_text', text: result.content}, {
+            type: 'input_image',
+            image_url: result.dataUrl,
+            detail: 'auto',
+          }];
+        }
+      }
       return {
         type: 'responses',
         role: 'user',
@@ -258,10 +293,13 @@ export function addToolResultMessages(
   } else if (provider === 'openai') {
     toolResultMessages = toolResults.map(result => {
       if (result.dataUrl) {
-        const parts: OpenAIContentPart[] = [{type: 'text', text: result.content}, {
-          type: 'image_url',
-          image_url: {url: result.dataUrl},
-        }];
+        const parsed = parseDataUrl(result.dataUrl);
+        const parts: OpenAIContentPart[] = [{type: 'text', text: result.content}];
+        if (parsed && isDocumentMimeType(parsed.mediaType)) {
+          parts.push({type: 'file', file: {file_data: result.dataUrl, filename: 'document.pdf'}});
+        } else {
+          parts.push({type: 'image_url', image_url: {url: result.dataUrl}});
+        }
         return {role: 'tool', content: parts, tool_call_id: result.id} as OpenAIMessage;
       }
       return {role: 'tool', content: result.content, tool_call_id: result.id} as OpenAIMessage;
@@ -299,13 +337,19 @@ export function addToolResultMessages(
         if (result.dataUrl) {
           const parsed = parseDataUrl(result.dataUrl);
           if (parsed) {
+            const mediaBlock = isDocumentMimeType(parsed.mediaType)
+              ? {
+                type: 'document' as const,
+                source: {type: 'base64' as const, media_type: parsed.mediaType, data: parsed.data},
+              }
+              : {
+                type: 'image' as const,
+                source: {type: 'base64' as const, media_type: parsed.mediaType, data: parsed.data},
+              };
             return {
               type: 'tool_result' as const,
               tool_use_id: result.id,
-              content: [{type: 'text', text: result.content}, {
-                type: 'image',
-                source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
-              }],
+              content: [{type: 'text', text: result.content}, mediaBlock],
             };
           }
         }

@@ -1,13 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const MEDIA_EXTENSIONS: Record<string, string> = {
+const IMAGE_EXTENSIONS: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.webp': 'image/webp',
 };
+
+const DOCUMENT_EXTENSIONS: Record<string, string> = {'.pdf': 'application/pdf'};
+
+const MEDIA_EXTENSIONS: Record<string, string> = {...IMAGE_EXTENSIONS, ...DOCUMENT_EXTENSIONS};
 
 export function getMediaMimeType(filePath: string): string | null {
   const ext = path.extname(filePath).toLowerCase();
@@ -16,6 +20,16 @@ export function getMediaMimeType(filePath: string): string | null {
 
 export function isMediaPath(filePath: string): boolean {
   return getMediaMimeType(filePath) !== null;
+}
+
+export function isImagePath(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return ext in IMAGE_EXTENSIONS;
+}
+
+export function isDocumentPath(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return ext in DOCUMENT_EXTENSIONS;
 }
 
 export function loadMediaAsBase64(filePath: string): {dataUrl: string; mimeType: string;} | null {
@@ -37,6 +51,14 @@ export function parseDataUrl(dataUrl: string): {mediaType: string; data: string;
     return {mediaType: matches[1], data: matches[2]};
   }
   return null;
+}
+
+export function isImageMimeType(mimeType: string): boolean {
+  return mimeType.startsWith('image/');
+}
+
+export function isDocumentMimeType(mimeType: string): boolean {
+  return mimeType === 'application/pdf';
 }
 
 export function extractMediaPath(text: string): string | null {

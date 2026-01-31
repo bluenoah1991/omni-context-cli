@@ -40,7 +40,9 @@ export async function handleChat(
   }
 
   const content = body.content as string;
-  const images = body.images as Array<{base64: string; mediaType: string;}> | undefined;
+  const attachments = body.attachments as
+    | Array<{base64: string; mediaType: string; fileName?: string;}>
+    | undefined;
 
   if (!content) {
     sendErrorResponse(res, 'Missing content', 400);
@@ -99,9 +101,10 @@ export async function handleChat(
     text = wrapIDEContext(text, currentSelection);
   }
 
-  const userMedia = images?.map(image => ({
-    dataUrl: `data:${image.mediaType};base64,${image.base64}`,
-    mimeType: image.mediaType,
+  const userMedia = attachments?.map(item => ({
+    dataUrl: `data:${item.mediaType};base64,${item.base64}`,
+    mimeType: item.mediaType,
+    fileName: item.fileName,
   }));
 
   if (slashCommand?.name === 'compact' || shouldAutoCompact(model, session)) {

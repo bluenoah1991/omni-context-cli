@@ -10,7 +10,7 @@ import { getAllSlashCommands } from '../../services/slashManager';
 import { formatApprovalPrompt } from '../../services/toolApproval';
 import { useChatStore } from '../../store/chatStore';
 import { ToolCall } from '../../types/streamCallbacks';
-import { extractMediaPath, loadMediaAsBase64 } from '../../utils/mediaUtils';
+import { extractMediaPath, isDocumentPath, loadMediaAsBase64 } from '../../utils/mediaUtils';
 import { colors } from '../theme/colors';
 import { OptionPicker } from './OptionPicker';
 import { SlashCommandPicker } from './SlashCommandPicker';
@@ -214,7 +214,7 @@ export function InputBox(
 
   const handleMediaOption = (key: string) => {
     if (!pendingMediaPath) return;
-    if (key === 'image') {
+    if (key === 'attach') {
       const mediaData = loadMediaAsBase64(pendingMediaPath);
       if (mediaData) {
         const fileName = path.basename(pendingMediaPath);
@@ -298,9 +298,11 @@ export function InputBox(
     setPickerCancelled(true);
   };
 
+  const isDocument = pendingMediaPath ? isDocumentPath(pendingMediaPath) : false;
+  const mediaType = isDocument ? 'document' : 'image';
   const mediaOptions = [{
-    key: 'image',
-    label: `Add as image: ${pendingMediaPath ? path.basename(pendingMediaPath) : ''}`,
+    key: 'attach',
+    label: `Add as ${mediaType}: ${pendingMediaPath ? path.basename(pendingMediaPath) : ''}`,
   }, {key: 'text', label: 'Paste as text'}];
 
   return (
@@ -318,7 +320,7 @@ export function InputBox(
       )}
       {pendingMediaPath && (
         <OptionPicker
-          title='Image file detected'
+          title={isDocument ? 'PDF file detected' : 'Image file detected'}
           options={mediaOptions}
           onSelect={handleMediaOption}
           onCancel={handleMediaCancel}
