@@ -83,6 +83,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const [rewindIndex, setRewindIndex] = useState(0);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [savedInput, setSavedInput] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const {
     isLoading,
@@ -163,6 +164,41 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           const attachment = await processFile(file);
           newAttachments.push(attachment);
         }
+      }
+    }
+
+    if (newAttachments.length > 0) {
+      setAttachments(prev => [...prev, ...newAttachments]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments: Attachment[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (isSupportedType(file.type)) {
+        const attachment = await processFile(file);
+        newAttachments.push(attachment);
       }
     }
 
@@ -351,11 +387,21 @@ export default function InputBox({disabled = false}: InputBoxProps) {
 
         <div
           className={`relative bg-vscode-sidebar border transition-colors rounded-xl ${
-            isLoading
+            isDragging
+              ? 'border-vscode-accent border-dashed bg-vscode-accent/5'
+              : isLoading
               ? 'border-vscode-border'
               : 'border-vscode-border focus-within:border-vscode-accent focus-within:ring-1 focus-within:ring-vscode-accent/30'
           }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
+          {isDragging && (
+            <div className='absolute inset-0 flex items-center justify-center bg-vscode-sidebar/90 rounded-xl z-20 pointer-events-none'>
+              <span className='text-sm text-vscode-accent'>Drop images or PDFs here</span>
+            </div>
+          )}
           {showRewindPicker && (
             <RewindPicker
               points={rewindPoints ?? []}
