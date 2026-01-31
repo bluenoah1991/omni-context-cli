@@ -16,6 +16,7 @@ import {
   truncateSession,
 } from '../../sessionManager';
 import { getAllSlashCommands, parseSlashCommand } from '../../slashManager';
+import { requiresApproval } from '../../toolApproval';
 import { WebSession } from '../../webSessionManager';
 import {
   parseRequestBody,
@@ -242,6 +243,19 @@ export async function handleChat(
             });
           }
         },
+        onToolApproval: toolCall => {
+          if (!requiresApproval(toolCall.name)) {
+            return Promise.resolve(true);
+          }
+          return new Promise(resolve => {
+            webSession.pendingApproval = {toolCall, resolve};
+            sendSseEvent(res, 'tool_approval', {
+              id: toolCall.id,
+              name: toolCall.name,
+              input: toolCall.input,
+            });
+          });
+        },
       },
       controller.signal,
       toolFilter,
@@ -351,6 +365,24 @@ export function handleStopGeneration(res: http.ServerResponse, webSession: WebSe
   if (webSession.abortController) {
     webSession.abortController.abort();
   }
+  sendJsonResponse(res, {ok: true});
+  return true;
+}
+
+export async function handleToolApproval(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  webSession: WebSession,
+): Promise<boolean> {
+  const {approved} = await parseRequestBody(req) as {approved: boolean;};
+
+  if (!webSession.pendingApproval) {
+    sendErrorResponse(res, 'No pending approval', 400);
+    return true;
+  }
+
+  webSession.pendingApproval.resolve(approved);
+  webSession.pendingApproval = null;
   sendJsonResponse(res, {ok: true});
   return true;
 }

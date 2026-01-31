@@ -14,6 +14,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChatStore } from '../store/chatStore';
 import type { RewindPoint } from '../types/rewind';
+import { formatApprovalPrompt } from '../utils/toolApproval';
+import { OptionPicker } from './OptionPicker';
 import RewindPicker from './RewindPicker';
 import SlashCommandPicker from './SlashCommandPicker';
 import { StatusIcon } from './StatusIcon';
@@ -79,10 +81,12 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     ideContext,
     inputHistory,
     slashCommands,
+    pendingApproval,
     getInputHistory,
     getSlashCommands,
     getRewindPoints,
     rewind,
+    handleToolApproval,
   } = useChatStore();
 
   useEffect(() => {
@@ -329,7 +333,18 @@ export default function InputBox({disabled = false}: InputBoxProps) {
               onSelect={handleRewind}
             />
           )}
-          {showPicker && !showRewindPicker && (
+          {pendingApproval && (
+            <OptionPicker
+              title={formatApprovalPrompt(pendingApproval)}
+              options={[{key: 'approve', label: 'Approve and continue'}, {
+                key: 'reject',
+                label: 'Deny and abort',
+              }]}
+              onSelect={key => handleToolApproval(key === 'approve')}
+              onCancel={() => handleToolApproval(false)}
+            />
+          )}
+          {showPicker && !showRewindPicker && !pendingApproval && (
             <SlashCommandPicker
               commands={filteredCommands}
               selectedIndex={selectedIndex}

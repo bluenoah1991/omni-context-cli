@@ -9,6 +9,7 @@ import {
   handleGetSlashCommands,
   handleRewind,
   handleStopGeneration,
+  handleToolApproval,
 } from './handlers/chatHandlers';
 import {
   handleGetConfig,
@@ -65,6 +66,9 @@ export async function handleAPI(
   if (route === 'chat/slashCommands' && method === 'GET') return handleGetSlashCommands(res);
   if (route === 'chat/stopGeneration' && method === 'POST') {
     return handleStopGeneration(res, webSession);
+  }
+  if (route === 'chat/toolApproval' && method === 'POST') {
+    return handleToolApproval(req, res, webSession);
   }
   if (route === 'ide/context' && method === 'GET') return handleGetIDEContext(res);
 

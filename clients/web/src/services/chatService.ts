@@ -6,6 +6,12 @@ import type { SlashCommand } from '../types/slash';
 import type { UIMessage } from '../types/uiMessage';
 import { apiUrl } from '../utils/webSession';
 
+export interface ToolApprovalRequest {
+  id?: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
 interface ChatCallbacks {
   onMessage: (message: UIMessage) => void;
   onError: (error: string) => void;
@@ -15,6 +21,7 @@ interface ChatCallbacks {
   onTokenUsage?: (
     usage: {inputTokens: number; outputTokens: number; cachedTokens: number;},
   ) => void;
+  onToolApproval?: (request: ToolApprovalRequest) => void;
 }
 
 let cachedSlashCommands: SlashCommand[] | null = null;
@@ -143,6 +150,19 @@ export async function stopGeneration(): Promise<ApiResult<void>> {
   }
 }
 
+export async function sendToolApproval(approved: boolean): Promise<ApiResult<void>> {
+  try {
+    await fetch(apiUrl('chat/toolApproval'), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({approved}),
+    });
+    return {data: undefined, error: null};
+  } catch {
+    return {data: null, error: 'Failed to send tool approval'};
+  }
+}
+
 function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {
   switch (event) {
     case 'compacting':
@@ -166,6 +186,9 @@ function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {
       callbacks.onTokenUsage?.(
         data as {inputTokens: number; outputTokens: number; cachedTokens: number;},
       );
+      break;
+    case 'tool_approval':
+      callbacks.onToolApproval?.(data as ToolApprovalRequest);
       break;
   }
 }

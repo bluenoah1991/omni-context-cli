@@ -4,7 +4,9 @@ import {
   fetchInputHistory,
   fetchSlashCommands,
   sendChat,
+  sendToolApproval,
   stopGeneration as apiStopGeneration,
+  type ToolApprovalRequest,
 } from '../../services/chatService';
 import type { Session } from '../../types/session';
 import type { SlashCommand } from '../../types/slash';
@@ -17,6 +19,7 @@ export interface ChatSlice {
   isCompacting: boolean;
   inputHistory: string[];
   slashCommands: SlashCommand[];
+  pendingApproval: ToolApprovalRequest | null;
   getInputHistory: () => Promise<void>;
   getSlashCommands: () => Promise<void>;
   sendMessage: (
@@ -24,6 +27,7 @@ export interface ChatSlice {
     images?: Array<{base64: string; mediaType: string;}>,
   ) => Promise<void>;
   stopGeneration: () => Promise<void>;
+  handleToolApproval: (approved: boolean) => Promise<void>;
 }
 
 function appendMessage(session: Session, message: UIMessage): Session {
@@ -83,6 +87,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
   isCompacting: false,
   inputHistory: [],
   slashCommands: [],
+  pendingApproval: null,
 
   getInputHistory: async () => {
     const {data, error} = await fetchInputHistory();
@@ -137,6 +142,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
               ? {...state.currentSession, ...usage}
               : state.currentSession,
           })),
+        onToolApproval: request => set({pendingApproval: request}),
       });
     } catch (err) {
       if (err instanceof Error) set({error: err.message});
@@ -147,5 +153,10 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
 
   stopGeneration: async () => {
     await apiStopGeneration();
+  },
+
+  handleToolApproval: async (approved: boolean) => {
+    set({pendingApproval: null});
+    await sendToolApproval(approved);
   },
 });
