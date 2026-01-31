@@ -26,6 +26,7 @@ export const MessageItem = memo(
         return (
           <ToolCallBlock
             toolName={message.toolName || 'Tool'}
+            toolInput={message.content}
             toolCallId={message.toolCallId}
             toolResult={message.toolResult}
           />

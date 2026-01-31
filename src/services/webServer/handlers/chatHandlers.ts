@@ -17,6 +17,7 @@ import {
 } from '../../sessionManager';
 import { getAllSlashCommands, parseSlashCommand } from '../../slashManager';
 import { requiresApproval } from '../../toolApproval';
+import { formatToolCall } from '../../toolExecutor';
 import { WebSession } from '../../webSessionManager';
 import {
   parseRequestBody,
@@ -211,7 +212,7 @@ export async function handleChat(
           if (!res.writableEnded) {
             sendSseEvent(res, 'message', {
               role: 'tool_call',
-              content: JSON.stringify(call.input),
+              content: formatToolCall(call.name, call.input),
               timestamp: Date.now(),
               toolName: call.name,
               toolCallId: call.id,

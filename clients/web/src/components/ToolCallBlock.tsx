@@ -6,17 +6,19 @@ import { CollapsibleBlock } from './CollapsibleBlock';
 
 interface ToolCallBlockProps {
   toolName: string;
+  toolInput?: string;
   toolCallId?: string;
   toolResult?: string;
 }
 
 export const ToolCallBlock = memo(
-  function ToolCallBlock({toolName, toolCallId, toolResult}: ToolCallBlockProps) {
+  function ToolCallBlock({toolName, toolInput, toolCallId, toolResult}: ToolCallBlockProps) {
     const openDiffPanel = useChatStore(state => state.openDiffPanel);
+    const toolExpanded = useChatStore(state => state.toolExpanded);
 
     const {displayContent, isError, diffs} = useMemo(() => {
       if (!toolResult) {
-        return {displayContent: undefined, isError: false, diffs: null};
+        return {displayContent: toolInput || '', isError: false, diffs: null};
       }
       try {
         const resultData = JSON.parse(toolResult);
@@ -31,7 +33,7 @@ export const ToolCallBlock = memo(
       } catch {
         return {displayContent: toolResult, isError: false, diffs: null};
       }
-    }, [toolResult]);
+    }, [toolInput, toolResult]);
 
     const handleClick = useCallback(() => {
       if (diffs && diffs.length > 0) {
@@ -61,6 +63,8 @@ export const ToolCallBlock = memo(
           title={title}
           content={displayContent}
           loading={!toolResult}
+          expandableWhileLoading
+          defaultExpanded={toolExpanded}
           variant={variant}
           clickable={hasDiffs || false}
         />

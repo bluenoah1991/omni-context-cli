@@ -20,6 +20,8 @@ export default function Settings({onClose}: SettingsProps) {
     setConfig,
     thinkingExpanded,
     setThinkingExpanded,
+    toolExpanded,
+    setToolExpanded,
     autoDiffPanel,
     setAutoDiffPanel,
   } = useChatStore();
@@ -207,6 +209,13 @@ export default function Settings({onClose}: SettingsProps) {
                 description='Show thinking process content expanded'
                 enabled={thinkingExpanded}
                 onChange={setThinkingExpanded}
+              />
+
+              <ToggleOption
+                label='Expand Tool Calls by Default'
+                description='Show tool call content expanded'
+                enabled={toolExpanded}
+                onChange={setToolExpanded}
               />
 
               <ToggleOption

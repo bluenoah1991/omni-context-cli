@@ -8,6 +8,7 @@ export interface UISlice {
   error: string | null;
   theme: 'light' | 'dark';
   thinkingExpanded: boolean;
+  toolExpanded: boolean;
   autoDiffPanel: boolean;
   ideContext: IDEContext | null;
   pollInterval: ReturnType<typeof setInterval> | null;
@@ -17,6 +18,7 @@ export interface UISlice {
   activeDiffTab: number;
   setTheme: (theme: 'light' | 'dark') => void;
   setThinkingExpanded: (expanded: boolean) => void;
+  setToolExpanded: (expanded: boolean) => void;
   setAutoDiffPanel: (enabled: boolean) => void;
   startPolling: () => void;
   stopPolling: () => void;
@@ -31,6 +33,7 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   error: null,
   theme: 'dark',
   thinkingExpanded: localStorage.getItem('thinkingExpanded') !== 'false',
+  toolExpanded: localStorage.getItem('toolExpanded') !== 'false',
   autoDiffPanel: localStorage.getItem('autoDiffPanel') !== 'false',
   ideContext: null,
   pollInterval: null,
@@ -44,6 +47,11 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   setThinkingExpanded: expanded => {
     localStorage.setItem('thinkingExpanded', String(expanded));
     set({thinkingExpanded: expanded});
+  },
+
+  setToolExpanded: expanded => {
+    localStorage.setItem('toolExpanded', String(expanded));
+    set({toolExpanded: expanded});
   },
 
   setAutoDiffPanel: enabled => {
