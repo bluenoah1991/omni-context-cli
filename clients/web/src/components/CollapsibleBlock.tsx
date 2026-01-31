@@ -81,7 +81,7 @@ export const CollapsibleBlock = memo(
         </div>
 
         {isExpanded && hasContent && (
-          <div className='px-4 pb-3 animate-fade-in'>
+          <div className='px-4 pb-3'>
             <div className='h-px bg-white/5 light:bg-black/10 mb-3' />
             <pre
               className={`text-xs font-mono whitespace-pre-wrap wrap-break-word max-h-60 overflow-y-auto custom-scrollbar ${styles.content}`}
