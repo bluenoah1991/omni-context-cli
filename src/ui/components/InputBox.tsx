@@ -258,6 +258,10 @@ export function InputBox(
       }
       return;
     }
+    if (key.ctrl && input === 'j') {
+      dispatch({type: 'insert', text: '\n'});
+      return;
+    }
     if (input === '\r' || input === '\n') {
       dispatch({type: 'insert', text: '\n'});
       return;
