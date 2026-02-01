@@ -6,6 +6,12 @@ export interface FileDiff {
   toolUseId?: string;
 }
 
+export interface Attachment {
+  url: string;
+  mimeType: string;
+  fileName?: string;
+}
+
 export interface UIMessage {
   role: MessageRole;
   content: string;
@@ -13,4 +19,5 @@ export interface UIMessage {
   toolName?: string;
   toolCallId?: string;
   toolResult?: string;
+  attachments?: Attachment[];
 }

@@ -6,7 +6,7 @@ export interface GeminiFunctionResponsePart {
 
 export interface GeminiPart {
   text?: string;
-  inlineData?: {mimeType: string; data: string;};
+  inlineData?: {mimeType: string; data: string; fileName?: string;};
   thought?: boolean;
   thoughtSignature?: string;
   functionCall?: {id?: string; name: string; args: Record<string, unknown>;};

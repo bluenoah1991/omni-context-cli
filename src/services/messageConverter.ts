@@ -24,20 +24,36 @@ function openAIMessageToUI(
 
   switch (message.role) {
     case 'user': {
+      let content = '';
+      const attachments: Array<{url: string; mimeType: string; fileName?: string;}> = [];
       if (typeof message.content === 'string') {
-        if (message.content.trim()) {
-          uiMessages.push({role: 'user', content: message.content, timestamp});
-        }
+        content = message.content;
       } else if (Array.isArray(message.content)) {
         const textParts = message.content.filter(part => part.type === 'text').map(part =>
           part.text
         );
-        if (textParts.length > 0) {
-          const content = textParts.join('\n');
-          if (content.trim()) {
-            uiMessages.push({role: 'user', content, timestamp});
+        content = textParts.join('\n');
+        message.content.forEach(part => {
+          if (part.type === 'image_url') {
+            const url = part.image_url.url;
+            const mimeType = url.startsWith('data:') ? url.split(';')[0].slice(5) : 'image/png';
+            attachments.push({url, mimeType});
+          } else if (part.type === 'file') {
+            const url = part.file.file_data;
+            const mimeType = url.startsWith('data:')
+              ? url.split(';')[0].slice(5)
+              : 'application/pdf';
+            attachments.push({url, mimeType, fileName: part.file.filename});
           }
-        }
+        });
+      }
+      if (content.trim() || attachments.length > 0) {
+        uiMessages.push({
+          role: 'user',
+          content,
+          timestamp,
+          ...(attachments.length > 0 && {attachments}),
+        });
       }
       break;
     }
@@ -138,11 +154,34 @@ function anthropicMessageToUI(
   }
 
   const textBlocks = message.content.filter(block => block.type === 'text');
-  if (textBlocks.length > 0) {
-    const content = textBlocks.map(block => block.text).join('\n');
-    if (content.trim()) {
-      uiMessages.push({role: message.role === 'user' ? 'user' : 'assistant', content, timestamp});
+  const content = textBlocks.map(block => block.text).join('\n');
+
+  if (message.role === 'user') {
+    const attachments: Array<{url: string; mimeType: string; fileName?: string;}> = [];
+    message.content.forEach(block => {
+      if (block.type === 'image') {
+        attachments.push({
+          url: `data:${block.source.media_type};base64,${block.source.data}`,
+          mimeType: block.source.media_type,
+        });
+      } else if (block.type === 'document') {
+        attachments.push({
+          url: `data:${block.source.media_type};base64,${block.source.data}`,
+          mimeType: block.source.media_type,
+          fileName: block.title,
+        });
+      }
+    });
+    if (content.trim() || attachments.length > 0) {
+      uiMessages.push({
+        role: 'user',
+        content,
+        timestamp,
+        ...(attachments.length > 0 && {attachments}),
+      });
     }
+  } else if (content.trim()) {
+    uiMessages.push({role: 'assistant', content, timestamp});
   }
 
   message.content.forEach(block => {
@@ -200,11 +239,21 @@ function geminiMessageToUI(
   }
 
   const textParts = message.parts.filter(part => part.text !== undefined && !part.thought);
-  if (textParts.length > 0) {
-    const content = textParts.map(part => part.text || '').join('\n');
-    if (content.trim()) {
-      uiMessages.push({role: message.role === 'user' ? 'user' : 'assistant', content, timestamp});
-    }
+  const mediaParts = message.parts.filter(part => part.inlineData?.mimeType);
+  const attachments = mediaParts.map(part => ({
+    url: `data:${part.inlineData!.mimeType};base64,${part.inlineData!.data}`,
+    mimeType: part.inlineData!.mimeType,
+    fileName: part.inlineData!.fileName,
+  }));
+
+  const content = textParts.map(part => part.text || '').join('\n');
+  if (content.trim() || attachments.length > 0) {
+    uiMessages.push({
+      role: message.role === 'user' ? 'user' : 'assistant',
+      content,
+      timestamp,
+      ...(attachments.length > 0 && {attachments}),
+    });
   }
 
   message.parts.forEach(part => {
@@ -252,13 +301,40 @@ function responsesItemToUI(
 
   if (item.type === 'message') {
     const message = item as ResponsesMessageItem;
-    const content = typeof message.content === 'string'
-      ? message.content
-      : message.content.map(c => c.type === 'output_text' || c.type === 'input_text' ? c.text : '')
-        .join('');
+    let content = '';
+    const attachments: Array<{url: string; mimeType: string; fileName?: string;}> = [];
 
-    if (content.trim()) {
-      uiMessages.push({role: message.role === 'user' ? 'user' : 'assistant', content, timestamp});
+    if (typeof message.content === 'string') {
+      content = message.content;
+    } else {
+      const textParts: string[] = [];
+      message.content.forEach(c => {
+        if (c.type === 'output_text' || c.type === 'input_text') {
+          textParts.push(c.text);
+        } else if (message.role === 'user') {
+          if (c.type === 'input_image') {
+            const url = c.image_url;
+            const mimeType = url.startsWith('data:') ? url.split(';')[0].slice(5) : 'image/png';
+            attachments.push({url, mimeType});
+          } else if (c.type === 'input_file') {
+            const url = c.file_data;
+            const mimeType = url.startsWith('data:')
+              ? url.split(';')[0].slice(5)
+              : 'application/pdf';
+            attachments.push({url, mimeType, fileName: c.filename});
+          }
+        }
+      });
+      content = textParts.join('');
+    }
+
+    if (content.trim() || attachments.length > 0) {
+      uiMessages.push({
+        role: message.role === 'user' ? 'user' : 'assistant',
+        content,
+        timestamp,
+        ...(attachments.length > 0 && {attachments}),
+      });
     }
   } else if (item.type === 'function_call') {
     const functionCall = item as ResponsesFunctionCall;

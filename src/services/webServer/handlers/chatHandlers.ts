@@ -247,6 +247,11 @@ export async function handleChat(
             });
           }
         },
+        onMedia: media => {
+          if (!res.writableEnded) {
+            sendSseEvent(res, 'media', media);
+          }
+        },
         onToolApproval: toolCall => {
           if (!requiresApproval(toolCall.name)) {
             return Promise.resolve(true);

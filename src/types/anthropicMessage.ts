@@ -8,6 +8,7 @@ export type AnthropicImageBlock = {
 export type AnthropicDocumentBlock = {
   type: 'document';
   source: {type: 'base64'; media_type: string; data: string;};
+  title?: string;
 };
 export type AnthropicToolResultContent =
   | AnthropicTextBlock

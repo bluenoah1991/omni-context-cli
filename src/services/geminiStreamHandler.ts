@@ -12,6 +12,7 @@ interface ToolCallAccumulator {
 export class GeminiStreamHandler extends BaseStreamHandler {
   private activeToolCalls: ToolCallAccumulator[] = [];
   private currentThinkingSignature = '';
+  private accumulatedMedia: Array<{mimeType: string; data: string;}> = [];
 
   protected getEndpoint(model: ModelConfig): string {
     const baseUrl = model.apiUrl.replace(/\/$/, '');
@@ -78,6 +79,14 @@ export class GeminiStreamHandler extends BaseStreamHandler {
     if (part.functionCall) {
       this.handleFunctionCall(part.functionCall);
     }
+
+    if (part.inlineData?.mimeType) {
+      this.accumulatedMedia.push(part.inlineData);
+      this.callbacks.onMedia?.({
+        url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+        mimeType: part.inlineData.mimeType,
+      });
+    }
   }
 
   private handleFunctionCall(functionCall: any): void {
@@ -107,6 +116,10 @@ export class GeminiStreamHandler extends BaseStreamHandler {
 
     if (this.accumulatedContent) {
       parts.push({text: this.accumulatedContent});
+    }
+
+    for (const media of this.accumulatedMedia) {
+      parts.push({inlineData: media});
     }
 
     for (const toolCall of this.completedToolCalls) {

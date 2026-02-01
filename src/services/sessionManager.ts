@@ -158,7 +158,9 @@ export function addUserMessage(
       for (const item of media) {
         const parsed = parseDataUrl(item.dataUrl);
         if (parsed) {
-          parts.push({inlineData: {mimeType: parsed.mediaType, data: parsed.data}});
+          parts.push({
+            inlineData: {mimeType: parsed.mediaType, data: parsed.data, fileName: item.fileName},
+          });
         }
       }
     }
@@ -173,6 +175,7 @@ export function addUserMessage(
             contentBlocks.push({
               type: 'document',
               source: {type: 'base64', media_type: parsed.mediaType, data: parsed.data},
+              title: item.fileName,
             });
           } else {
             contentBlocks.push({

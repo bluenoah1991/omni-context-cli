@@ -22,6 +22,7 @@ interface ChatCallbacks {
     usage: {inputTokens: number; outputTokens: number; cachedTokens: number;},
   ) => void;
   onToolApproval?: (request: ToolApprovalRequest) => void;
+  onMedia?: (media: {url: string; mimeType: string;}) => void;
 }
 
 let cachedSlashCommands: SlashCommand[] | null = null;
@@ -192,6 +193,9 @@ function handleEvent(event: string, data: unknown, callbacks: ChatCallbacks) {
       break;
     case 'tool_approval':
       callbacks.onToolApproval?.(data as ToolApprovalRequest);
+      break;
+    case 'media':
+      callbacks.onMedia?.(data as {url: string; mimeType: string;});
       break;
   }
 }

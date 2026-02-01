@@ -57,6 +57,21 @@ function appendMessage(session: Session, message: UIMessage): Session {
   return {...session, messages: messageList};
 }
 
+function appendMedia(session: Session, media: {url: string; mimeType: string;}): Session {
+  const messageList = [...(session.messages || [])];
+  const lastMessage = messageList[messageList.length - 1];
+
+  if (lastMessage?.role === 'assistant') {
+    messageList[messageList.length - 1] = {
+      ...lastMessage,
+      attachments: [...(lastMessage.attachments || []), media],
+    };
+  } else {
+    messageList.push({role: 'assistant', content: '', timestamp: Date.now(), attachments: [media]});
+  }
+  return {...session, messages: messageList};
+}
+
 function autoOpenDiff(message: UIMessage, state: ChatState): void {
   if (message.role !== 'tool_result' || !state.autoDiffPanel) return;
   try {
@@ -146,6 +161,8 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
               : state.currentSession,
           })),
         onToolApproval: request => set({pendingApproval: request}),
+        onMedia: media =>
+          set(state => ({currentSession: appendMedia(state.currentSession!, media)})),
       });
     } catch (err) {
       if (err instanceof Error) set({error: err.message});

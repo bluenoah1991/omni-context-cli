@@ -14,10 +14,16 @@ export const MessageItem = memo(
   function MessageItem({message, isLoading = false}: MessageItemProps) {
     switch (message.role) {
       case 'user':
-        return <UserBlock content={message.content} />;
+        return <UserBlock content={message.content} attachments={message.attachments} />;
 
       case 'assistant':
-        return <AssistantBlock content={message.content} isLoading={isLoading} />;
+        return (
+          <AssistantBlock
+            content={message.content}
+            attachments={message.attachments}
+            isLoading={isLoading}
+          />
+        );
 
       case 'thinking':
         return <ThinkingBlock content={message.content} loading={isLoading} />;

@@ -8,6 +8,7 @@ export interface StreamCallbacks {
   onToolResult?: (toolResult: ToolResult) => void;
   onToolApproval?: (toolCall: ToolCall) => Promise<boolean>;
   onSessionUpdate?: (session: Session) => void;
+  onMedia?: (media: {url: string; mimeType: string;}) => void;
 }
 
 export interface ToolCall {

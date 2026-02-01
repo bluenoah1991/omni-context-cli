@@ -33,6 +33,10 @@ export async function buildGeminiRequest(
         const {displayText, diffs, ...rest} = part.functionResponse.response as any;
         return {...part, functionResponse: {...part.functionResponse, response: rest}};
       }
+      if (part.inlineData) {
+        const {fileName, ...rest} = part.inlineData;
+        return {...part, inlineData: rest};
+      }
       return {...part};
     });
     return {role: message.role, parts};
