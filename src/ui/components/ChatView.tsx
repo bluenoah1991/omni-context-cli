@@ -74,7 +74,9 @@ export function ChatView(): React.ReactElement {
   const [menuInitialView, setMenuInitialView] = useState<View | undefined>();
   const [model, setModel] = useState(() => getCurrentModel());
   const [enableThinking, setEnableThinking] = useState(() => loadAppConfig().enableThinking);
-  const [specialistMode, setSpecialistMode] = useState(() => loadAppConfig().specialistMode);
+  const [workflowPreset, setWorkflowPreset] = useState(() =>
+    loadAppConfig().workflowPreset ?? 'specialist'
+  );
   const [streamingOutput, setStreamingOutput] = useState(() => loadAppConfig().streamingOutput);
   const [ideContextEnabled, setIDEContextEnabled] = useState(() => loadAppConfig().ideContext);
   const [memoryEnabled, setMemoryEnabled] = useState(() => loadAppConfig().memoryEnabled);
@@ -111,7 +113,7 @@ export function ChatView(): React.ReactElement {
     setModel(getCurrentModel());
     const config = loadAppConfig();
     setEnableThinking(config.enableThinking);
-    setSpecialistMode(config.specialistMode);
+    setWorkflowPreset(config.workflowPreset ?? 'specialist');
     setStreamingOutput(config.streamingOutput);
     setIDEContextEnabled(config.ideContext);
     setMemoryEnabled(config.memoryEnabled);
@@ -239,10 +241,10 @@ export function ChatView(): React.ReactElement {
     }
 
     const toolFilter = {
-      excludeAgents: !specialistMode,
-      excludeMcp: specialistMode,
-      allowedTools: specialistMode ? [] : null,
-      additionalTools: specialistMode ? null : ['agent_explore'],
+      excludeAgents: workflowPreset !== 'specialist',
+      excludeMcp: workflowPreset === 'specialist',
+      allowedTools: workflowPreset === 'specialist' ? [] : null,
+      additionalTools: workflowPreset === 'specialist' ? null : ['agent_explore'],
     };
 
     setLoading(true);
@@ -333,7 +335,7 @@ export function ChatView(): React.ReactElement {
     }
   }, [
     model,
-    specialistMode,
+    workflowPreset,
     ideContextEnabled,
     memoryEnabled,
     notificationEnabled,
@@ -365,7 +367,7 @@ export function ChatView(): React.ReactElement {
       <Box height={2}>
         {isCompacting
           ? <CompactingIndicator />
-          : isLoading && <LoadingIndicator specialistMode={specialistMode} />}
+          : isLoading && <LoadingIndicator workflowPreset={workflowPreset} />}
       </Box>
 
       {showMenu && <Menu onClose={handleCloseMenu} initialView={menuInitialView} />}

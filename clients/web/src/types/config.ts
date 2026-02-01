@@ -1,9 +1,11 @@
+export type WorkflowPreset = 'normal' | 'specialist' | 'artist';
+
 export interface Config {
   projectName: string;
   defaultModelId?: string;
   agentModelId?: string;
   enableThinking: boolean;
-  specialistMode: boolean;
+  workflowPreset: WorkflowPreset;
   ideContext: boolean;
   memoryEnabled: boolean;
   notificationEnabled: boolean;

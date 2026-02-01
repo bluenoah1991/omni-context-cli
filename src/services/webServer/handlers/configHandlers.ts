@@ -81,7 +81,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     defaultModelId: config.defaultModelId || config.models[0]?.id,
     agentModelId: config.agentModelId,
     enableThinking: config.enableThinking ?? true,
-    specialistMode: config.specialistMode ?? true,
+    workflowPreset: config.workflowPreset ?? 'specialist',
     ideContext: config.ideContext ?? true,
     memoryEnabled: config.memoryEnabled ?? false,
     notificationEnabled: config.notificationEnabled ?? false,
@@ -106,7 +106,7 @@ export async function handleSetConfig(
   if ('defaultModelId' in body) config.defaultModelId = body.defaultModelId;
   if ('agentModelId' in body) config.agentModelId = body.agentModelId;
   if ('enableThinking' in body) config.enableThinking = body.enableThinking;
-  if ('specialistMode' in body) config.specialistMode = body.specialistMode;
+  if ('workflowPreset' in body) config.workflowPreset = body.workflowPreset;
   if ('ideContext' in body) config.ideContext = body.ideContext;
   if ('memoryEnabled' in body) config.memoryEnabled = body.memoryEnabled;
   if ('notificationEnabled' in body) config.notificationEnabled = body.notificationEnabled;

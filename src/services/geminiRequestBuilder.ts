@@ -46,7 +46,7 @@ export async function buildGeminiRequest(
 
   if (!skipSystemPrompt) {
     request.systemInstruction = {
-      parts: [{text: buildSystemPrompt(config.specialistMode, isFromAgent)}],
+      parts: [{text: buildSystemPrompt(config.workflowPreset, isFromAgent)}],
     };
   }
 

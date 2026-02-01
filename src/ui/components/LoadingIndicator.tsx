@@ -1,5 +1,6 @@
 import { Text } from 'ink';
 import React, { useEffect, useState } from 'react';
+import { WorkflowPreset } from '../../types/config';
 import { colors } from '../theme/colors';
 import { ShimmerText } from './ShimmerText';
 import { Spinner } from './Spinner';
@@ -17,24 +18,38 @@ const verbs = [
   'Manifesting',
 ];
 
-const getRandomText = () => verbs[Math.floor(Math.random() * verbs.length)];
+const artistVerbs = [
+  'Painting',
+  'Sketching',
+  'Imagining',
+  'Composing',
+  'Rendering',
+  'Sculpting',
+  'Illustrating',
+  'Envisioning',
+  'Designing',
+  'Creating',
+];
+
+const getRandomText = (verbs: string[]) => verbs[Math.floor(Math.random() * verbs.length)];
 
 interface LoadingIndicatorProps {
-  specialistMode?: boolean;
+  workflowPreset?: WorkflowPreset;
 }
 
 export function LoadingIndicator(
-  {specialistMode = false}: LoadingIndicatorProps,
+  {workflowPreset = 'normal'}: LoadingIndicatorProps,
 ): React.ReactElement {
-  const [text, setText] = useState(getRandomText);
+  const verbList = workflowPreset === 'artist' ? artistVerbs : verbs;
+  const [text, setText] = useState(() => getRandomText(verbList));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setText(getRandomText());
+      setText(getRandomText(verbList));
     }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [verbList]);
 
   return (
     <>
@@ -42,7 +57,7 @@ export function LoadingIndicator(
         <Spinner type='dots' />
         {' '}
       </Text>
-      {specialistMode
+      {workflowPreset !== 'normal'
         ? <ShimmerText text={text + '...'} />
         : <Text color={colors.muted}>{text}...</Text>}
     </>

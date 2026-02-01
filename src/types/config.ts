@@ -1,5 +1,7 @@
 export type Provider = 'openai' | 'anthropic' | 'gemini' | 'responses' | 'none';
 
+export type WorkflowPreset = 'normal' | 'specialist' | 'artist';
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -17,7 +19,7 @@ export interface AppConfig {
   agentModelId?: string;
   enableThinking: boolean;
   streamingOutput: boolean;
-  specialistMode: boolean;
+  workflowPreset: WorkflowPreset;
   ideContext: boolean;
   memoryEnabled: boolean;
   notificationEnabled: boolean;
@@ -32,7 +34,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   models: [],
   enableThinking: true,
   streamingOutput: false,
-  specialistMode: true,
+  workflowPreset: 'specialist',
   ideContext: true,
   memoryEnabled: false,
   notificationEnabled: false,

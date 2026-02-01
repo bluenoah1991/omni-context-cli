@@ -30,7 +30,7 @@ export default function Settings({onClose}: SettingsProps) {
   const [defaultModelId, setDefaultModelId] = useState(config?.defaultModelId || '');
   const [agentModelId, setAgentModelId] = useState(config?.agentModelId || '');
   const [enableThinking, setEnableThinking] = useState(config?.enableThinking ?? true);
-  const [specialistMode, setSpecialistMode] = useState(config?.specialistMode ?? true);
+  const [workflowPreset, setWorkflowPreset] = useState(config?.workflowPreset ?? 'specialist');
   const [memoryEnabled, setMemoryEnabled] = useState(config?.memoryEnabled ?? false);
   const [notificationEnabled, setNotificationEnabled] = useState(
     config?.notificationEnabled ?? false,
@@ -45,7 +45,7 @@ export default function Settings({onClose}: SettingsProps) {
       setDefaultModelId(config.defaultModelId || '');
       setAgentModelId(config.agentModelId || '');
       setEnableThinking(config.enableThinking);
-      setSpecialistMode(config.specialistMode);
+      setWorkflowPreset(config.workflowPreset ?? 'specialist');
       setMemoryEnabled(config.memoryEnabled);
       setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
@@ -60,7 +60,7 @@ export default function Settings({onClose}: SettingsProps) {
         defaultModelId: defaultModelId || undefined,
         agentModelId: agentModelId || undefined,
         enableThinking,
-        specialistMode,
+        workflowPreset,
         memoryEnabled,
         notificationEnabled,
         contextEditing,
@@ -157,11 +157,12 @@ export default function Settings({onClose}: SettingsProps) {
 
           {activeTab === 'preferences' && (
             <>
-              <ToggleOption
-                label='Specialist Mode'
-                description='Enable specialized agent routing for complex tasks'
-                enabled={specialistMode}
-                onChange={setSpecialistMode}
+              <SegmentedControl
+                label='Workflow Preset'
+                description='Assistant behavior'
+                options={['normal', 'specialist', 'artist'] as const}
+                value={workflowPreset}
+                onChange={setWorkflowPreset}
               />
 
               <ToggleOption

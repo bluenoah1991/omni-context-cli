@@ -188,13 +188,13 @@ export async function handleChat(
     });
   }
 
-  const specialistMode = config.specialistMode ?? true;
+  const workflowPreset = config.workflowPreset ?? 'specialist';
 
   const toolFilter = {
-    excludeAgents: !specialistMode,
-    excludeMcp: specialistMode,
-    allowedTools: specialistMode ? [] : null,
-    additionalTools: specialistMode ? null : ['agent_explore'],
+    excludeAgents: workflowPreset !== 'specialist',
+    excludeMcp: workflowPreset === 'specialist',
+    allowedTools: workflowPreset === 'specialist' ? [] : null,
+    additionalTools: workflowPreset === 'specialist' ? null : ['agent_explore'],
   };
 
   try {

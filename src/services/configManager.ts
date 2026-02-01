@@ -114,9 +114,9 @@ export function setStreamingOutput(value: boolean): void {
   saveAppConfig(config);
 }
 
-export function setSpecialistMode(value: boolean): void {
+export function setWorkflowPreset(value: 'normal' | 'specialist' | 'artist'): void {
   const config = loadAppConfig();
-  config.specialistMode = value;
+  config.workflowPreset = value;
   saveAppConfig(config);
 }
 

@@ -14,9 +14,9 @@ import {
   setIDEContext,
   setMemoryEnabled,
   setNotificationEnabled,
-  setSpecialistMode,
   setStreamingOutput,
   setThinking,
+  setWorkflowPreset,
 } from '../../services/configManager';
 import {
   getRewindPoints,
@@ -42,7 +42,7 @@ export type View =
   | 'prefs'
   | 'pref-thinking'
   | 'pref-streaming'
-  | 'pref-specialist'
+  | 'pref-workflow-preset'
   | 'pref-ide-context'
   | 'pref-memory'
   | 'pref-notification'
@@ -88,7 +88,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [deleteIndex, setDeleteIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState<number>();
   const [streamingIndex, setStreamingIndex] = useState<number>();
-  const [specialistIndex, setSpecialistIndex] = useState<number>();
+  const [workflowPresetIndex, setWorkflowPresetIndex] = useState<number>();
   const [ideContextIndex, setIDEContextIndex] = useState<number>();
   const [memoryIndex, setMemoryIndex] = useState<number>();
   const [notificationIndex, setNotificationIndex] = useState<number>();
@@ -106,7 +106,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'select', label: '⤭ Switch to a different model'},
       {id: 'sessions', label: '↻ Load a previous session'},
       {id: 'rewind', label: '↩ Rewind to a previous message'},
-      {id: 'specialist', label: '♪ Specialist mode on/off'},
+      {id: 'workflow-preset', label: '♪ Switch workflow preset'},
       {id: 'models', label: '◈ Manage your model list →'},
       {id: 'settings', label: '⚙ Change your preferences →'},
       {id: 'exit', label: '× Quit Omx'},
@@ -116,7 +116,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'pick-model',
       'browse-sessions',
       'rewind-session',
-      'pref-specialist',
+      'pref-workflow-preset',
       'model-ops',
       'prefs',
     ];
@@ -494,12 +494,13 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
     );
   }
 
-  if (view === 'pref-specialist') {
-    const items: SelectItem[] = [{id: 'on', label: '✓ Enable specialist mode'}, {
-      id: 'off',
-      label: '✗ Disable specialist mode',
-    }];
-    const initialIndex = config.specialistMode ? 0 : 1;
+  if (view === 'pref-workflow-preset') {
+    const items: SelectItem[] = [{id: 'normal', label: '○ Normal mode'}, {
+      id: 'specialist',
+      label: '♪ Specialist mode',
+    }, {id: 'artist', label: '✦ Artist mode'}];
+    const modeToIndex = {normal: 0, specialist: 1, artist: 2};
+    const initialIndex = modeToIndex[config.workflowPreset ?? 'specialist'];
 
     return (
       <Box
@@ -510,15 +511,16 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
         paddingY={1}
       >
         <SelectList
-          key='specialist-mode'
-          title='Enable specialist mode for hierarchical agent workflow?'
+          key='workflow-preset'
+          title='Select workflow preset'
           items={items}
-          selectedIndex={specialistIndex ?? initialIndex}
-          onSelect={setSpecialistIndex}
+          selectedIndex={workflowPresetIndex ?? initialIndex}
+          onSelect={setWorkflowPresetIndex}
           onConfirm={i => {
-            const shouldEnable = i === 0;
-            if (shouldEnable !== config.specialistMode) {
-              setSpecialistMode(shouldEnable);
+            const presets = ['normal', 'specialist', 'artist'] as const;
+            const selectedPreset = presets[i];
+            if (selectedPreset !== config.workflowPreset) {
+              setWorkflowPreset(selectedPreset);
             }
             onClose();
           }}

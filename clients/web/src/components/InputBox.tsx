@@ -4,6 +4,7 @@ import {
   Brain,
   FileCode,
   MessageSquare,
+  Palette,
   RefreshCw,
   Scissors,
   Send,
@@ -464,9 +465,13 @@ export default function InputBox({disabled = false}: InputBoxProps) {
 
               <div className='flex items-center gap-0.5 shrink-0'>
                 <StatusIcon
-                  icon={Sparkles}
-                  active={config?.specialistMode}
-                  title='Specialist Mode'
+                  icon={config?.workflowPreset === 'artist' ? Palette : Sparkles}
+                  active={config?.workflowPreset !== 'normal'}
+                  title={`${
+                    (config?.workflowPreset ?? 'specialist').charAt(0).toUpperCase()
+                    + (config?.workflowPreset ?? 'specialist').slice(1)
+                  } Mode${config?.workflowPreset !== 'normal' ? ': On' : ''}`}
+                  showStatus={false}
                 />
                 <StatusIcon
                   icon={Brain}

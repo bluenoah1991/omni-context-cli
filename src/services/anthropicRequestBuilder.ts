@@ -94,7 +94,7 @@ export async function buildAnthropicRequest(
 
   if (!skipSystemPrompt) {
     request.system = [{
-      text: buildSystemPrompt(config.specialistMode, isFromAgent),
+      text: buildSystemPrompt(config.workflowPreset, isFromAgent),
       type: 'text',
       cache_control: cacheControl,
     }];
