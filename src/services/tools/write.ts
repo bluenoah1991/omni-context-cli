@@ -10,7 +10,7 @@ export function registerWriteTool(): void {
       name: 'Write',
       builtin: true,
       description:
-        `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful! Great for creating new config files, writing complete file contents, or initializing project files. To prevent accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content.`,
+        `Write content to a file, creating parent directories as needed. Overwrites existing files without warning—be careful! Great for creating new config files, writing complete file contents, or initializing project files. To prevent accidents, use createOnly=true for new files. For partial updates, use 'edit' instead to preserve existing content. For binary files (images, PDFs, etc.), set encoding to 'base64'.`,
       formatCall: (args: Record<string, unknown>) => String(args.filePath || ''),
       parameters: {
         properties: {
@@ -23,6 +23,12 @@ export function registerWriteTool(): void {
             type: 'string',
             description: 'Complete file content. This replaces everything in the file.',
           },
+          encoding: {
+            type: 'string',
+            enum: ['text', 'base64'],
+            description:
+              "Content encoding. Use 'base64' for binary files (images, PDFs, etc.). Default: 'text'.",
+          },
           createOnly: {
             type: 'boolean',
             description:
@@ -33,10 +39,15 @@ export function registerWriteTool(): void {
       },
     },
     async (
-      args: {content: string; filePath: string; createOnly?: boolean;},
+      args: {
+        filePath: string;
+        content: string;
+        encoding?: 'text' | 'base64';
+        createOnly?: boolean;
+      },
       signal?: AbortSignal,
     ) => {
-      const {content, filePath, createOnly = false} = args;
+      const {content, filePath, encoding = 'text', createOnly = false} = args;
 
       if (!filePath) {
         throw new Error('You need to provide a filePath. Where do you want to save this?');
@@ -62,6 +73,17 @@ export function registerWriteTool(): void {
 
       const dir = path.dirname(absolutePath);
       await fs.mkdir(dir, {recursive: true});
+
+      if (encoding === 'base64') {
+        const buffer = Buffer.from(content, 'base64');
+        await fs.writeFile(absolutePath, buffer);
+        const sizeKB = (buffer.length / 1024).toFixed(1);
+        const action = createOnly ? 'Created' : 'Wrote';
+        return {
+          result: `${action} ${sizeKB} KB to ${absolutePath}`,
+          displayText: `${action} ${sizeKB} KB`,
+        };
+      }
 
       let oldContent = '';
       try {
