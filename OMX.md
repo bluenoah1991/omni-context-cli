@@ -240,7 +240,7 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `agentModelId` | string | undefined | Model for agent execution |
 | `enableThinking` | boolean | true | Enable Claude thinking mode |
 | `streamingOutput` | boolean | false | Stream responses to terminal |
-| `specialistMode` | boolean | true | Enable specialist agent mode |
+| `workflowPreset` | 'normal' \| 'specialist' \| 'artist' | 'specialist' | Workflow mode: normal (basic), specialist (agent mode), or artist (image-first responses) |
 | `ideContext` | boolean | true | Include IDE context |
 | `memoryEnabled` | boolean | false | Enable memory features |
 | `cacheTtl` | '5m' \| '1h' | '5m' | Response cache duration |
@@ -399,7 +399,7 @@ For VS Code extension embedding, use `npm run build:vscode`.
 ### Prompt Engineering
 
 - Base system prompt in `src/prompts/system.txt`
-- Specialized prompts for specialist mode, skills, compaction, memory, agent instructions
+- Specialized prompts for specialist mode, artist mode, skills, compaction, memory, agent instructions
 - Dynamic prompt assembly via `systemPromptBuilder.ts`
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 - Context editing via `contextEditor.ts` for configurable message modification rounds
@@ -443,9 +443,9 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `Edit` | Surgical text replacements in files |
 | `Glob` | Find files by pattern |
 | `Grep` | Search file contents using ripgrep |
-| `Read` | Read file contents with line numbers |
+| `Read` | Read file contents with line numbers, images, and PDFs |
 | `WebSearch` | Perform web searches via Anthropic API |
-| `Write` | Create or overwrite files |
+| `Write` | Create or overwrite files (supports base64 encoding for binary files) |
 
 ### Build Process
 
