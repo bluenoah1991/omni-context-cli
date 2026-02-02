@@ -3,6 +3,7 @@ import {
   ArrowUp,
   Brain,
   FileCode,
+  Globe,
   MessageSquare,
   Palette,
   Paperclip,
@@ -488,7 +489,11 @@ export default function InputBox({disabled = false}: InputBoxProps) {
 
               <div className='hidden min-[360px]:flex items-center gap-0.5 shrink-0'>
                 <StatusIcon
-                  icon={config?.workflowPreset === 'artist' ? Palette : Sparkles}
+                  icon={config?.workflowPreset === 'artist'
+                    ? Palette
+                    : config?.workflowPreset === 'explorer'
+                    ? Globe
+                    : Sparkles}
                   active={config?.workflowPreset !== 'normal'}
                   title={`${
                     (config?.workflowPreset ?? 'specialist').charAt(0).toUpperCase()

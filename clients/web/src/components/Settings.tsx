@@ -86,7 +86,7 @@ export default function Settings({onClose}: SettingsProps) {
 
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm'>
-      <div className='bg-vscode-sidebar border border-vscode-border rounded-xl w-full max-w-md shadow-2xl transform transition-all scale-100 opacity-100 overflow-hidden m-4'>
+      <div className='bg-vscode-sidebar border border-vscode-border rounded-xl w-full max-w-lg shadow-2xl transform transition-all scale-100 opacity-100 overflow-hidden m-4'>
         <div className='flex items-center justify-between px-6 py-4 border-b border-vscode-border bg-vscode-element/50'>
           <h2 className='text-lg font-semibold text-vscode-text-header'>Settings</h2>
           <button
@@ -160,7 +160,7 @@ export default function Settings({onClose}: SettingsProps) {
               <SegmentedControl
                 label='Workflow Preset'
                 description='Assistant behavior'
-                options={['normal', 'specialist', 'artist'] as const}
+                options={['normal', 'specialist', 'artist', 'explorer'] as const}
                 value={workflowPreset}
                 onChange={setWorkflowPreset}
               />

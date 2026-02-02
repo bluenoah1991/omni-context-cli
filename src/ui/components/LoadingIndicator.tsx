@@ -31,6 +31,19 @@ const artistVerbs = [
   'Creating',
 ];
 
+const explorerVerbs = [
+  'Searching',
+  'Exploring',
+  'Discovering',
+  'Investigating',
+  'Researching',
+  'Digging',
+  'Uncovering',
+  'Scanning',
+  'Probing',
+  'Scouting',
+];
+
 const getRandomText = (verbs: string[]) => verbs[Math.floor(Math.random() * verbs.length)];
 
 interface LoadingIndicatorProps {
@@ -40,7 +53,11 @@ interface LoadingIndicatorProps {
 export function LoadingIndicator(
   {workflowPreset = 'normal'}: LoadingIndicatorProps,
 ): React.ReactElement {
-  const verbList = workflowPreset === 'artist' ? artistVerbs : verbs;
+  const verbList = workflowPreset === 'artist'
+    ? artistVerbs
+    : workflowPreset === 'explorer'
+    ? explorerVerbs
+    : verbs;
   const [text, setText] = useState(() => getRandomText(verbList));
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { getSkills } from '../services/skillManager';
 import { WorkflowPreset } from '../types/config';
 import { getOmxFilePath } from '../utils/omxPaths';
 import artistPrompt from './artist.txt';
+import explorerPrompt from './explorer.txt';
 import { buildSkillsPrompt } from './skillsPromptBuilder';
 import specialistPrompt from './specialist.txt';
 import systemPrompt from './system.txt';
@@ -15,6 +16,7 @@ export function buildSystemPrompt(workflowPreset?: WorkflowPreset, isFromAgent?:
   result = result.replace('{{PLATFORM}}', os.platform());
   result = result.replace('{{ARCH}}', os.arch());
   result = result.replace('{{CWD}}', process.cwd());
+  result = result.replace('{{TODAY}}', new Date().toISOString().split('T')[0]);
 
   if (effectiveMode === 'normal' && !isFromAgent) {
     const skillsPrompt = buildSkillsPrompt(getSkills());
@@ -32,6 +34,9 @@ function getPresetPrompt(preset: WorkflowPreset): string {
   }
   if (preset === 'artist') {
     return getUserPromptOrDefault('artist.txt', artistPrompt);
+  }
+  if (preset === 'explorer') {
+    return getUserPromptOrDefault('explorer.txt', explorerPrompt);
   }
   return systemPrompt;
 }
