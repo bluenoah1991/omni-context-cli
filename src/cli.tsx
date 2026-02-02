@@ -180,7 +180,8 @@ if (opts.serve) {
       : process.platform === 'darwin'
       ? 'open'
       : 'xdg-open';
-    exec(`${cmd} http://${host}:${port}`);
+    const browserHost = host === '0.0.0.0' ? 'localhost' : host;
+    exec(`${cmd} http://${browserHost}:${port}`);
   }
 
   if (opts.parentPid) {

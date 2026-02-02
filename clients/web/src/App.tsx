@@ -53,7 +53,7 @@ export default function App() {
   return (
     <div className='flex h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
       <div className='flex-1 flex flex-col min-w-0'>
-        <header className='flex-none pt-3 pb-2 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
+        <header className='safe-area-top flex-none pb-2 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
           <div className='flex items-center justify-between w-full'>
             <div className='w-80'>
               <SessionSelector disabled={isLoading} />
@@ -78,7 +78,7 @@ export default function App() {
           <MessageList />
         </main>
 
-        <div className='flex-none bg-vscode-bg px-4 border-t border-vscode-element'>
+        <div className='safe-area-bottom flex-none bg-vscode-bg px-4 border-t border-vscode-element'>
           <InputBox disabled={!currentModel} />
         </div>
       </div>

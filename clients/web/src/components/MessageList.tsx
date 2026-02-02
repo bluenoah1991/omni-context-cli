@@ -67,7 +67,7 @@ export default function MessageList() {
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className='flex-1 overflow-y-auto px-4 [scrollbar-gutter:stable_both-edges]'
+      className='flex-1 overflow-y-auto overscroll-contain px-4 [scrollbar-gutter:stable_both-edges]'
     >
       <div className='max-w-4xl mx-auto py-6 space-y-4'>
         {messages.map((message, index) => (

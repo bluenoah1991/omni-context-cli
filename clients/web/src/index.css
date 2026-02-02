@@ -50,14 +50,45 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--vscode-bg);
   color: var(--vscode-text);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
+  position: fixed;
+  width: 100%;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+.safe-area-top {
+  padding-top: 0.75rem;
+  padding-top: calc(0.75rem + constant(safe-area-inset-top));
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
+.safe-area-bottom {
+  padding-bottom: 0;
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 ::-webkit-scrollbar {
@@ -91,11 +122,11 @@ body {
   contain: layout;
 }
 
-.markdown-content > *:first-child {
+.markdown-content>*:first-child {
   margin-top: 0;
 }
 
-.markdown-content > *:last-child {
+.markdown-content>*:last-child {
   margin-bottom: 0;
 }
 
@@ -112,9 +143,21 @@ body {
   color: var(--vscode-text-header);
 }
 
-.markdown-content h1 { font-size: 1.5em; border-bottom: 1px solid var(--vscode-border); padding-bottom: 0.3em; }
-.markdown-content h2 { font-size: 1.3em; border-bottom: 1px solid var(--vscode-border); padding-bottom: 0.3em; }
-.markdown-content h3 { font-size: 1.1em; }
+.markdown-content h1 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--vscode-border);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  font-size: 1.3em;
+  border-bottom: 1px solid var(--vscode-border);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h3 {
+  font-size: 1.1em;
+}
 
 .markdown-content p {
   margin: 0.8em 0;
@@ -130,7 +173,7 @@ body {
   margin: 0.3em 0;
 }
 
-.markdown-content li > p {
+.markdown-content li>p {
   margin: 0.3em 0;
 }
 
@@ -168,8 +211,13 @@ body {
   color: var(--vscode-text);
 }
 
-.markdown-content blockquote > p:first-child { margin-top: 0; }
-.markdown-content blockquote > p:last-child { margin-bottom: 0; }
+.markdown-content blockquote>p:first-child {
+  margin-top: 0;
+}
+
+.markdown-content blockquote>p:last-child {
+  margin-bottom: 0;
+}
 
 .markdown-content a {
   color: var(--vscode-accent);
@@ -204,8 +252,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
