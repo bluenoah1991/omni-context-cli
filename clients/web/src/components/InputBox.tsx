@@ -5,6 +5,7 @@ import {
   FileCode,
   MessageSquare,
   Palette,
+  Paperclip,
   RefreshCw,
   Scissors,
   Send,
@@ -86,6 +87,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const [savedInput, setSavedInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     isLoading,
     sendMessage,
@@ -210,6 +212,27 @@ export default function InputBox({disabled = false}: InputBoxProps) {
 
   const removeAttachment = (id: string) => {
     setAttachments(prev => prev.filter(a => a.id !== id));
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments: Attachment[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (isSupportedType(file.type)) {
+        const attachment = await processFile(file);
+        newAttachments.push(attachment);
+      }
+    }
+
+    if (newAttachments.length > 0) {
+      setAttachments(prev => [...prev, ...newAttachments]);
+    }
+
+    e.target.value = '';
   };
 
   const showRewindPicker = rewindPoints !== null;
@@ -509,7 +532,28 @@ export default function InputBox({disabled = false}: InputBoxProps) {
               </div>
             </div>
 
-            <div className='flex items-center pl-3'>
+            <div className='flex items-center gap-1 pl-3'>
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept='image/*,application/pdf'
+                multiple
+                onChange={handleFileSelect}
+                className='hidden'
+              />
+              <button
+                type='button'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || disabled}
+                className={`p-1.5 rounded-md transition-all ${
+                  isLoading || disabled
+                    ? 'text-vscode-border-active cursor-not-allowed'
+                    : 'text-vscode-text-muted hover:text-vscode-text hover:bg-white/5 light:hover:bg-black/5'
+                }`}
+                title='Attach image or PDF'
+              >
+                <Paperclip size={14} />
+              </button>
               {isLoading
                 ? (
                   <button
