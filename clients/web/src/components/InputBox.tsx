@@ -447,7 +447,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           <div className='flex items-center justify-between px-3 pb-2 pt-1'>
             <div className='flex items-center gap-3 text-xs text-vscode-text-muted select-none overflow-hidden'>
               <div
-                className='hidden min-[480px]:flex items-center gap-1.5 px-1.5 py-0.5 rounded-md hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default min-w-0 truncate'
+                className='hidden min-[480px]:flex items-center gap-1.5 px-1.5 py-0.5 rounded-md hover:bg-white/5 light:hover:bg-black/5 transition-colors cursor-default min-w-0'
                 title={showAgentModel
                   ? `${currentModelName} / ${agentModelName}`
                   : currentModelName}
@@ -509,7 +509,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
               </div>
             </div>
 
-            <div className='flex items-center pl-2'>
+            <div className='flex items-center pl-3'>
               {isLoading
                 ? (
                   <button
