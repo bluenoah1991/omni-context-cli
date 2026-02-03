@@ -1,0 +1,8 @@
+{
+  "name": "cli-deps",
+  "private": true,
+  "dependencies": {
+    "figlet": "^1.8.0",
+    "node-notifier": "^10.0.1"
+  }
+}

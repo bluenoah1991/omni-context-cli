@@ -1,0 +1,77 @@
+{
+  "name": "omni-context-desktop",
+  "version": "0.0.1",
+  "description": "OmniContext Desktop - Zero-telemetry coding assistant",
+  "main": "./out/main/index.js",
+  "author": "bluenoah1991",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "node build.mjs",
+    "postinstall": "electron-builder install-app-deps && cd cli-deps && npm install",
+    "package": "npm run build && electron-builder --dir",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac"
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0",
+    "esbuild": "^0.27.2",
+    "typescript": "^5.7.2"
+  },
+  "build": {
+    "appId": "com.omni-context.desktop",
+    "productName": "OmniContext Desktop",
+    "directories": {
+      "buildResources": "../../assets"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../../dist",
+        "to": "omni-context-cli",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "cli-deps/node_modules",
+        "to": "omni-context-cli/node_modules"
+      },
+      {
+        "from": "webview",
+        "to": "webview",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../../assets/cone@256.png",
+        "to": "icon.png"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "../../assets/cone@256.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "OmniContext Desktop"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "../../assets/cone@512.png"
+    }
+  }
+}

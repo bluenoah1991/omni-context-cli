@@ -54,7 +54,9 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('--install-vscode-extension', 'Install VS Code extension').option(
   '--approve-write',
   'Require user approval before running Bash, Edit, and Write tools',
-).option('--approve-all', 'Require user approval before running any tool').parse();
+).option('--approve-all', 'Require user approval before running any tool').parse(process.argv, {
+  from: 'node',
+});
 
 const opts = program.opts();
 
