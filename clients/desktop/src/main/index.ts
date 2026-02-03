@@ -1,8 +1,8 @@
 import { ChildProcess, spawn } from 'child_process';
 import { app, BrowserWindow, shell } from 'electron';
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as net from 'net';
-import { tmpdir } from 'os';
+import { homedir, tmpdir } from 'os';
 import { join } from 'path';
 
 if (app.isPackaged) {
@@ -25,12 +25,20 @@ const PORT = 5282;
 
 const isDev = () => !app.isPackaged;
 
+const getDefaultWorkspace = () => {
+  const workspace = join(homedir(), 'Documents', 'OmniContext');
+  if (!existsSync(workspace)) {
+    mkdirSync(workspace, {recursive: true});
+  }
+  return workspace;
+};
+
 const getPath = (type: 'cli' | 'cwd' | 'webview' | 'icon') => {
   const paths = {
     cli: isDev()
       ? join(__dirname, '../../../../dist/cli.js')
       : join(process.resourcesPath, 'omni-context-cli', 'cli.js'),
-    cwd: isDev() ? join(__dirname, '../../../..') : process.cwd(),
+    cwd: isDev() ? join(__dirname, '../../../..') : getDefaultWorkspace(),
     webview: isDev() ? join(__dirname, '../../webview') : join(process.resourcesPath, 'webview'),
     icon: isDev()
       ? join(__dirname, '../../../../assets/cone@256.png')
