@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild'
 import { cpSync } from 'fs'
+import { execSync } from 'child_process'
 
 await esbuild.build({
   entryPoints: ['src/main/index.ts'],
@@ -21,6 +22,17 @@ await esbuild.build({
   external: ['electron']
 })
 
-cpSync('src/loading.html', 'out/loading.html')
+await esbuild.build({
+  entryPoints: ['src/portal/main.tsx'],
+  bundle: true,
+  platform: 'browser',
+  target: 'es2020',
+  format: 'iife',
+  outfile: 'out/portal/index.js',
+  jsx: 'automatic',
+})
 
-console.log('Build complete')
+execSync('npx @tailwindcss/cli -i ./src/portal/index.css -o ./out/portal/index.css', { stdio: 'inherit' })
+
+cpSync('src/portal/index.html', 'out/portal/index.html')
+cpSync('src/loading.html', 'out/loading.html')

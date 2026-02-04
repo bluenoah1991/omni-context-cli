@@ -14,13 +14,20 @@
     "package:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
-    "@electron-toolkit/preload": "^3.0.1"
+    "lucide-react": "^0.563.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
     "@types/node": "^22.10.0",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
     "electron": "^40.1.0",
     "electron-builder": "^26.7.0",
     "esbuild": "^0.27.2",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.7.2"
   },
   "build": {
@@ -47,6 +54,13 @@
       {
         "from": "webview",
         "to": "webview",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "out/portal",
+        "to": "portal",
         "filter": [
           "**/*"
         ]

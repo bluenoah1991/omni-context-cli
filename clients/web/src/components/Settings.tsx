@@ -36,6 +36,8 @@ export default function Settings({onClose}: SettingsProps) {
     config?.notificationEnabled ?? false,
   );
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
+  const [ideContext, setIdeContext] = useState(config?.ideContext ?? true);
+  const [cacheTtl, setCacheTtl] = useState<'5m' | '1h'>(config?.cacheTtl ?? '5m');
   const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
   const [saving, setSaving] = useState(false);
 
@@ -49,6 +51,8 @@ export default function Settings({onClose}: SettingsProps) {
       setMemoryEnabled(config.memoryEnabled);
       setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
+      setIdeContext(config.ideContext ?? true);
+      setCacheTtl(config.cacheTtl ?? '5m');
       setWebTheme(config.webTheme || 'dark');
     }
   }, [config, currentModel]);
@@ -64,6 +68,8 @@ export default function Settings({onClose}: SettingsProps) {
         memoryEnabled,
         notificationEnabled,
         contextEditing,
+        ideContext,
+        cacheTtl,
         webTheme,
       });
       const newModel = models.find(model => model.id === currentModelId);
@@ -191,6 +197,21 @@ export default function Settings({onClose}: SettingsProps) {
                 description='Enable chain-of-thought reasoning'
                 enabled={enableThinking}
                 onChange={setEnableThinking}
+              />
+
+              <ToggleOption
+                label='IDE Context'
+                description='Include context from connected IDE'
+                enabled={ideContext}
+                onChange={setIdeContext}
+              />
+
+              <SegmentedControl
+                label='Response Cache'
+                description='Cache duration for Anthropic API prompt caching'
+                options={['5m', '1h'] as const}
+                value={cacheTtl}
+                onChange={setCacheTtl}
               />
             </>
           )}

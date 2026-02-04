@@ -7,15 +7,31 @@ export class WebviewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = 'omni-context.webview';
 
   private extensionUri: vscode.Uri;
+  private webviewView?: vscode.WebviewView;
+  private themeDisposable?: vscode.Disposable;
 
   constructor(extensionUri: vscode.Uri) {
     this.extensionUri = extensionUri;
   }
 
   async resolveWebviewView(webviewView: vscode.WebviewView) {
+    this.webviewView = webviewView;
     const webviewUri = vscode.Uri.joinPath(this.extensionUri, 'webview');
     webviewView.webview.options = {enableScripts: true, localResourceRoots: [webviewUri]};
     webviewView.webview.html = loadTemplate('loading', {status: 'Waiting for workspace...'});
+
+    this.themeDisposable?.dispose();
+    this.themeDisposable = vscode.window.onDidChangeActiveColorTheme(theme => {
+      this.webviewView?.webview.postMessage({
+        type: 'themeChange',
+        theme: theme.kind === vscode.ColorThemeKind.Light ? 'light' : 'dark',
+      });
+    });
+
+    webviewView.onDidDispose(() => {
+      this.themeDisposable?.dispose();
+      this.webviewView = undefined;
+    });
 
     const cwd = await this.waitForWorkspace();
     if (!cwd) {

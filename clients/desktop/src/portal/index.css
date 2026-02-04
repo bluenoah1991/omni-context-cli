@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+@custom-variant light (:root.light &);
+
+@theme inline {
+  --color-vscode-bg: var(--vscode-bg);
+  --color-vscode-sidebar: var(--vscode-sidebar);
+  --color-vscode-element: var(--vscode-element);
+  --color-vscode-border: var(--vscode-border);
+  --color-vscode-text: var(--vscode-text);
+  --color-vscode-text-header: var(--vscode-text-header);
+  --color-vscode-text-muted: var(--vscode-text-muted);
+  --color-vscode-accent: var(--vscode-accent);
+  --color-vscode-warning: var(--vscode-warning);
+  --color-vscode-error: var(--vscode-error);
+}
+
+:root {
+  --vscode-bg: #1e1e1e;
+  --vscode-sidebar: #252526;
+  --vscode-element: #2d2d2d;
+  --vscode-border: #3c3c3c;
+  --vscode-text: #cccccc;
+  --vscode-text-header: #e0e0e0;
+  --vscode-text-muted: #858585;
+  --vscode-accent: #0078d4;
+  --vscode-warning: #d7ba7d;
+  --vscode-error: #f14c4c;
+  color-scheme: dark;
+}
+
+:root.light {
+  --vscode-bg: #ffffff;
+  --vscode-sidebar: #f3f3f3;
+  --vscode-element: #eaeaea;
+  --vscode-border: #cecece;
+  --vscode-text: #3b3b3b;
+  --vscode-text-header: #1e1e1e;
+  --vscode-text-muted: #616161;
+  --vscode-accent: #0066b8;
+  --vscode-warning: #795e26;
+  --vscode-error: #c72e2e;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--vscode-bg);
+  color: var(--vscode-text);
+}

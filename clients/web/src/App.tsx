@@ -27,11 +27,32 @@ export default function App() {
   } = useChatStore();
 
   useEffect(() => {
-    const isLight = config?.webTheme === 'light'
-      || (config?.webTheme === 'auto'
-        && window.matchMedia('(prefers-color-scheme: light)').matches);
-    document.documentElement.classList.toggle('light', isLight);
-    setTheme(isLight ? 'light' : 'dark');
+    const webTheme = config?.webTheme;
+    const applyTheme = (isLight: boolean) => {
+      document.documentElement.classList.toggle('light', isLight);
+      setTheme(isLight ? 'light' : 'dark');
+    };
+    const isLight = webTheme === 'light'
+      || (webTheme === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
+    applyTheme(isLight);
+
+    if (webTheme === 'auto') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+      const updateMediaTheme = (e: MediaQueryListEvent) => applyTheme(e.matches);
+      mediaQuery.addEventListener('change', updateMediaTheme);
+
+      const handleMessage = (e: MessageEvent) => {
+        if (e.data?.type === 'themeChange') {
+          applyTheme(e.data.theme === 'light');
+        }
+      };
+      window.addEventListener('message', handleMessage);
+
+      return () => {
+        mediaQuery.removeEventListener('change', updateMediaTheme);
+        window.removeEventListener('message', handleMessage);
+      };
+    }
   }, [config?.webTheme, setTheme]);
 
   useEffect(() => {
