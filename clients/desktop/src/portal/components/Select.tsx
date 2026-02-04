@@ -16,9 +16,7 @@ interface SelectProps {
 }
 
 export const Select = memo(
-  function Select(
-    {label, description, value, onChange, options, placeholder = 'Select an option'}: SelectProps,
-  ) {
+  function Select({label, description, value, onChange, options, placeholder}: SelectProps) {
     return (
       <div className={label ? 'space-y-2' : ''}>
         {label && <label className='block text-sm font-medium text-vscode-text'>{label}</label>}
@@ -26,9 +24,9 @@ export const Select = memo(
           <select
             value={value}
             onChange={e => onChange(e.target.value)}
-            className='w-full px-4 py-2.5 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent focus:ring-1 focus:ring-vscode-accent appearance-none'
+            className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent focus:ring-1 focus:ring-vscode-accent appearance-none cursor-pointer'
           >
-            <option value=''>{placeholder}</option>
+            {placeholder && <option value=''>{placeholder}</option>}
             {options.map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}

@@ -8,7 +8,7 @@ interface ProviderItemProps {
 
 export function ProviderItem({provider, onRemove}: ProviderItemProps) {
   return (
-    <div className='flex items-center justify-between p-3 bg-vscode-element rounded-lg'>
+    <div className='flex items-center justify-between p-4 bg-vscode-element rounded-lg border border-vscode-border'>
       <div className='flex flex-col'>
         <span className='font-medium text-vscode-text-header text-sm'>{provider.name}</span>
         <span className='text-xs text-vscode-text-muted'>
@@ -17,7 +17,7 @@ export function ProviderItem({provider, onRemove}: ProviderItemProps) {
       </div>
       <button
         onClick={() => onRemove(provider.id)}
-        className='p-1 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors'
+        className='p-2 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors cursor-pointer'
         title='Remove provider'
       >
         <X size={16} />

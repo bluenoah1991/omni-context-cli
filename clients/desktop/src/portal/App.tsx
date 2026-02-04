@@ -32,13 +32,13 @@ const NavItem = memo(
     return (
       <button
         onClick={() => onClick(id)}
-        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors border-l-2 ${
+        className={`w-full flex items-center gap-3 px-6 py-3 text-base font-medium transition-colors border-l-4 ${
           activeTab === id
             ? 'bg-vscode-element border-vscode-accent text-vscode-text-header'
             : 'border-transparent text-vscode-text-muted hover:text-vscode-text hover:bg-vscode-element/50'
         }`}
       >
-        <Icon size={18} className={activeTab === id ? 'text-vscode-accent' : ''} />
+        <Icon size={20} className={activeTab === id ? 'text-vscode-accent' : ''} />
         <span>{label}</span>
         {alert && <div className='ml-auto w-2 h-2 rounded-full bg-vscode-error' />}
       </button>
@@ -239,16 +239,16 @@ export default function App() {
   }
 
   return (
-    <div className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans'>
-      <div className='w-64 bg-vscode-sidebar border-r border-vscode-border flex flex-col shrink-0'>
+    <div className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans select-none'>
+      <div className='w-80 bg-vscode-sidebar border-r border-vscode-border flex flex-col shrink-0'>
         <div className='p-6'>
-          <h1 className='text-lg font-semibold text-vscode-text-header flex items-center gap-2'>
-            <Monitor size={20} className='text-vscode-accent' />
+          <h1 className='text-xl font-semibold text-vscode-text-header flex items-center gap-3'>
+            <Monitor size={24} className='text-vscode-accent' />
             OmniContext
           </h1>
         </div>
 
-        <nav className='flex-1 py-2'>
+        <nav className='flex-1'>
           <NavItem
             id='workspaces'
             icon={LayoutGrid}
@@ -273,12 +273,12 @@ export default function App() {
           />
         </nav>
 
-        <div className='p-4 border-t border-vscode-border bg-vscode-element/10'>
-          <div className='mb-4 space-y-2'>
-            <div className='flex items-center gap-2 text-xs'>
+        <div className='p-6 border-t border-vscode-border bg-vscode-element/10'>
+          <div className='mb-6 space-y-3'>
+            <div className='flex items-center gap-3 text-sm'>
               {selectedWorkspace
-                ? <FolderOpen size={14} className='text-vscode-accent shrink-0' />
-                : <AlertCircle size={14} className='text-vscode-error shrink-0' />}
+                ? <FolderOpen size={16} className='text-vscode-accent shrink-0' />
+                : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
               <span
                 className={`truncate ${
                   selectedWorkspace ? 'text-vscode-text-header' : 'text-vscode-text-muted'
@@ -288,10 +288,10 @@ export default function App() {
                 {selectedWorkspace ? selectedWorkspace.split(/[/\\]/).pop() : 'No workspace'}
               </span>
             </div>
-            <div className='flex items-center gap-2 text-xs'>
+            <div className='flex items-center gap-3 text-sm'>
               {omxConfig.models.length > 0
-                ? <Box size={14} className='text-vscode-accent shrink-0' />
-                : <AlertCircle size={14} className='text-vscode-error shrink-0' />}
+                ? <Box size={16} className='text-vscode-accent shrink-0' />
+                : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
               <span
                 className={omxConfig.models.length > 0
                   ? 'text-vscode-text-header'
@@ -302,9 +302,9 @@ export default function App() {
                   : 'No models'}
               </span>
             </div>
-            <div className='flex items-center gap-2 text-xs'>
+            <div className='flex items-center gap-3 text-sm'>
               <Shield
-                size={14}
+                size={16}
                 className={`shrink-0 ${
                   approvalMode === 'none' ? 'text-vscode-warning' : 'text-vscode-accent'
                 }`}
@@ -322,33 +322,35 @@ export default function App() {
           <button
             onClick={handleLaunch}
             disabled={!canLaunch}
-            className='w-full py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-sm'
+            className='w-full py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-base'
           >
-            <Rocket size={16} />
+            <Rocket size={20} />
             Launch
           </button>
         </div>
       </div>
 
       <div className='flex-1 flex flex-col min-w-0 bg-vscode-bg overflow-hidden'>
-        <div className='flex-1 overflow-y-auto p-8 md:p-12'>
+        <div className='flex-1 overflow-y-auto p-6'>
           {activeTab === 'workspaces' && (
-            <div className='max-w-2xl mx-auto w-full space-y-8'>
+            <div className='max-w-3xl mx-auto w-full space-y-6'>
               <header>
-                <h2 className='text-2xl font-light text-vscode-text-header mb-2'>Workspaces</h2>
-                <p className='text-vscode-text-muted'>Open a folder or select a recent project</p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Workspaces</h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Open a folder or select a recent project
+                </p>
               </header>
 
-              <div className='space-y-8'>
+              <div className='space-y-6'>
                 <div>
-                  <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-3'>
+                  <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
                     Start
                   </h3>
                   <button
                     onClick={handleBrowse}
                     className='w-full p-4 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border hover:border-vscode-accent rounded-lg text-left transition-all group flex items-center gap-4'
                   >
-                    <div className='p-2.5 rounded-lg bg-vscode-accent/10 text-vscode-accent group-hover:bg-vscode-accent group-hover:text-white transition-colors'>
+                    <div className='p-2 rounded-lg bg-vscode-accent/10 text-vscode-accent group-hover:bg-vscode-accent group-hover:text-white transition-colors'>
                       <FolderOpen size={24} />
                     </div>
                     <div>
@@ -364,23 +366,21 @@ export default function App() {
 
                 {desktopConfig.workspaces.length > 0 && (
                   <div>
-                    <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-3'>
+                    <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
                       Recent
                     </h3>
-                    <div className='space-y-2'>
+                    <div className='space-y-4'>
                       {desktopConfig.workspaces.map(ws => (
                         <div
                           key={ws.path}
-                          className={`w-full p-3 rounded-lg border transition-all flex items-center gap-3 group ${
+                          onClick={() => setSelectedWorkspace(ws.path)}
+                          className={`w-full p-4 rounded-lg border transition-all flex items-center gap-4 group cursor-pointer ${
                             selectedWorkspace === ws.path
                               ? 'bg-vscode-accent/10 border-vscode-accent'
                               : 'bg-transparent border-transparent hover:bg-vscode-element'
                           }`}
                         >
-                          <button
-                            onClick={() => setSelectedWorkspace(ws.path)}
-                            className='flex items-center gap-3 flex-1 min-w-0 text-left'
-                          >
+                          <div className='flex items-center gap-4 flex-1 min-w-0 text-left'>
                             <div
                               className={`p-2 rounded ${
                                 selectedWorkspace === ws.path
@@ -404,16 +404,23 @@ export default function App() {
                                 {ws.path}
                               </div>
                             </div>
-                          </button>
+                          </div>
                           {selectedWorkspace === ws.path
-                            ? <CheckCircle2 size={16} className='text-vscode-accent shrink-0' />
+                            ? (
+                              <div className='p-2'>
+                                <CheckCircle2 size={16} className='text-vscode-accent shrink-0' />
+                              </div>
+                            )
                             : ws.path !== desktopConfig.defaultWorkspace && (
                               <button
-                                onClick={() => handleRemoveWorkspace(ws.path)}
-                                className='p-1 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors opacity-0 group-hover:opacity-100'
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleRemoveWorkspace(ws.path);
+                                }}
+                                className='p-2 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors opacity-0 group-hover:opacity-100'
                                 title='Remove from list'
                               >
-                                <X size={14} />
+                                <X size={16} />
                               </button>
                             )}
                         </div>
@@ -426,13 +433,13 @@ export default function App() {
           )}
 
           {activeTab === 'models' && (
-            <div className='max-w-2xl mx-auto space-y-8'>
+            <div className='max-w-3xl mx-auto space-y-6'>
               <header className='flex items-center justify-between'>
                 <div>
-                  <h2 className='text-2xl font-light text-vscode-text-header mb-2'>
+                  <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
                     Model Providers
                   </h2>
-                  <p className='text-vscode-text-muted'>Configure LLM API providers</p>
+                  <p className='text-vscode-text-muted text-sm'>Configure LLM API providers</p>
                 </div>
                 {omxConfig.models.length === 0 && (
                   <div className='px-3 py-1 bg-vscode-error/20 text-vscode-error text-xs rounded-full border border-vscode-error/20'>
@@ -441,7 +448,7 @@ export default function App() {
                 )}
               </header>
 
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-5 shadow-sm'>
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 shadow-sm'>
                 <h3 className='text-sm font-medium text-vscode-text-header mb-4'>
                   Add New Provider
                 </h3>
@@ -459,7 +466,7 @@ export default function App() {
                     onChange={e => setApiKey(e.target.value)}
                     placeholder='Enter API Key'
                     autoComplete='off'
-                    className='w-full px-3 py-2.5 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent'
+                    className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
                   />
                 </div>
                 <button
@@ -482,14 +489,14 @@ export default function App() {
                 <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider'>
                   Configured
                 </h3>
-                <div className='space-y-3'>
+                <div className='space-y-4'>
                   {configuredProviders.length > 0
                     ? (configuredProviders.map(p => (
                       <ProviderItem key={p.id} provider={p} onRemove={handleRemoveProvider} />
                     )))
                     : (
-                      <div className='text-center py-10 border-2 border-dashed border-vscode-border/50 rounded-lg'>
-                        <Box size={32} className='mx-auto text-vscode-text-muted/30 mb-2' />
+                      <div className='text-center py-8 border-2 border-dashed border-vscode-border/50 rounded-lg'>
+                        <Box size={24} className='mx-auto text-vscode-text-muted/30 mb-2' />
                         <p className='text-sm text-vscode-text-muted'>
                           No providers configured yet
                         </p>
@@ -501,13 +508,13 @@ export default function App() {
           )}
 
           {activeTab === 'permissions' && (
-            <div className='max-w-2xl mx-auto space-y-8'>
+            <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-2xl font-light text-vscode-text-header mb-2'>Permissions</h2>
-                <p className='text-vscode-text-muted'>Control tool execution safety</p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Permissions</h2>
+                <p className='text-vscode-text-muted text-sm'>Control tool execution safety</p>
               </header>
 
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-5'>
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <Select
                   label='Approval Mode'
                   description='Choose when the assistant requires your explicit approval to run tools.'
@@ -519,7 +526,7 @@ export default function App() {
                   }, {value: 'all', label: 'Full Approval (Ask for everything)'}]}
                 />
 
-                <div className='mt-6 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
+                <div className='mt-4 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
                   <p className='mb-2'>
                     <strong className='text-vscode-text-header'>Write Approval</strong>{' '}
                     is recommended. It allows read-only operations (searching, reading files) to run
