@@ -9,4 +9,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   launch: (workspace: string, approvalMode: string) =>
     ipcRenderer.send('launch', workspace, approvalMode),
+  getCustomPrompt: (name: string) => ipcRenderer.invoke('get-custom-prompt', name),
+  saveCustomPrompt: (name: string, content: string) =>
+    ipcRenderer.invoke('save-custom-prompt', name, content),
+  deleteCustomPrompt: (name: string) => ipcRenderer.invoke('delete-custom-prompt', name),
 });

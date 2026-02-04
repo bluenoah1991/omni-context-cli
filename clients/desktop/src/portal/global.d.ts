@@ -10,6 +10,9 @@ declare global {
       checkPathExists: (path: string) => Promise<boolean>;
       selectFolder: () => Promise<string | null>;
       launch: (workspace: string, approvalMode: ApprovalMode) => void;
+      getCustomPrompt: (name: string) => Promise<string | null>;
+      saveCustomPrompt: (name: string, content: string) => Promise<void>;
+      deleteCustomPrompt: (name: string) => Promise<void>;
     };
   }
 }

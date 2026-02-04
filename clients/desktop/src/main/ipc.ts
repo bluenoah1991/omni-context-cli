@@ -1,7 +1,9 @@
 import { dialog, ipcMain } from 'electron';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
 import { loadDesktopConfig, loadOmxConfig, saveDesktopConfig, saveOmxConfig } from './config';
+import { getOmxDir } from './paths';
 import { getMainWindow, launchApp } from './window';
 
 export function registerIpcHandlers(): void {
@@ -20,5 +22,25 @@ export function registerIpcHandlers(): void {
 
   ipcMain.on('launch', (_, workspace: string, approvalMode: ApprovalMode) => {
     launchApp(workspace, approvalMode);
+  });
+
+  ipcMain.handle('get-custom-prompt', (_, name: string) => {
+    const path = join(getOmxDir(), `${name}.txt`);
+    if (existsSync(path)) {
+      return readFileSync(path, 'utf-8');
+    }
+    return null;
+  });
+
+  ipcMain.handle('save-custom-prompt', (_, name: string, content: string) => {
+    const path = join(getOmxDir(), `${name}.txt`);
+    writeFileSync(path, content, 'utf-8');
+  });
+
+  ipcMain.handle('delete-custom-prompt', (_, name: string) => {
+    const path = join(getOmxDir(), `${name}.txt`);
+    if (existsSync(path)) {
+      unlinkSync(path);
+    }
   });
 }

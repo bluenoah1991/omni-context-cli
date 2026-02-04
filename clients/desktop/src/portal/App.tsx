@@ -2,20 +2,23 @@ import {
   AlertCircle,
   Box,
   CheckCircle2,
+  FileText,
   FolderOpen,
   LayoutGrid,
   Loader2,
   type LucideIcon,
   Monitor,
   Rocket,
+  RotateCcw,
+  Save,
   Shield,
   X,
 } from 'lucide-react';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { ProviderItem } from './components/ProviderItem';
 import { Select } from './components/Select';
 import { addProviderModels, removeProviderModels } from './providers';
-import { usePortalStore } from './store/portalStore';
+import { type CustomPrompts, type PromptType, usePortalStore } from './store/portalStore';
 import type { ApprovalMode, Tab } from './types/config';
 
 interface NavItemProps {
@@ -61,6 +64,9 @@ export default function App() {
     configuredProviders,
     availableProviders,
     canLaunch,
+    customPrompts,
+    selectedPromptType,
+    promptEditorValue,
     setOmxConfig,
     setDesktopConfig,
     setLoading,
@@ -72,7 +78,12 @@ export default function App() {
     setIsAddingProvider,
     setApprovalMode,
     clearProviderForm,
+    setCustomPrompts,
+    setSelectedPromptType,
+    setPromptEditorValue,
   } = usePortalStore();
+
+  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
 
   useEffect(() => {
     init();
@@ -111,6 +122,15 @@ export default function App() {
         workspace = desktop.lastWorkspace;
       }
       setSelectedWorkspace(workspace);
+
+      const [specialist, artist, explorer] = await Promise.all([
+        window.electronAPI.getCustomPrompt('specialist'),
+        window.electronAPI.getCustomPrompt('artist'),
+        window.electronAPI.getCustomPrompt('explorer'),
+      ]);
+      const prompts: CustomPrompts = {specialist, artist, explorer};
+      setCustomPrompts(prompts);
+      setPromptEditorValue(prompts.specialist ?? '');
 
       if (omx.models.length === 0) {
         setActiveTab('models');
@@ -211,6 +231,33 @@ export default function App() {
     }
   };
 
+  const handlePromptTypeChange = (type: PromptType) => {
+    setSelectedPromptType(type);
+  };
+
+  const handleSavePrompt = async () => {
+    if (!promptEditorValue.trim()) return;
+    setIsSavingPrompt(true);
+    try {
+      await window.electronAPI.saveCustomPrompt(selectedPromptType, promptEditorValue);
+      setCustomPrompts({...customPrompts, [selectedPromptType]: promptEditorValue});
+    } catch (e) {
+      console.error('Failed to save prompt:', e);
+    } finally {
+      setIsSavingPrompt(false);
+    }
+  };
+
+  const handleResetPrompt = async () => {
+    try {
+      await window.electronAPI.deleteCustomPrompt(selectedPromptType);
+      setCustomPrompts({...customPrompts, [selectedPromptType]: null});
+      setPromptEditorValue('');
+    } catch (e) {
+      console.error('Failed to reset prompt:', e);
+    }
+  };
+
   const handleLaunch = async () => {
     if (!selectedWorkspace) return;
 
@@ -268,6 +315,13 @@ export default function App() {
             id='permissions'
             icon={Shield}
             label='Permissions'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
+            id='prompts'
+            icon={FileText}
+            label='Prompts'
             activeTab={activeTab}
             onClick={setActiveTab}
           />
@@ -536,6 +590,84 @@ export default function App() {
                   <p>
                     <strong className='text-vscode-text-header'>Full Approval</strong>{' '}
                     provides maximum safety but may interrupt the workflow frequently.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'prompts' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Custom Prompts</h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Customize system prompts for different workflow modes
+                </p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
+                <Select
+                  label='Workflow Mode'
+                  description='Select the mode to customize.'
+                  value={selectedPromptType}
+                  onChange={v => handlePromptTypeChange(v as PromptType)}
+                  options={[{value: 'specialist', label: 'Specialist Mode'}, {
+                    value: 'artist',
+                    label: 'Artist Mode',
+                  }, {value: 'explorer', label: 'Explorer Mode'}]}
+                />
+
+                <div className='mt-4'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <label className='text-sm font-medium text-vscode-text-header'>
+                      System Prompt
+                    </label>
+                    {customPrompts[selectedPromptType] !== null && (
+                      <span className='text-xs text-vscode-accent'>Customized</span>
+                    )}
+                  </div>
+                  <textarea
+                    value={promptEditorValue}
+                    onChange={e => setPromptEditorValue(e.target.value)}
+                    placeholder={`Enter custom system prompt for ${selectedPromptType} mode...`}
+                    className='w-full h-64 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono resize-none focus:outline-none focus:border-vscode-accent select-text'
+                  />
+                </div>
+
+                <div className='flex gap-3 mt-4'>
+                  <button
+                    onClick={handleSavePrompt}
+                    disabled={!promptEditorValue.trim() || isSavingPrompt}
+                    className='flex-1 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2'
+                  >
+                    {isSavingPrompt
+                      ? <Loader2 size={16} className='animate-spin' />
+                      : <Save size={16} />}
+                    {isSavingPrompt ? 'Saving...' : 'Save Prompt'}
+                  </button>
+                  <button
+                    onClick={handleResetPrompt}
+                    disabled={customPrompts[selectedPromptType] === null}
+                    className='px-4 py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
+                  >
+                    <RotateCcw size={16} />
+                    Reset to Default
+                  </button>
+                </div>
+
+                <div className='mt-4 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
+                  <p className='mb-2'>
+                    <strong className='text-vscode-text-header'>Specialist Mode</strong>{' '}
+                    is optimized for coding tasks with specialized tools like explore, slice, and
+                    ripple.
+                  </p>
+                  <p className='mb-2'>
+                    <strong className='text-vscode-text-header'>Artist Mode</strong>{' '}
+                    focuses on image generation and responds primarily through visuals.
+                  </p>
+                  <p>
+                    <strong className='text-vscode-text-header'>Explorer Mode</strong>{' '}
+                    prioritizes web search to find current information before answering.
                   </p>
                 </div>
               </div>

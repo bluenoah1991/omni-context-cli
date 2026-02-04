@@ -3,6 +3,14 @@ import { getAllProviders } from '../providers';
 import type { ApprovalMode, DesktopConfig, OmxConfig, Tab } from '../types/config';
 import type { ProviderState } from '../types/provider';
 
+export type PromptType = 'specialist' | 'artist' | 'explorer';
+
+export interface CustomPrompts {
+  specialist: string | null;
+  artist: string | null;
+  explorer: string | null;
+}
+
 interface PortalState {
   omxConfig: OmxConfig;
   desktopConfig: DesktopConfig;
@@ -17,6 +25,9 @@ interface PortalState {
   configuredProviders: ProviderState[];
   availableProviders: Array<{value: string; label: string;}>;
   canLaunch: boolean;
+  customPrompts: CustomPrompts;
+  selectedPromptType: PromptType;
+  promptEditorValue: string;
 
   setOmxConfig: (config: OmxConfig) => void;
   setDesktopConfig: (config: DesktopConfig) => void;
@@ -29,6 +40,9 @@ interface PortalState {
   setIsAddingProvider: (adding: boolean) => void;
   setApprovalMode: (mode: ApprovalMode) => void;
   clearProviderForm: () => void;
+  setCustomPrompts: (prompts: CustomPrompts) => void;
+  setSelectedPromptType: (type: PromptType) => void;
+  setPromptEditorValue: (value: string) => void;
 }
 
 function computeDerivedState(omxConfig: OmxConfig, selectedWorkspace: string) {
@@ -64,6 +78,9 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   configuredProviders: [],
   availableProviders: getAllProviders().map(p => ({value: p.id, label: p.name})),
   canLaunch: false,
+  customPrompts: {specialist: null, artist: null, explorer: null},
+  selectedPromptType: 'specialist',
+  promptEditorValue: '',
 
   setOmxConfig: config => {
     const {selectedWorkspace} = get();
@@ -82,4 +99,10 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   setIsAddingProvider: adding => set({isAddingProvider: adding}),
   setApprovalMode: mode => set({approvalMode: mode}),
   clearProviderForm: () => set({selectedProvider: '', apiKey: '', providerError: ''}),
+  setCustomPrompts: prompts => set({customPrompts: prompts}),
+  setSelectedPromptType: type => {
+    const {customPrompts} = get();
+    set({selectedPromptType: type, promptEditorValue: customPrompts[type] ?? ''});
+  },
+  setPromptEditorValue: value => set({promptEditorValue: value}),
 }));

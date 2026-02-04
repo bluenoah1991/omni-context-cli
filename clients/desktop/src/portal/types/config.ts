@@ -11,7 +11,7 @@ export interface OmxConfig {
 
 export type ApprovalMode = 'none' | 'write' | 'all';
 
-export type Tab = 'workspaces' | 'models' | 'permissions';
+export type Tab = 'workspaces' | 'models' | 'permissions' | 'prompts';
 
 export interface DesktopConfig {
   workspaces: Array<{name: string; path: string;}>;
