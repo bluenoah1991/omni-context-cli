@@ -86,6 +86,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     memoryEnabled: config.memoryEnabled ?? false,
     notificationEnabled: config.notificationEnabled ?? false,
     contextEditing: config.contextEditing ?? true,
+    cacheTtl: config.cacheTtl ?? '5m',
     webTheme: config.webTheme,
   });
   return true;
@@ -111,6 +112,7 @@ export async function handleSetConfig(
   if ('memoryEnabled' in body) config.memoryEnabled = body.memoryEnabled;
   if ('notificationEnabled' in body) config.notificationEnabled = body.notificationEnabled;
   if ('contextEditing' in body) config.contextEditing = body.contextEditing;
+  if ('cacheTtl' in body) config.cacheTtl = body.cacheTtl;
   if ('webTheme' in body) config.webTheme = body.webTheme;
 
   saveAppConfig(config);
