@@ -148,7 +148,7 @@ omx/
 |   |-- desktop/                   # Electron desktop client
 |   |   |-- src/main/              # Main process (window, server, config)
 |   |   |-- src/preload/           # Preload scripts
-|   |   |-- src/portal/            # Provider configuration UI (React)
+|   |   |-- src/portal/            # Configuration portal UI (React)
 |   |   +-- cli-deps/              # CLI dependencies for bundling
 |   |-- vscode/                    # VS Code extension
 |   |   |-- src/extension.ts       # Extension entry point
@@ -228,6 +228,7 @@ description: Echo a message
 | MCP Servers | `~/.omx/mcp.json` | `.omx/mcp.json` |
 | App Config | `~/.omx/omx.json` | `.omx/omx.json` |
 | Skills | `~/.omx/skills/` | `.omx/skills/` |
+| Custom Prompts | `~/.omx/*.txt` | - |
 | Memory | - | `.omx/memory.json` |
 | Agent Instructions | - | `.omx/OMX-AGENTS.md` |
 | Sessions | `~/.omx/projects/<id>/` | - |
@@ -293,7 +294,8 @@ Web server components in `src/services/webServer/`:
 The Electron desktop client (`clients/desktop/`) provides a standalone application:
 
 - Spawns OMX server with dynamic port allocation
-- Provider configuration portal UI for first-time setup
+- Configuration portal for providers, permissions, and custom prompts
+- Custom system prompts for specialist, artist, and explorer modes
 - Auto-opens default workspace (Documents/OmniContext)
 - Bundles CLI dependencies for offline use
 - macOS and Windows support
@@ -379,7 +381,7 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `src/services/webServer/` | HTTP API and static server components |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
 | `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
-| `clients/desktop/src/portal/App.tsx` | Provider configuration portal UI |
+| `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
 | `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
 | `clients/web/src/App.tsx` | Web client main component |
