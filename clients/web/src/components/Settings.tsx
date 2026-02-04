@@ -207,7 +207,7 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <SegmentedControl
-                label='Response Cache'
+                label='Cache Duration'
                 description='Cache duration for Anthropic API prompt caching'
                 options={['5m', '1h'] as const}
                 value={cacheTtl}
