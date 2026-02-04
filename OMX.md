@@ -145,6 +145,11 @@ omx/
 |   |-- ui/                        # React/Ink components (23 components)
 |   +-- utils/                     # Helper utilities (7 files)
 |-- clients/
+|   |-- desktop/                   # Electron desktop client
+|   |   |-- src/main/              # Main process (window, server, config)
+|   |   |-- src/preload/           # Preload scripts
+|   |   |-- src/portal/            # Provider configuration UI (React)
+|   |   +-- cli-deps/              # CLI dependencies for bundling
 |   |-- vscode/                    # VS Code extension
 |   |   |-- src/extension.ts       # Extension entry point
 |   |   |-- src/webviewProvider.ts # Webview panel management
@@ -240,7 +245,7 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `agentModelId` | string | undefined | Model for agent execution |
 | `enableThinking` | boolean | true | Enable Claude thinking mode |
 | `streamingOutput` | boolean | false | Stream responses to terminal |
-| `workflowPreset` | 'normal' \| 'specialist' \| 'artist' | 'specialist' | Workflow mode: normal (basic), specialist (agent mode), or artist (image-first responses) |
+| `workflowPreset` | 'normal' \| 'specialist' \| 'artist' \| 'explorer' | 'specialist' | Workflow mode: normal (basic), specialist (agent mode), artist (image-first responses), or explorer (web search-focused) |
 | `ideContext` | boolean | true | Include IDE context |
 | `memoryEnabled` | boolean | false | Enable memory features |
 | `cacheTtl` | '5m' \| '1h' | '5m' | Response cache duration |
@@ -283,6 +288,26 @@ Web server components in `src/services/webServer/`:
 - `apiHandlers.ts` - API route handlers
 - `handlers/` - Route-specific handlers (chat, sessions, config)
 
+### Desktop Client
+
+The Electron desktop client (`clients/desktop/`) provides a standalone application:
+
+- Spawns OMX server with dynamic port allocation
+- Provider configuration portal UI for first-time setup
+- Auto-opens default workspace (Documents/OmniContext)
+- Bundles CLI dependencies for offline use
+- macOS and Windows support
+
+Build the desktop client:
+```bash
+cd clients/desktop
+npm install
+npm run build
+npm run package        # Create distributable
+npm run package:win    # Windows installer
+npm run package:mac    # macOS app bundle
+```
+
 ### VS Code Extension
 
 The VS Code extension (`clients/vscode/`) provides an integrated coding assistant within the IDE:
@@ -309,6 +334,8 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Tool approval UI for confirming operations
 - Drag and drop file attachment
 - Document (PDF) and image support
+- Mobile-optimized with PWA support
+- Touch-friendly UI with safe area handling
 
 Build the web client:
 ```bash
@@ -350,6 +377,9 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
 | `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Xai, Zenmux, Zhipu) |
 | `src/services/webServer/` | HTTP API and static server components |
+| `clients/desktop/src/main/index.ts` | Electron main process entry point |
+| `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
+| `clients/desktop/src/portal/App.tsx` | Provider configuration portal UI |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
 | `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
 | `clients/web/src/App.tsx` | Web client main component |
@@ -399,7 +429,7 @@ For VS Code extension embedding, use `npm run build:vscode`.
 ### Prompt Engineering
 
 - Base system prompt in `src/prompts/system.txt`
-- Specialized prompts for specialist mode, artist mode, skills, compaction, memory, agent instructions
+- Specialized prompts for specialist mode, artist mode, explorer mode, skills, compaction, memory, agent instructions
 - Dynamic prompt assembly via `systemPromptBuilder.ts`
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 - Context editing via `contextEditor.ts` for configurable message modification rounds
@@ -453,5 +483,6 @@ For VS Code extension embedding, use `npm run build:vscode`.
 - Production: `npm run build` bundles, minifies, and obfuscates
 - Output: Single ESM bundle at `dist/cli.js`
 - Includes: agents/, slash/, assets/, and bin/ directories copied to dist/
+- Desktop client: Built separately via `npm run build` in `clients/desktop/`
 - Web client: Built separately via `npm run build` in `clients/web/`
 - VS Code extension: Built separately via `npm run build` in `clients/vscode/`
