@@ -153,7 +153,7 @@ if (proxyUrl) {
     new ProxyAgent({
       uri: proxyUrl,
       connections: 100,
-      pipelining: 10,
+      pipelining: 1,
       keepAliveTimeout: 60000,
       keepAliveMaxTimeout: 600000,
       allowH2: true,
@@ -164,7 +164,7 @@ if (proxyUrl) {
   setGlobalDispatcher(
     new EnvHttpProxyAgent({
       connections: 100,
-      pipelining: 10,
+      pipelining: 1,
       keepAliveTimeout: 60000,
       keepAliveMaxTimeout: 600000,
       allowH2: true,
