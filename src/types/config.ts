@@ -28,6 +28,7 @@ export interface AppConfig {
   contextEditingRounds: number;
   webTheme?: 'dark' | 'light' | 'auto';
   clientId?: string;
+  proxy?: string;
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {

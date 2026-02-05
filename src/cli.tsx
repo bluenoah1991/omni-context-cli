@@ -4,11 +4,12 @@ import { render } from 'ink';
 import dns from 'node:dns';
 import { performance } from 'node:perf_hooks';
 import React from 'react';
-import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
+import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
 import {
   findModelById,
   initializeCurrentModel,
+  loadAppConfig,
   setCurrentModel,
 } from './services/configManager.js';
 import { enableCostAnalysis } from './services/costAnalysis.js';
@@ -134,15 +135,43 @@ dns.setDefaultResultOrder('ipv4first');
 
 performance.setResourceTimingBufferSize(0);
 
-const agent = new EnvHttpProxyAgent({
-  connections: 100,
-  pipelining: 10,
-  keepAliveTimeout: 60000,
-  keepAliveMaxTimeout: 600000,
-  allowH2: true,
-  maxConcurrentStreams: 100,
-});
-setGlobalDispatcher(agent);
+function validateProxyUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+const appConfig = loadAppConfig();
+const proxyUrl = validateProxyUrl(appConfig.proxy);
+
+if (proxyUrl) {
+  setGlobalDispatcher(
+    new ProxyAgent({
+      uri: proxyUrl,
+      connections: 100,
+      pipelining: 10,
+      keepAliveTimeout: 60000,
+      keepAliveMaxTimeout: 600000,
+      allowH2: true,
+      maxConcurrentStreams: 100,
+    }),
+  );
+} else {
+  setGlobalDispatcher(
+    new EnvHttpProxyAgent({
+      connections: 100,
+      pipelining: 10,
+      keepAliveTimeout: 60000,
+      keepAliveMaxTimeout: 600000,
+      allowH2: true,
+      maxConcurrentStreams: 100,
+    }),
+  );
+}
 
 initializeCurrentModel();
 initializeInterceptors();
