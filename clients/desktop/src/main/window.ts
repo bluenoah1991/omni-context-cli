@@ -48,6 +48,15 @@ export async function createWindow(): Promise<void> {
     shell.openExternal(details.url);
     return {action: 'deny'};
   });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+        event.preventDefault();
+        shell.openExternal(url);
+      }
+    }
+  });
   if (isDev()) mainWindow.webContents.openDevTools();
 }
 
