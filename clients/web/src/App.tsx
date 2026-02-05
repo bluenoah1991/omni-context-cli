@@ -76,7 +76,7 @@ export default function App() {
       <div className='flex-1 flex flex-col min-w-0'>
         <header className='safe-area-top flex-none pb-2 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
           <div className='flex items-center justify-between w-full'>
-            <div className='w-80'>
+            <div className='min-w-0 max-w-[60%] sm:w-80'>
               <SessionSelector disabled={isLoading} />
             </div>
             <div className='flex items-center gap-4'>
