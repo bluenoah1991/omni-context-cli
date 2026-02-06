@@ -72,12 +72,10 @@ export async function buildGeminiRequest(
     }];
   }
 
-  const body = applyInterceptors(request, model);
-
-  const headers: Record<string, string> = {
+  const baseHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     'x-goog-api-key': model.apiKey,
   };
 
-  return {headers, body};
+  return applyInterceptors(request, baseHeaders, model);
 }

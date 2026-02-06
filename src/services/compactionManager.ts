@@ -6,11 +6,13 @@ import { ModelConfig, Provider } from '../types/config';
 import { ChatMessage, Session } from '../types/session';
 import { distillMessages, getLastResponse } from '../utils/messageUtils';
 import { runConversation } from './chatOrchestrator';
+import { loadAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
 
 const AUTOCOMPACT_THRESHOLD = 0.8;
 
 export function shouldAutoCompact(model: ModelConfig, session: Session): boolean {
+  if (loadAppConfig().serverCompaction) return false;
   const maxContextWindow = (model.contextSize || 200) * 1024;
   const maxAllowedTokens = Math.floor(maxContextWindow * AUTOCOMPACT_THRESHOLD);
   const currentTokens = (session.inputTokens ?? 0) + (session.outputTokens ?? 0);

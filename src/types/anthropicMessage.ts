@@ -20,6 +20,7 @@ export type AnthropicContentBlock =
   | AnthropicImageBlock
   | AnthropicDocumentBlock
   | {type: 'thinking'; thinking: string; signature?: string;}
+  | {type: 'compaction'; content: string;}
   | {type: 'tool_use'; id: string; name: string; input: Record<string, any>;}
   | {type: 'tool_result'; tool_use_id: string; content: string | AnthropicToolResultContent[];};
 

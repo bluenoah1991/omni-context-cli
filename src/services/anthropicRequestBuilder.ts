@@ -119,33 +119,28 @@ export async function buildAnthropicRequest(
   }
 
   if (config.serverCompaction) {
-    const triggerTokens = Math.max(50000, Math.floor((model.contextSize || 200) * 1024 * 0.75));
+    const triggerTokens = Math.max(50000, Math.floor((model.contextSize || 200) * 1024 * 0.8));
     request.context_management = {
       edits: [{type: 'compact_20260112', trigger: {type: 'input_tokens', value: triggerTokens}}],
     };
   }
 
-  const body = applyInterceptors(request, model);
-
-  const headers: Record<string, string> = {
+  const baseHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     'x-api-key': model.apiKey,
     'anthropic-version': '2023-06-01',
   };
 
   const betas: string[] = [];
-  if (config.enableThinking) {
-    betas.push('interleaved-thinking-2025-05-14');
-  }
   if (model.contextSize > 200) {
     betas.push('context-1m-2025-08-07');
   }
-  if (body.context_management) {
+  if (config.serverCompaction) {
     betas.push('compact-2026-01-12');
   }
   if (betas.length) {
-    headers['anthropic-beta'] = betas.join(',');
+    baseHeaders['anthropic-beta'] = betas.join(',');
   }
 
-  return {headers, body};
+  return applyInterceptors(request, baseHeaders, model);
 }

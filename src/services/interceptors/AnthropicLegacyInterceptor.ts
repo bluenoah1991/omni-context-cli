@@ -1,5 +1,6 @@
 import { ModelConfig } from '../../types/config';
-import { RequestInterceptor } from '../requestInterceptor';
+import { loadAppConfig } from '../configManager';
+import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
 export class AnthropicLegacyInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
@@ -7,18 +8,34 @@ export class AnthropicLegacyInterceptor implements RequestInterceptor {
       && !model.name.includes('opus-4.6');
   }
 
-  interceptRequest(request: Record<string, unknown>): Record<string, unknown> {
-    const result = {...request};
+  interceptRequest(
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    _model: ModelConfig,
+  ): InterceptorResult {
+    const newBody = {...body};
 
-    const thinking = result.thinking as {type: string;} | undefined;
+    const thinking = newBody.thinking as {type: string;} | undefined;
     if (thinking?.type === 'adaptive') {
-      result.thinking = {type: 'enabled', budget_tokens: 31999};
+      newBody.thinking = {type: 'enabled', budget_tokens: 31999};
     }
 
-    if (result.context_management) {
-      delete result.context_management;
+    if (newBody.context_management) {
+      delete newBody.context_management;
     }
 
-    return result;
+    const newHeaders = {...headers};
+    const betas = (newHeaders['anthropic-beta'] || '').split(',').filter(Boolean);
+    if (loadAppConfig().enableThinking) {
+      betas.push('interleaved-thinking-2025-05-14');
+    }
+    const filtered = betas.filter(b => b !== 'compact-2026-01-12');
+    if (filtered.length) {
+      newHeaders['anthropic-beta'] = filtered.join(',');
+    } else {
+      delete newHeaders['anthropic-beta'];
+    }
+
+    return {body: newBody, headers: newHeaders};
   }
 }

@@ -114,9 +114,7 @@ export async function buildResponsesRequest(
     request.parallel_tool_calls = true;
   }
 
-  const body = applyInterceptors(request, model);
+  const baseHeaders = {'Content-Type': 'application/json', Authorization: `Bearer ${model.apiKey}`};
 
-  const headers = {'Content-Type': 'application/json', Authorization: `Bearer ${model.apiKey}`};
-
-  return {headers, body};
+  return applyInterceptors(request, baseHeaders, model);
 }

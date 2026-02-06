@@ -1,25 +1,35 @@
 import { ModelConfig } from '../types/config';
 
+export interface InterceptorResult {
+  body: Record<string, unknown>;
+  headers: Record<string, string>;
+}
+
 export interface RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean;
-  interceptRequest(request: Record<string, unknown>, model: ModelConfig): Record<string, unknown>;
+  interceptRequest(
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    model: ModelConfig,
+  ): InterceptorResult;
 }
 
 const interceptors: RequestInterceptor[] = [];
 
 export function applyInterceptors(
-  request: Record<string, unknown>,
+  body: Record<string, unknown>,
+  headers: Record<string, string>,
   model: ModelConfig,
-): Record<string, unknown> {
-  let modifiedRequest = request;
+): InterceptorResult {
+  let result: InterceptorResult = {body, headers};
 
   for (const interceptor of interceptors) {
     if (interceptor.shouldIntercept(model)) {
-      modifiedRequest = interceptor.interceptRequest(modifiedRequest, model);
+      result = interceptor.interceptRequest(result.body, result.headers, model);
     }
   }
 
-  return modifiedRequest;
+  return result;
 }
 
 export function registerInterceptor(interceptor: RequestInterceptor): void {

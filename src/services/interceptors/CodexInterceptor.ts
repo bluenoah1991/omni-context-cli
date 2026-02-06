@@ -1,5 +1,5 @@
 import { ModelConfig } from '../../types/config';
-import { RequestInterceptor } from '../requestInterceptor';
+import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 import codexInstructions from './codex-instructions.txt';
 
 export class CodexInterceptor implements RequestInterceptor {
@@ -10,19 +10,23 @@ export class CodexInterceptor implements RequestInterceptor {
     return true;
   }
 
-  interceptRequest(request: Record<string, unknown>, model: ModelConfig): Record<string, unknown> {
-    const result: Record<string, unknown> = {...request, instructions: codexInstructions};
+  interceptRequest(
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    model: ModelConfig,
+  ): InterceptorResult {
+    const newBody: Record<string, unknown> = {...body, instructions: codexInstructions};
 
-    if (request.reasoning) {
+    if (body.reasoning) {
       const versionMatch = model.name.match(/(\d+\.\d+)/);
       if (versionMatch) {
         const version = parseFloat(versionMatch[1]);
         if (version >= 5.2) {
-          result.reasoning = {effort: 'xhigh', summary: 'auto'};
+          newBody.reasoning = {effort: 'xhigh', summary: 'auto'};
         }
       }
     }
 
-    return result;
+    return {body: newBody, headers};
   }
 }

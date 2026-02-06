@@ -1,14 +1,21 @@
 import { ModelConfig } from '../../types/config';
 import { loadAppConfig } from '../configManager';
-import { RequestInterceptor } from '../requestInterceptor';
+import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
 export class ZhipuInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
     return model.provider === 'openai' && model.apiUrl.includes('open.bigmodel.cn');
   }
 
-  interceptRequest(request: Record<string, unknown>, _model: ModelConfig): Record<string, unknown> {
+  interceptRequest(
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    _model: ModelConfig,
+  ): InterceptorResult {
     const config = loadAppConfig();
-    return {...request, thinking: {type: config.enableThinking ? 'enabled' : 'disabled'}};
+    return {
+      body: {...body, thinking: {type: config.enableThinking ? 'enabled' : 'disabled'}},
+      headers,
+    };
   }
 }

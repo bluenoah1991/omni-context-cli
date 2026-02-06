@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { ModelConfig } from '../../types/config';
 import { getOmxFilePath } from '../../utils/omxPaths';
-import { RequestInterceptor } from '../requestInterceptor';
+import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
 interface ZenmuxConfig {
   model_routing_config?: Record<string, unknown>;
@@ -28,13 +28,17 @@ export class ZenmuxInterceptor implements RequestInterceptor {
     return model.name === 'zenmux/auto';
   }
 
-  interceptRequest(request: Record<string, unknown>, _model: ModelConfig): Record<string, unknown> {
+  interceptRequest(
+    body: Record<string, unknown>,
+    headers: Record<string, string>,
+    _model: ModelConfig,
+  ): InterceptorResult {
     const config = loadConfig();
 
     if (config?.model_routing_config) {
-      return {...request, model_routing_config: config.model_routing_config};
+      return {body: {...body, model_routing_config: config.model_routing_config}, headers};
     }
 
-    return request;
+    return {body, headers};
   }
 }
