@@ -37,6 +37,7 @@ export default function Settings({onClose}: SettingsProps) {
   );
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
   const [ideContext, setIdeContext] = useState(config?.ideContext ?? true);
+  const [serverCompaction, setServerCompaction] = useState(config?.serverCompaction ?? false);
   const [cacheTtl, setCacheTtl] = useState<'5m' | '1h'>(config?.cacheTtl ?? '5m');
   const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
   const [saving, setSaving] = useState(false);
@@ -51,6 +52,7 @@ export default function Settings({onClose}: SettingsProps) {
       setMemoryEnabled(config.memoryEnabled);
       setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
+      setServerCompaction(config.serverCompaction ?? false);
       setIdeContext(config.ideContext ?? true);
       setCacheTtl(config.cacheTtl ?? '5m');
       setWebTheme(config.webTheme || 'dark');
@@ -68,6 +70,7 @@ export default function Settings({onClose}: SettingsProps) {
         memoryEnabled,
         notificationEnabled,
         contextEditing,
+        serverCompaction,
         ideContext,
         cacheTtl,
         webTheme,
@@ -183,6 +186,13 @@ export default function Settings({onClose}: SettingsProps) {
                 description='Allow context modification during conversation'
                 enabled={contextEditing}
                 onChange={setContextEditing}
+              />
+
+              <ToggleOption
+                label='Server Compaction'
+                description='Let Anthropic auto-summarize when context gets long'
+                enabled={serverCompaction}
+                onChange={setServerCompaction}
               />
 
               <ToggleOption

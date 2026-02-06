@@ -10,6 +10,7 @@ export interface Config {
   memoryEnabled: boolean;
   notificationEnabled: boolean;
   contextEditing: boolean;
+  serverCompaction: boolean;
   cacheTtl?: '5m' | '1h';
   webTheme?: 'dark' | 'light' | 'auto';
 }
