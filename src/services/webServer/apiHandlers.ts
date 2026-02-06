@@ -18,13 +18,14 @@ import {
   handleSetConfig,
   handleSetModel,
 } from './handlers/configHandlers';
+import { handleRemotePoll } from './handlers/remoteHandlers';
 import {
   handleGetSession,
   handleGetSessions,
   handleLoadSession,
   handleNewSession,
 } from './handlers/sessionHandlers';
-import { sendErrorResponse, sendNoContentResponse } from './httpUtils';
+import { sendNoContentResponse } from './httpUtils';
 
 export async function handleAPI(
   req: http.IncomingMessage,
@@ -35,6 +36,15 @@ export async function handleAPI(
   if (method === 'OPTIONS') {
     sendNoContentResponse(res);
     return true;
+  }
+
+  if (pathname === '/api/health' && method === 'GET') {
+    sendNoContentResponse(res);
+    return true;
+  }
+
+  if (pathname === '/api/remote/poll' && method === 'POST') {
+    return handleRemotePoll(req, res);
   }
 
   const match = pathname.match(/^\/api\/([^/]+)\/(.+)$/);

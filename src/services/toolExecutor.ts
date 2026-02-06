@@ -2,13 +2,15 @@ import { StreamCallbacks } from '../types/streamCallbacks';
 import { ToolDefinition, ToolExecutionResult, ToolFilter, ToolHandler } from '../types/tool';
 import { getAgentModel, loadAppConfig } from './configManager';
 import { executeMCPTool, getAllMCPToolDefinitions, isMCPTool } from './mcpManager';
+import { executeRemoteTool, getRemoteToolDefinitions, isRemoteTool } from './remoteToolBridge';
 
 const tools: Map<string, {definition: ToolDefinition; handler: ToolHandler;}> = new Map();
 
 export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[]> {
   const localTools = Array.from(tools.values()).map(t => t.definition);
   const mcpTools = getAllMCPToolDefinitions();
-  let allTools = [...localTools, ...mcpTools];
+  const remoteTools = getRemoteToolDefinitions();
+  let allTools = [...localTools, ...mcpTools, ...remoteTools];
 
   const agentModel = getAgentModel(loadAppConfig());
   if (agentModel?.provider !== 'anthropic') {
@@ -69,6 +71,10 @@ export async function executeTool(
     } catch (error) {
       return {success: false, error: String(error)};
     }
+  }
+
+  if (isRemoteTool(toolName)) {
+    return executeRemoteTool(toolName, args);
   }
 
   const tool = tools.get(toolName);

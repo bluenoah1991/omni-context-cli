@@ -1,0 +1,104 @@
+:root {
+  --vscode-bg: #1e1e1e;
+  --vscode-border: #3c3c3c;
+  --vscode-text: #cccccc;
+  --vscode-text-header: #e0e0e0;
+  --vscode-text-muted: #858585;
+  --vscode-accent: #0078d4;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --vscode-bg: #ffffff;
+    --vscode-border: #cecece;
+    --vscode-text: #3b3b3b;
+    --vscode-text-header: #1e1e1e;
+    --vscode-text-muted: #616161;
+    --vscode-accent: #0066b8;
+    color-scheme: light;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--vscode-bg);
+  color: var(--vscode-text);
+}
+
+.connect-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+}
+
+.connect-panel h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--vscode-text-header);
+  margin-bottom: 8px;
+}
+
+.connect-panel .subtitle {
+  font-size: 14px;
+  color: var(--vscode-text-muted);
+  margin-bottom: 28px;
+}
+
+.connect-panel input {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 16px;
+  border: 1px solid var(--vscode-border);
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 12px;
+  background: var(--vscode-bg);
+  color: var(--vscode-text);
+  outline: none;
+  font-family: inherit;
+}
+
+.connect-panel input:focus {
+  border-color: var(--vscode-accent);
+}
+
+.connect-panel button {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  background: var(--vscode-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.connect-panel button:hover {
+  filter: brightness(1.1);
+}
+
+.connect-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.server-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}

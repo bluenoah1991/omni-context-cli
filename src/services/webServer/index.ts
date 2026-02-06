@@ -5,8 +5,6 @@ import { handleAPI } from './apiHandlers.js';
 import { sendErrorResponse, sendRedirectResponse } from './httpUtils.js';
 import { serveStatic } from './staticServer.js';
 
-let server: http.Server | null = null;
-
 async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const url = new URL(req.url || '/', `http://${req.headers.host}`);
   const pathname = url.pathname;
@@ -39,7 +37,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
 }
 
 export async function startServer(port = 5281, host = 'localhost'): Promise<void> {
-  server = http.createServer(handleRequest);
+  const server = http.createServer(handleRequest);
 
   server.listen(port, host);
   await Promise.race([
