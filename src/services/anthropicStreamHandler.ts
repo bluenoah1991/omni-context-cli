@@ -108,7 +108,7 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
     }
 
     if (deltaType === 'compaction_delta') {
-      this.accumulatedCompaction = data.delta.content ?? '';
+      this.accumulatedCompaction += data.delta.content ?? '';
     }
 
     if (deltaType === 'input_json_delta' && this.currentToolCall) {
