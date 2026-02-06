@@ -24,6 +24,7 @@ export interface AppConfig {
   memoryEnabled: boolean;
   notificationEnabled: boolean;
   cacheTtl: '5m' | '1h';
+  serverCompaction: boolean;
   contextEditing: boolean;
   contextEditingRounds: number;
   webTheme?: 'dark' | 'light' | 'auto';
@@ -40,6 +41,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   memoryEnabled: false,
   notificationEnabled: false,
   cacheTtl: '5m',
+  serverCompaction: false,
   contextEditing: true,
   contextEditingRounds: 0,
   webTheme: 'dark',

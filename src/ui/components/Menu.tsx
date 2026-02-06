@@ -14,6 +14,7 @@ import {
   setIDEContext,
   setMemoryEnabled,
   setNotificationEnabled,
+  setServerCompaction,
   setStreamingOutput,
   setThinking,
   setWorkflowPreset,
@@ -48,6 +49,7 @@ export type View =
   | 'pref-notification'
   | 'pref-cache-ttl'
   | 'pref-context-editing'
+  | 'pref-server-compaction'
   | 'browse-sessions'
   | 'rewind-session';
 
@@ -94,6 +96,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [notificationIndex, setNotificationIndex] = useState<number>();
   const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
   const [contextEditingIndex, setContextEditingIndex] = useState<number>();
+  const [serverCompactionIndex, setServerCompactionIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
   const [modelsIndex, setModelsIndex] = useState(0);
@@ -184,6 +187,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'memory', label: '≡ Cross-session memory'},
       {id: 'thinking', label: '◉ Extended thinking'},
       {id: 'ide-context', label: '⌘ IDE context'},
+      {id: 'server-compaction', label: '§ Server compaction'},
       {id: 'streaming', label: '⇵ Streaming output'},
     ];
 
@@ -194,6 +198,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'pref-memory',
       'pref-thinking',
       'pref-ide-context',
+      'pref-server-compaction',
       'pref-streaming',
     ];
 
@@ -451,6 +456,40 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             const shouldEnable = i === 0;
             if (shouldEnable !== config.enableThinking) {
               setThinking(shouldEnable);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('prefs')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pref-server-compaction') {
+    const items: SelectItem[] = [{id: 'on', label: '✓ Enable server compaction'}, {
+      id: 'off',
+      label: '✗ Disable server compaction',
+    }];
+    const initialIndex = config.serverCompaction ? 0 : 1;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='server-compaction-mode'
+          title='Let Anthropic auto-summarize when context gets long?'
+          items={items}
+          selectedIndex={serverCompactionIndex ?? initialIndex}
+          onSelect={setServerCompactionIndex}
+          onConfirm={i => {
+            const shouldEnable = i === 0;
+            if (shouldEnable !== config.serverCompaction) {
+              setServerCompaction(shouldEnable);
             }
             onClose();
           }}

@@ -11,6 +11,7 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
   private currentToolCall: ToolCallAccumulator | null = null;
   private currentThinking = '';
   private currentThinkingSignature = '';
+  private accumulatedCompaction = '';
 
   protected processChunk(chunk: any): void {
     if (!chunk.event) return;
@@ -106,6 +107,10 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
       this.accumulatedThinkingSignature += signature;
     }
 
+    if (deltaType === 'compaction_delta') {
+      this.accumulatedCompaction = data.delta.content ?? '';
+    }
+
     if (deltaType === 'input_json_delta' && this.currentToolCall) {
       this.currentToolCall.input += data.delta.partial_json;
     }
@@ -138,6 +143,10 @@ export class AnthropicStreamHandler extends BaseStreamHandler {
 
   protected finish() {
     const content: any[] = [];
+
+    if (this.accumulatedCompaction) {
+      content.push({type: 'compaction', content: this.accumulatedCompaction});
+    }
 
     if (this.accumulatedThinking) {
       content.push({

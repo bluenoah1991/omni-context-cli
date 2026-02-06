@@ -58,15 +58,35 @@ async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
 
   const data: ZenmuxModelResponse = await response.json();
 
-  return data.data.filter(m => matchesPrefix(m.id, ANTHROPIC_PREFIXES)).map(model => ({
-    id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    name: model.id,
-    nickname: `Zenmux ${model.display_name || model.id}`,
-    provider: 'anthropic' as const,
-    apiKey,
-    apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
-    contextSize: model.context_length ? Math.floor(model.context_length / 1000) : 200,
-  }));
+  const DUAL_CONTEXT_MODELS = ['anthropic/claude-opus-4.6', 'anthropic/claude-sonnet-4.5'];
+  const models: ModelConfig[] = [];
+
+  for (const model of data.data.filter(m => matchesPrefix(m.id, ANTHROPIC_PREFIXES))) {
+    const contextSize = model.context_length ? Math.floor(model.context_length / 1000) : 200;
+    models.push({
+      id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: model.id,
+      nickname: `Zenmux ${model.display_name || model.id}`,
+      provider: 'anthropic' as const,
+      apiKey,
+      apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
+      contextSize,
+    });
+
+    if (DUAL_CONTEXT_MODELS.includes(model.id)) {
+      models.push({
+        id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: model.id,
+        nickname: `Zenmux ${model.display_name || model.id} [200K]`,
+        provider: 'anthropic' as const,
+        apiKey,
+        apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
+        contextSize: 200,
+      });
+    }
+  }
+
+  return models;
 }
 
 async function fetchResponsesModels(apiKey: string): Promise<ModelConfig[]> {

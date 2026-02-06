@@ -71,6 +71,7 @@ function handleStatus(): SlashHandlerResult {
   lines.push(`Cache duration: ${config.cacheTtl}`);
   lines.push(`Completion notification: ${config.notificationEnabled ? '√' : '✗'}`);
   lines.push(`Context editing: ${config.contextEditing ? '√' : '✗'}`);
+  lines.push(`Server compaction: ${config.serverCompaction ? '√' : '✗'}`);
   lines.push(`Cross-session memory: ${config.memoryEnabled ? '√' : '✗'}`);
   lines.push(`Extended thinking: ${config.enableThinking ? '√' : '✗'}`);
   lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
