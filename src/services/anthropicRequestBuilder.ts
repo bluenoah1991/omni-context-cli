@@ -119,7 +119,7 @@ export async function buildAnthropicRequest(
   }
 
   if (config.serverCompaction) {
-    const triggerTokens = Math.max(50000, Math.floor((model.contextSize || 200) * 1024 * 0.8));
+    const triggerTokens = Math.max(50000, Math.floor((model.contextSize || 200) * 1024 * 0.75));
     request.context_management = {
       edits: [{type: 'compact_20260112', trigger: {type: 'input_tokens', value: triggerTokens}}],
     };
