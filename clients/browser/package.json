@@ -1,6 +1,6 @@
 {
   "name": "omnicontext-connect",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Connect your browser to OmniContext CLI",
   "scripts": {
     "build": "webpack --mode production",
