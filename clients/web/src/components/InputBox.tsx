@@ -556,6 +556,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     : 'text-vscode-text-muted hover:text-vscode-text hover:bg-white/5 light:hover:bg-black/5'
                 }`}
                 title='Attach image or PDF'
+                tabIndex={-1}
               >
                 <Paperclip size={14} />
               </button>
