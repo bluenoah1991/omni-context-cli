@@ -10,6 +10,12 @@ export interface TransportCallbacks {
   onDisconnect?: (clientId: string) => void;
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export class LongPollTransport {
   private pendingMessages = new Map<string, unknown>();
   private pollWaiters = new Map<string, PollWaiter>();
@@ -106,12 +112,12 @@ export class LongPollTransport {
   }
 
   private sendJson(res: http.ServerResponse, data: any): void {
-    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.writeHead(200, {'Content-Type': 'application/json', ...CORS_HEADERS});
     res.end(JSON.stringify(data));
   }
 
   private sendError(res: http.ServerResponse, message: string, status: number): void {
-    res.writeHead(status, {'Content-Type': 'application/json'});
+    res.writeHead(status, {'Content-Type': 'application/json', ...CORS_HEADERS});
     res.end(JSON.stringify({error: message}));
   }
 }

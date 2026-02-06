@@ -16,7 +16,7 @@ export function isToolApprovalEnabled(): boolean {
 
 export function requiresApproval(toolName: string): boolean {
   if (toolApprovalMode === 'none') return false;
-  if (toolName.startsWith('agent_') || toolName.startsWith('mcp_')) return false;
+  if (toolName.startsWith('agent_')) return false;
   if (toolApprovalMode === 'all') return true;
   return WRITE_TOOLS.has(toolName);
 }

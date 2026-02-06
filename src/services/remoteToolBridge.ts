@@ -21,6 +21,7 @@ interface PendingCall {
   timeoutId: ReturnType<typeof setTimeout>;
 }
 
+const REMOTE_PREFIX = 'remote_';
 const TIMEOUT_MS = 120000;
 
 const remoteClients = new Map<string, RemoteClient>();
@@ -33,11 +34,12 @@ export function getRemoteToolDefinitions(): ToolDefinition[] {
     if (Date.now() - client.heartbeat > TIMEOUT_MS) continue;
 
     for (const tool of client.toolDefinitions) {
+      const name = `${REMOTE_PREFIX}${clientType}_${tool.name}`;
       definitions.push({
-        name: `${clientType}_${tool.name}`,
+        name,
         description: `[${clientType}] ${tool.description}`,
         parameters: tool.parameters,
-        formatCall: args => `${clientType}_${tool.name}: ${JSON.stringify(args)}`,
+        formatCall: args => `${name}: ${JSON.stringify(args)}`,
       });
     }
   }
@@ -46,26 +48,23 @@ export function getRemoteToolDefinitions(): ToolDefinition[] {
 }
 
 export function isRemoteTool(toolName: string): boolean {
-  const sep = toolName.indexOf('_');
-  if (sep === -1) return false;
-  const client = remoteClients.get(toolName.slice(0, sep));
-  if (!client || Date.now() - client.heartbeat > TIMEOUT_MS) return false;
-  return client.toolDefinitions.some(t => t.name === toolName.slice(sep + 1));
+  return toolName.startsWith(REMOTE_PREFIX);
 }
 
 export async function executeRemoteTool(
   toolName: string,
   args: Record<string, unknown>,
 ): Promise<ToolExecutionResult> {
-  const sep = toolName.indexOf('_');
-  const clientType = toolName.slice(0, sep);
+  const unprefixed = toolName.slice(REMOTE_PREFIX.length);
+  const sep = unprefixed.indexOf('_');
+  const clientType = unprefixed.slice(0, sep);
   const client = remoteClients.get(clientType);
 
   if (!client || Date.now() - client.heartbeat > TIMEOUT_MS) {
     return {success: false, error: `No remote client for tool: ${toolName}`};
   }
 
-  const remoteToolName = toolName.slice(sep + 1);
+  const remoteToolName = unprefixed.slice(sep + 1);
 
   return new Promise(resolve => {
     const timeoutId = setTimeout(() => {

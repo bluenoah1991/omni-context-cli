@@ -28,12 +28,14 @@ export async function getTools(toolFilter?: ToolFilter): Promise<ToolDefinition[
   }
 
   if (toolFilter.excludeMcp) {
-    allTools = allTools.filter(t => !t.name.startsWith('mcp_') || additionalSet.has(t.name));
+    allTools = allTools.filter(t =>
+      (!t.name.startsWith('mcp_') && !t.name.startsWith('remote_')) || additionalSet.has(t.name)
+    );
   }
 
   if (toolFilter.allowedTools) {
     allTools = allTools.filter(t =>
-      t.name.startsWith('agent_') || t.name.startsWith('mcp_')
+      t.name.startsWith('agent_') || t.name.startsWith('mcp_') || t.name.startsWith('remote_')
       || toolFilter.allowedTools!.includes(t.name)
       || additionalSet.has(t.name)
     );

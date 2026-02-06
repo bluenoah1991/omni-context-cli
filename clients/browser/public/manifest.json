@@ -23,18 +23,11 @@
     "storage",
     "scripting",
     "sidePanel",
-    "alarms",
     "bookmarks",
     "history",
     "debugger"
   ],
   "host_permissions": [
     "<all_urls>"
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["readabilityExtractor.js"],
-      "matches": ["<all_urls>"]
-    }
   ]
 }
