@@ -27,7 +27,6 @@ interface ChatState {
   setError: (error: string | null) => void;
   addMediaContext: (media: MediaContext) => void;
   clearMediaContexts: () => void;
-  reset: () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -73,14 +72,4 @@ export const useChatStore = create<ChatState>((set, get) => ({
   addMediaContext: media => set(state => ({mediaContexts: [...state.mediaContexts, media]})),
 
   clearMediaContexts: () => set({mediaContexts: []}),
-
-  reset: () =>
-    set({
-      session: createSession(),
-      messages: [],
-      isLoading: false,
-      isCompacting: false,
-      error: null,
-      mediaContexts: [],
-    }),
 }));
