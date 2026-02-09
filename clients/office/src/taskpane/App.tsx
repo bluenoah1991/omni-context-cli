@@ -90,7 +90,9 @@ function App() {
         onKeyDown={e => e.key === 'Enter' && handleConnect()}
         placeholder='localhost:5281'
       />
-      <button onClick={handleConnect} disabled={!serverAddress.trim()}>Connect</button>
+      <button onClick={handleConnect} disabled={!serverAddress.trim() || state === 'connecting'}>
+        {state === 'connecting' ? 'Connecting...' : 'Connect'}
+      </button>
     </div>
   );
 }
