@@ -39,13 +39,13 @@ const NavItem = memo(
     return (
       <button
         onClick={() => onClick(id)}
-        className={`w-full flex items-center gap-3 px-6 py-3 text-base font-medium transition-colors border-l-4 ${
+        className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors border-l-4 ${
           activeTab === id
             ? 'bg-vscode-element border-vscode-accent text-vscode-text-header'
             : 'border-transparent text-vscode-text-muted hover:text-vscode-text hover:bg-vscode-element/50'
         }`}
       >
-        <Icon size={20} className={activeTab === id ? 'text-vscode-accent' : ''} />
+        <Icon size={18} className={activeTab === id ? 'text-vscode-accent' : ''} />
         <span>{label}</span>
         {alert && <div className='ml-auto w-2 h-2 rounded-full bg-vscode-error' />}
       </button>
@@ -138,12 +138,13 @@ export default function App() {
       }
       setSelectedWorkspace(workspace);
 
-      const [specialist, artist, explorer] = await Promise.all([
+      const [specialist, artist, explorer, assistant] = await Promise.all([
         window.electronAPI.getCustomPrompt('specialist'),
         window.electronAPI.getCustomPrompt('artist'),
         window.electronAPI.getCustomPrompt('explorer'),
+        window.electronAPI.getCustomPrompt('assistant'),
       ]);
-      const prompts: CustomPrompts = {specialist, artist, explorer};
+      const prompts: CustomPrompts = {specialist, artist, explorer, assistant};
       setCustomPrompts(prompts);
       setPromptEditorValue(prompts.specialist ?? '');
 
@@ -359,7 +360,7 @@ export default function App() {
   return (
     <div className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans select-none'>
       <div className='w-80 bg-vscode-sidebar border-r border-vscode-border flex flex-col shrink-0'>
-        <div className='p-6'>
+        <div className='p-4'>
           <h1 className='text-xl font-semibold text-vscode-text-header flex items-center gap-3'>
             <Monitor size={24} className='text-vscode-accent' />
             OmniContext
@@ -412,7 +413,7 @@ export default function App() {
           />
         </nav>
 
-        <div className='px-6 py-7 border-t border-vscode-border bg-vscode-element/10'>
+        <div className='px-4 py-4 border-t border-vscode-border bg-vscode-element/10'>
           {servePort
             ? (
               <div className='space-y-4'>
@@ -479,7 +480,7 @@ export default function App() {
 
                 <button
                   onClick={handleStopServe}
-                  className='w-full py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-all flex items-center justify-center gap-2 font-medium text-base'
+                  className='w-full py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-all flex items-center justify-center gap-2 font-medium text-sm'
                 >
                   <Square size={16} />
                   Stop Serving
@@ -546,9 +547,9 @@ export default function App() {
                 <button
                   onClick={handleLaunch}
                   disabled={!canLaunch}
-                  className='w-full py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-base'
+                  className='w-full py-2 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-sm'
                 >
-                  <Rocket size={20} />
+                  <Rocket size={16} />
                   {serveOnly ? 'Start Serving' : 'Launch'}
                 </button>
               </div>
@@ -557,7 +558,7 @@ export default function App() {
       </div>
 
       <div className='flex-1 flex flex-col min-w-0 bg-vscode-bg overflow-hidden'>
-        <div className='flex-1 overflow-y-auto p-6'>
+        <div className='flex-1 overflow-y-auto p-4'>
           {activeTab === 'workspaces' && (
             <div className='max-w-3xl mx-auto w-full space-y-6'>
               <header>
@@ -577,10 +578,10 @@ export default function App() {
                     className='w-full p-4 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border hover:border-vscode-accent rounded-lg text-left transition-all group flex items-center gap-4'
                   >
                     <div className='p-2 rounded-lg bg-vscode-accent/10 text-vscode-accent group-hover:bg-vscode-accent group-hover:text-white transition-colors'>
-                      <FolderOpen size={24} />
+                      <FolderOpen size={20} />
                     </div>
                     <div>
-                      <div className='text-base font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
+                      <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
                         Open Folder
                       </div>
                       <div className='text-vscode-text-muted text-xs mt-0.5'>
@@ -698,7 +699,7 @@ export default function App() {
                 <button
                   onClick={handleAddProvider}
                   disabled={!selectedProvider || !apiKey || isAddingProvider}
-                  className='px-6 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 w-full md:w-auto'
+                  className='px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 w-full md:w-auto'
                 >
                   {isAddingProvider && <Loader2 size={16} className='animate-spin' />}
                   {isAddingProvider ? 'Adding...' : 'Add Provider'}
@@ -783,10 +784,12 @@ export default function App() {
                   description='Select the mode to customize.'
                   value={selectedPromptType}
                   onChange={v => handlePromptTypeChange(v as PromptType)}
-                  options={[{value: 'specialist', label: 'Specialist Mode'}, {
-                    value: 'artist',
-                    label: 'Artist Mode',
-                  }, {value: 'explorer', label: 'Explorer Mode'}]}
+                  options={[
+                    {value: 'specialist', label: 'Specialist Mode'},
+                    {value: 'artist', label: 'Artist Mode'},
+                    {value: 'explorer', label: 'Explorer Mode'},
+                    {value: 'assistant', label: 'Assistant Mode'},
+                  ]}
                 />
 
                 <div className='mt-4'>
@@ -857,8 +860,8 @@ export default function App() {
                 </p>
               </header>
 
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-6'>
-                <div className='flex items-center justify-between mb-6'>
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
+                <div className='flex items-center justify-between mb-4'>
                   <div className='flex items-center gap-3'>
                     <div
                       className={`w-3 h-3 rounded-full ${
@@ -869,7 +872,7 @@ export default function App() {
                           : 'bg-vscode-text-muted/30'
                       }`}
                     />
-                    <span className='text-base font-medium text-vscode-text-header'>
+                    <span className='text-sm font-medium text-vscode-text-header'>
                       {officeInstalled && officeRunning
                         ? 'Running'
                         : officeInstalled
@@ -888,7 +891,7 @@ export default function App() {
                       <button
                         onClick={handleInstallOffice}
                         disabled={isOfficeLoading}
-                        className='flex-1 py-3 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2'
+                        className='flex-1 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2'
                       >
                         {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
                         {isOfficeLoading ? 'Installing...' : 'Install Office Add-in'}
@@ -898,7 +901,7 @@ export default function App() {
                       <button
                         onClick={handleUninstallOffice}
                         disabled={isOfficeLoading}
-                        className='flex-1 py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
+                        className='flex-1 py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
                       >
                         {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
                         {isOfficeLoading ? 'Removing...' : 'Uninstall'}
@@ -937,9 +940,9 @@ export default function App() {
                 </p>
               </header>
 
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-6 space-y-5'>
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
                 <div className='flex items-start gap-4'>
-                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
                     1
                   </div>
                   <div>
@@ -962,7 +965,7 @@ export default function App() {
                 </div>
 
                 <div className='flex items-start gap-4'>
-                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
                     2
                   </div>
                   <div>
@@ -978,7 +981,7 @@ export default function App() {
                 </div>
 
                 <div className='flex items-start gap-4'>
-                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
                     3
                   </div>
                   <div>
@@ -998,7 +1001,7 @@ export default function App() {
                 </div>
 
                 <div className='flex items-start gap-4'>
-                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
                     4
                   </div>
                   <div>

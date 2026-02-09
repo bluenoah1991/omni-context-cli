@@ -28,7 +28,7 @@ export const Select = memo(
             onChange={e => onChange(e.target.value)}
             className='w-full px-4 py-2.5 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent focus:ring-1 focus:ring-vscode-accent appearance-none'
           >
-            <option value=''>{placeholder}</option>
+            {placeholder && <option value=''>{placeholder}</option>}
             {options.map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}

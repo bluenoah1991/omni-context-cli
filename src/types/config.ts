@@ -1,6 +1,6 @@
 export type Provider = 'openai' | 'anthropic' | 'gemini' | 'responses' | 'none';
 
-export type WorkflowPreset = 'normal' | 'specialist' | 'artist' | 'explorer';
+export type WorkflowPreset = 'normal' | 'specialist' | 'artist' | 'explorer' | 'assistant';
 
 export interface ModelConfig {
   id: string;

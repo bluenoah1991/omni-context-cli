@@ -539,8 +539,9 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'specialist', label: '♪ Specialist mode'},
       {id: 'artist', label: '✦ Artist mode'},
       {id: 'explorer', label: '◎ Explorer mode'},
+      {id: 'assistant', label: '◇ Assistant mode'},
     ];
-    const modeToIndex = {normal: 0, specialist: 1, artist: 2, explorer: 3};
+    const modeToIndex = {normal: 0, specialist: 1, artist: 2, explorer: 3, assistant: 4};
     const initialIndex = modeToIndex[config.workflowPreset ?? 'specialist'];
 
     return (
@@ -558,7 +559,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           selectedIndex={workflowPresetIndex ?? initialIndex}
           onSelect={setWorkflowPresetIndex}
           onConfirm={i => {
-            const presets = ['normal', 'specialist', 'artist', 'explorer'] as const;
+            const presets = ['normal', 'specialist', 'artist', 'explorer', 'assistant'] as const;
             const selectedPreset = presets[i];
             if (selectedPreset !== config.workflowPreset) {
               setWorkflowPreset(selectedPreset);

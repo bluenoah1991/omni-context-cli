@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig } from '../types/config';
+import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig, WorkflowPreset } from '../types/config';
 import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
 
 function generateClientId(): string {
@@ -114,7 +114,7 @@ export function setStreamingOutput(value: boolean): void {
   saveAppConfig(config);
 }
 
-export function setWorkflowPreset(value: 'normal' | 'specialist' | 'artist' | 'explorer'): void {
+export function setWorkflowPreset(value: WorkflowPreset): void {
   const config = loadAppConfig();
   config.workflowPreset = value;
   saveAppConfig(config);

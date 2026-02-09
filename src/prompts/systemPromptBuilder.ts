@@ -4,6 +4,7 @@ import { getSkills } from '../services/skillManager';
 import { WorkflowPreset } from '../types/config';
 import { getOmxFilePath } from '../utils/omxPaths';
 import artistPrompt from './artist.txt';
+import assistantPrompt from './assistant.txt';
 import explorerPrompt from './explorer.txt';
 import { buildSkillsPrompt } from './skillsPromptBuilder';
 import specialistPrompt from './specialist.txt';
@@ -37,6 +38,9 @@ function getPresetPrompt(preset: WorkflowPreset): string {
   }
   if (preset === 'explorer') {
     return getUserPromptOrDefault('explorer.txt', explorerPrompt);
+  }
+  if (preset === 'assistant') {
+    return getUserPromptOrDefault('assistant.txt', assistantPrompt);
   }
   return systemPrompt;
 }

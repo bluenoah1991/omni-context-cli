@@ -1,4 +1,4 @@
-export type WorkflowPreset = 'normal' | 'specialist' | 'artist' | 'explorer';
+export type WorkflowPreset = 'normal' | 'specialist' | 'artist' | 'explorer' | 'assistant';
 
 export interface Config {
   projectName: string;

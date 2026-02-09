@@ -166,12 +166,19 @@ export default function Settings({onClose}: SettingsProps) {
 
           {activeTab === 'preferences' && (
             <>
-              <SegmentedControl
+              <Select
                 label='Workflow Preset'
-                description='Assistant behavior'
-                options={['normal', 'specialist', 'artist', 'explorer'] as const}
+                description='Changes the system prompt and available tools for different tasks'
                 value={workflowPreset}
-                onChange={setWorkflowPreset}
+                onChange={v => setWorkflowPreset(v as typeof workflowPreset)}
+                options={[
+                  {value: 'normal', label: 'Normal'},
+                  {value: 'specialist', label: 'Specialist'},
+                  {value: 'artist', label: 'Artist'},
+                  {value: 'explorer', label: 'Explorer'},
+                  {value: 'assistant', label: 'Assistant'},
+                ]}
+                placeholder=''
               />
 
               <ToggleOption

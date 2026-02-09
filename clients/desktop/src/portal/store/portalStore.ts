@@ -3,12 +3,13 @@ import { getAllProviders } from '../providers';
 import type { ApprovalMode, DesktopConfig, OmxConfig, Tab } from '../types/config';
 import type { ProviderState } from '../types/provider';
 
-export type PromptType = 'specialist' | 'artist' | 'explorer';
+export type PromptType = 'specialist' | 'artist' | 'explorer' | 'assistant';
 
 export interface CustomPrompts {
   specialist: string | null;
   artist: string | null;
   explorer: string | null;
+  assistant: string | null;
 }
 
 interface PortalState {
@@ -82,7 +83,7 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   configuredProviders: [],
   availableProviders: getAllProviders().map(p => ({value: p.id, label: p.name})),
   canLaunch: false,
-  customPrompts: {specialist: null, artist: null, explorer: null},
+  customPrompts: {specialist: null, artist: null, explorer: null, assistant: null},
   selectedPromptType: 'specialist',
   promptEditorValue: '',
   officeInstalled: false,
