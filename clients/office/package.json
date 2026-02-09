@@ -1,23 +1,21 @@
 {
-  "name": "omnicontext-office",
+  "name": "omni-context-office",
   "version": "0.0.1",
   "description": "Connect Microsoft Office to OmniContext CLI",
   "private": true,
   "scripts": {
     "build": "webpack --mode production",
+    "build:desktop": "webpack --mode production --output-path ../desktop/out/office-dist",
     "dev": "webpack serve --mode development",
-    "certs": "office-addin-dev-certs install",
-    "sideload": "office-addin-dev-settings sideload manifest.xml",
-    "unsideload": "office-addin-dev-settings unregister manifest.xml",
-    "start": "office-addin-debugging start manifest.xml",
-    "stop": "office-addin-debugging stop manifest.xml"
+    "dev:sideload": "office-addin-dev-settings sideload dist/manifest.xml",
+    "dev:unsideload": "office-addin-dev-settings unregister dist/manifest.xml",
+    "dev:certs": "office-addin-dev-certs install"
   },
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "office-addin-debugging": "^6.0.6",
     "office-addin-dev-certs": "^2.0.6",
     "office-addin-dev-settings": "^3.0.6",
     "@types/office-js": "^1.0.421",

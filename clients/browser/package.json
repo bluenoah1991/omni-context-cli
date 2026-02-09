@@ -1,5 +1,5 @@
 {
-  "name": "omnicontext-connect",
+  "name": "omni-context-connect",
   "version": "0.0.1",
   "description": "Connect your browser to OmniContext CLI",
   "scripts": {

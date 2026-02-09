@@ -7,7 +7,7 @@ export const isDev = () => !app.isPackaged;
 
 export const getOmxDir = () => join(homedir(), '.omx');
 
-export const getPath = (type: 'cli' | 'webview' | 'icon' | 'portal') => {
+export const getPath = (type: 'cli' | 'webview' | 'icon' | 'portal' | 'officeDist') => {
   const paths = {
     cli: isDev()
       ? join(__dirname, '../../../../dist/cli.js')
@@ -17,6 +17,9 @@ export const getPath = (type: 'cli' | 'webview' | 'icon' | 'portal') => {
       ? join(__dirname, '../../../../assets/cone@256.png')
       : join(process.resourcesPath, 'icon.png'),
     portal: isDev() ? join(__dirname, '../portal') : join(process.resourcesPath, 'portal'),
+    officeDist: isDev()
+      ? join(__dirname, '../office-dist')
+      : join(process.resourcesPath, 'office-dist'),
   };
   return paths[type];
 };

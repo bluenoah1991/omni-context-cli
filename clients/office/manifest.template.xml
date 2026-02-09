@@ -11,8 +11,8 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="OmniContext" />
   <Description DefaultValue="Connect Microsoft Office to OmniContext CLI, an AI coding assistant." />
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
+  <IconUrl DefaultValue="{{BASE_URL}}/assets/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="{{BASE_URL}}/assets/icon-80.png" />
   <SupportUrl DefaultValue="https://github.com/nicepkg/omni-context-cli" />
 
   <Hosts>
@@ -22,7 +22,7 @@
   </Hosts>
 
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html" />
+    <SourceLocation DefaultValue="{{BASE_URL}}/taskpane.html" />
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
@@ -130,12 +130,12 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16" DefaultValue="https://localhost:3000/assets/icon-16.png" />
-        <bt:Image id="Icon.32" DefaultValue="https://localhost:3000/assets/icon-32.png" />
-        <bt:Image id="Icon.80" DefaultValue="https://localhost:3000/assets/icon-80.png" />
+        <bt:Image id="Icon.16" DefaultValue="{{BASE_URL}}/assets/icon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="{{BASE_URL}}/assets/icon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="{{BASE_URL}}/assets/icon-80.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="{{BASE_URL}}/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="OmniContext" />

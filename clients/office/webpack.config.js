@@ -5,6 +5,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 const certsDir = path.join(require('os').homedir(), '.office-addin-dev-certs');
 const hasDevCerts = fs.existsSync(path.join(certsDir, 'localhost.crt'));
+const devPort = 5199;
 
 module.exports = {
   entry: {taskpane: './src/taskpane/index.tsx'},
@@ -14,7 +15,13 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        {from: 'manifest.xml', to: 'manifest.xml'},
+        {
+          from: 'manifest.template.xml',
+          to: 'manifest.xml',
+          transform: content =>
+            content.toString().replaceAll('{{BASE_URL}}', `https://localhost:${devPort}`),
+        },
+        {from: 'manifest.template.xml', to: 'manifest.template.xml'},
         {from: 'src/taskpane/styles.css', to: 'styles.css'},
         {from: '../../assets/cone@16.png', to: 'assets/icon-16.png'},
         {from: '../../assets/cone@32.png', to: 'assets/icon-32.png'},
@@ -29,7 +36,7 @@ module.exports = {
   ],
   devServer: {
     static: './dist',
-    port: 3000,
+    port: devPort,
     server: hasDevCerts
       ? {
         type: 'https',

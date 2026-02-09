@@ -10,9 +10,18 @@ declare global {
       checkPathExists: (path: string) => Promise<boolean>;
       selectFolder: () => Promise<string | null>;
       launch: (workspace: string, approvalMode: ApprovalMode) => void;
+      startServe: (
+        workspace: string,
+        approvalMode: string,
+      ) => Promise<{success: boolean; port?: number; error?: string;}>;
+      stopServe: () => Promise<void>;
+      getServeStatus: () => Promise<{running: boolean; port: number | null;}>;
       getCustomPrompt: (name: string) => Promise<string | null>;
       saveCustomPrompt: (name: string, content: string) => Promise<void>;
       deleteCustomPrompt: (name: string) => Promise<void>;
+      getOfficeStatus: () => Promise<{installed: boolean; running: boolean; port: number;}>;
+      installOfficeAddin: () => Promise<{success: boolean; error?: string;}>;
+      uninstallOfficeAddin: () => Promise<{success: boolean; error?: string;}>;
     };
   }
 }

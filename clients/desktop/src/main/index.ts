@@ -2,6 +2,7 @@ import { app, BrowserWindow, nativeTheme } from 'electron';
 import { appendFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { registerIpcHandlers } from './ipc';
+import { getStatus, startServer as startOfficeServer } from './officeAddin';
 import { checkPort, getPort } from './server';
 import { createWindow, resumeApp, showPortal } from './window';
 
@@ -26,6 +27,9 @@ app.whenReady().then(async () => {
   nativeTheme.themeSource = 'system';
   await createWindow();
   await showPortal();
+  if (getStatus().installed) {
+    startOfficeServer().catch(e => console.error('Office server failed:', e));
+  }
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       await createWindow();

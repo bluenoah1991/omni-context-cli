@@ -17,6 +17,7 @@
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "selfsigned": "^2.4.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
@@ -64,6 +65,11 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "out/office-dist",
+        "to": "office-dist",
+        "filter": ["**/*"]
       },
       {
         "from": "../../assets/cone@256.png",

@@ -2,6 +2,9 @@ import {
   AlertCircle,
   Box,
   CheckCircle2,
+  Chrome,
+  ClipboardCopy,
+  FileSpreadsheet,
   FileText,
   FolderOpen,
   LayoutGrid,
@@ -12,6 +15,7 @@ import {
   RotateCcw,
   Save,
   Shield,
+  Square,
   X,
 } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
@@ -81,9 +85,20 @@ export default function App() {
     setCustomPrompts,
     setSelectedPromptType,
     setPromptEditorValue,
+    officeInstalled,
+    officeRunning,
+    officePort,
+    setOfficeStatus,
   } = usePortalStore();
 
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
+  const [isOfficeLoading, setIsOfficeLoading] = useState(false);
+  const [serveOnly, setServeOnly] = useState(false);
+  const [servePort, setServePort] = useState<number | null>(null);
+  const [serveSnapshot, setServeSnapshot] = useState<
+    {workspace: string; models: number; approval: string;} | null
+  >(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     init();
@@ -131,6 +146,19 @@ export default function App() {
       const prompts: CustomPrompts = {specialist, artist, explorer};
       setCustomPrompts(prompts);
       setPromptEditorValue(prompts.specialist ?? '');
+
+      const officeStatus = await window.electronAPI.getOfficeStatus();
+      setOfficeStatus(officeStatus);
+
+      const serveStatus = await window.electronAPI.getServeStatus();
+      if (serveStatus.running && serveStatus.port) {
+        setServePort(serveStatus.port);
+        setServeSnapshot({
+          workspace: workspace,
+          models: omx.models.length,
+          approval: desktop.approvalMode ?? 'write',
+        });
+      }
 
       if (omx.models.length === 0) {
         setActiveTab('models');
@@ -258,6 +286,31 @@ export default function App() {
     }
   };
 
+  const handleInstallOffice = async () => {
+    setIsOfficeLoading(true);
+    try {
+      const result = await window.electronAPI.installOfficeAddin();
+      if (!result.success) throw new Error(result.error);
+      setOfficeStatus(await window.electronAPI.getOfficeStatus());
+    } catch (e) {
+      console.error('Office install failed:', e);
+    } finally {
+      setIsOfficeLoading(false);
+    }
+  };
+
+  const handleUninstallOffice = async () => {
+    setIsOfficeLoading(true);
+    try {
+      await window.electronAPI.uninstallOfficeAddin();
+      setOfficeStatus(await window.electronAPI.getOfficeStatus());
+    } catch (e) {
+      console.error('Office uninstall failed:', e);
+    } finally {
+      setIsOfficeLoading(false);
+    }
+  };
+
   const handleLaunch = async () => {
     if (!selectedWorkspace) return;
 
@@ -271,10 +324,28 @@ export default function App() {
       const newConfig = {...desktopConfig, lastWorkspace: selectedWorkspace};
       await window.electronAPI.saveDesktopConfig(newConfig);
 
-      window.electronAPI.launch(selectedWorkspace, approvalMode);
+      if (serveOnly) {
+        const result = await window.electronAPI.startServe(selectedWorkspace, approvalMode);
+        if (result.success && result.port) {
+          setServePort(result.port);
+          setServeSnapshot({
+            workspace: selectedWorkspace,
+            models: omxConfig.models.length,
+            approval: approvalMode,
+          });
+        }
+      } else {
+        window.electronAPI.launch(selectedWorkspace, approvalMode);
+      }
     } catch (e) {
       console.error('Failed to launch:', e);
     }
+  };
+
+  const handleStopServe = async () => {
+    await window.electronAPI.stopServe();
+    setServePort(null);
+    setServeSnapshot(null);
   };
 
   if (loading) {
@@ -319,6 +390,20 @@ export default function App() {
             onClick={setActiveTab}
           />
           <NavItem
+            id='office'
+            icon={FileSpreadsheet}
+            label='Office Integration'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
+            id='browser'
+            icon={Chrome}
+            label='Browser Integration'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
             id='prompts'
             icon={FileText}
             label='Prompts'
@@ -327,60 +412,147 @@ export default function App() {
           />
         </nav>
 
-        <div className='p-6 border-t border-vscode-border bg-vscode-element/10'>
-          <div className='mb-6 space-y-3'>
-            <div className='flex items-center gap-3 text-sm'>
-              {selectedWorkspace
-                ? <FolderOpen size={16} className='text-vscode-accent shrink-0' />
-                : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
-              <span
-                className={`truncate ${
-                  selectedWorkspace ? 'text-vscode-text-header' : 'text-vscode-text-muted'
-                }`}
-                title={selectedWorkspace}
-              >
-                {selectedWorkspace ? selectedWorkspace.split(/[/\\]/).pop() : 'No workspace'}
-              </span>
-            </div>
-            <div className='flex items-center gap-3 text-sm'>
-              {omxConfig.models.length > 0
-                ? <Box size={16} className='text-vscode-accent shrink-0' />
-                : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
-              <span
-                className={omxConfig.models.length > 0
-                  ? 'text-vscode-text-header'
-                  : 'text-vscode-text-muted'}
-              >
-                {omxConfig.models.length > 0
-                  ? `${omxConfig.models.length} models ready`
-                  : 'No models'}
-              </span>
-            </div>
-            <div className='flex items-center gap-3 text-sm'>
-              <Shield
-                size={16}
-                className={`shrink-0 ${
-                  approvalMode === 'none' ? 'text-vscode-warning' : 'text-vscode-accent'
-                }`}
-              />
-              <span className='text-vscode-text-header'>
-                {approvalMode === 'none'
-                  ? 'No Approval'
-                  : approvalMode === 'write'
-                  ? 'Write Approval'
-                  : 'Full Approval'}
-              </span>
-            </div>
-          </div>
+        <div className='px-6 py-7 border-t border-vscode-border bg-vscode-element/10'>
+          {servePort
+            ? (
+              <div className='space-y-4'>
+                {serveSnapshot && (
+                  <div className='space-y-2 text-sm opacity-60'>
+                    <div className='flex items-center gap-3'>
+                      <FolderOpen size={16} className='text-vscode-accent shrink-0' />
+                      <span
+                        className='text-vscode-text-header truncate'
+                        title={serveSnapshot.workspace}
+                      >
+                        {serveSnapshot.workspace.split(/[/\\]/).pop()}
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-3'>
+                      <Box size={16} className='text-vscode-accent shrink-0' />
+                      <span className='text-vscode-text-header'>{serveSnapshot.models} models</span>
+                    </div>
+                    <div className='flex items-center gap-3'>
+                      <Shield
+                        size={16}
+                        className={`shrink-0 ${
+                          serveSnapshot.approval === 'none'
+                            ? 'text-vscode-warning'
+                            : 'text-vscode-accent'
+                        }`}
+                      />
+                      <span className='text-vscode-text-header'>
+                        {serveSnapshot.approval === 'none'
+                          ? 'No Approval'
+                          : serveSnapshot.approval === 'write'
+                          ? 'Write Approval'
+                          : 'Full Approval'}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-          <button
-            onClick={handleLaunch}
-            disabled={!canLaunch}
-            className='w-full py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-base'
-          >
-            <Rocket size={20} />
-            Launch
-          </button>
+                <div
+                  className='flex items-center gap-3 p-3 bg-vscode-bg rounded-lg border border-vscode-border cursor-pointer hover:border-vscode-accent transition-colors group'
+                  onClick={() => {
+                    navigator.clipboard.writeText(`http://localhost:${servePort}`);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  title='Click to copy'
+                >
+                  <div className='w-2.5 h-2.5 rounded-full bg-green-500 shrink-0' />
+                  <span className='text-sm text-vscode-text-header font-mono flex-1 truncate'>
+                    http://localhost:{servePort}
+                  </span>
+                  <ClipboardCopy
+                    size={14}
+                    className={`shrink-0 transition-colors ${
+                      copied
+                        ? 'text-green-500'
+                        : 'text-vscode-text-muted group-hover:text-vscode-accent'
+                    }`}
+                  />
+                </div>
+                <p className='text-xs text-vscode-text-muted'>
+                  Paste this URL into the Office add-in or browser extension to connect.
+                </p>
+
+                <button
+                  onClick={handleStopServe}
+                  className='w-full py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-all flex items-center justify-center gap-2 font-medium text-base'
+                >
+                  <Square size={16} />
+                  Stop Serving
+                </button>
+              </div>
+            )
+            : (
+              <div>
+                <div className='mb-6 space-y-3'>
+                  <div className='flex items-center gap-3 text-sm'>
+                    {selectedWorkspace
+                      ? <FolderOpen size={16} className='text-vscode-accent shrink-0' />
+                      : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
+                    <span
+                      className={`truncate ${
+                        selectedWorkspace ? 'text-vscode-text-header' : 'text-vscode-text-muted'
+                      }`}
+                      title={selectedWorkspace}
+                    >
+                      {selectedWorkspace ? selectedWorkspace.split(/[/\\]/).pop() : 'No workspace'}
+                    </span>
+                  </div>
+                  <div className='flex items-center gap-3 text-sm'>
+                    {omxConfig.models.length > 0
+                      ? <Box size={16} className='text-vscode-accent shrink-0' />
+                      : <AlertCircle size={16} className='text-vscode-error shrink-0' />}
+                    <span
+                      className={omxConfig.models.length > 0
+                        ? 'text-vscode-text-header'
+                        : 'text-vscode-text-muted'}
+                    >
+                      {omxConfig.models.length > 0
+                        ? `${omxConfig.models.length} models ready`
+                        : 'No models'}
+                    </span>
+                  </div>
+                  <div className='flex items-center gap-3 text-sm'>
+                    <Shield
+                      size={16}
+                      className={`shrink-0 ${
+                        approvalMode === 'none' ? 'text-vscode-warning' : 'text-vscode-accent'
+                      }`}
+                    />
+                    <span className='text-vscode-text-header'>
+                      {approvalMode === 'none'
+                        ? 'No Approval'
+                        : approvalMode === 'write'
+                        ? 'Write Approval'
+                        : 'Full Approval'}
+                    </span>
+                  </div>
+                </div>
+
+                <label className='flex items-center gap-2 mb-4 text-sm cursor-pointer select-none'>
+                  <input
+                    type='checkbox'
+                    checked={serveOnly}
+                    onChange={e => setServeOnly(e.target.checked)}
+                    className='accent-vscode-accent'
+                  />
+                  <span className='text-vscode-text-muted'>Serve only (for Office / Browser)</span>
+                </label>
+
+                <button
+                  onClick={handleLaunch}
+                  disabled={!canLaunch}
+                  className='w-full py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-base'
+                >
+                  <Rocket size={20} />
+                  {serveOnly ? 'Start Serving' : 'Launch'}
+                </button>
+              </div>
+            )}
         </div>
       </div>
 
@@ -669,6 +841,175 @@ export default function App() {
                     <strong className='text-vscode-text-header'>Explorer Mode</strong>{' '}
                     prioritizes web search to find current information before answering.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'office' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  Office Integration
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Connect Word, Excel, and PowerPoint to OmniContext
+                </p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-6'>
+                <div className='flex items-center justify-between mb-6'>
+                  <div className='flex items-center gap-3'>
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        officeInstalled && officeRunning
+                          ? 'bg-green-500'
+                          : officeInstalled
+                          ? 'bg-yellow-500'
+                          : 'bg-vscode-text-muted/30'
+                      }`}
+                    />
+                    <span className='text-base font-medium text-vscode-text-header'>
+                      {officeInstalled && officeRunning
+                        ? 'Running'
+                        : officeInstalled
+                        ? 'Installed (not running)'
+                        : 'Not installed'}
+                    </span>
+                  </div>
+                  {officeInstalled && officeRunning && (
+                    <span className='text-xs text-vscode-text-muted'>HTTPS port {officePort}</span>
+                  )}
+                </div>
+
+                <div className='flex gap-3'>
+                  {!officeInstalled
+                    ? (
+                      <button
+                        onClick={handleInstallOffice}
+                        disabled={isOfficeLoading}
+                        className='flex-1 py-3 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2'
+                      >
+                        {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
+                        {isOfficeLoading ? 'Installing...' : 'Install Office Add-in'}
+                      </button>
+                    )
+                    : (
+                      <button
+                        onClick={handleUninstallOffice}
+                        disabled={isOfficeLoading}
+                        className='flex-1 py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
+                      >
+                        {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
+                        {isOfficeLoading ? 'Removing...' : 'Uninstall'}
+                      </button>
+                    )}
+                </div>
+              </div>
+
+              <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
+                <p>
+                  <strong className='text-vscode-text-header'>How it works:</strong>{' '}
+                  Installing registers the OmniContext add-in with Microsoft Office on this
+                  computer. A local HTTPS server provides the add-in interface.
+                </p>
+                <p>
+                  After installing, open any Office app (Word, Excel, or PowerPoint). You'll find
+                  the <strong className='text-vscode-text-header'>OmniContext</strong>{' '}
+                  button on the Home tab.
+                </p>
+                <p>
+                  The Desktop app must be running for the add-in to work. It starts automatically
+                  when you launch OmniContext Desktop.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'browser' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  Browser Extension
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Connect Google Chrome to OmniContext
+                </p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-6 space-y-5'>
+                <div className='flex items-start gap-4'>
+                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    1
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Download the extension
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted mb-2'>
+                      Go to the releases page and download the latest{' '}
+                      <strong className='text-vscode-text-header'>OmniContext Connect</strong>{' '}
+                      extension package (.zip).
+                    </p>
+                    <a
+                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                      target='_blank'
+                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                    >
+                      Open Releases Page
+                    </a>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    2
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Unzip the package
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Extract the downloaded .zip file to a folder on your computer. You'll need the
+                      {' '}
+                      <strong className='text-vscode-text-header'>dist</strong> folder inside.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    3
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Load in Chrome
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Open <strong className='text-vscode-text-header'>chrome://extensions</strong>
+                      {' '}
+                      in your browser, enable{' '}
+                      <strong className='text-vscode-text-header'>Developer mode</strong>, click
+                      {' '}
+                      <strong className='text-vscode-text-header'>Load unpacked</strong>, and select
+                      the <strong className='text-vscode-text-header'>dist</strong> folder.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-8 h-8 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    4
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>Connect</h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Open the extension's side panel in Chrome and enter the server address. Use
+                      {' '}
+                      <strong className='text-vscode-text-header'>Serve only</strong>{' '}
+                      mode to start a server from the Workspaces tab.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

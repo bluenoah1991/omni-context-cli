@@ -52,3 +52,15 @@ export async function startServer(cwd: string, approvalMode: ApprovalMode): Prom
 
   return port;
 }
+
+export function stopServer(): void {
+  if (serverProcess) {
+    serverProcess.kill();
+    serverProcess = null;
+    currentPort = null;
+  }
+}
+
+export function isServerRunning(): boolean {
+  return serverProcess !== null;
+}

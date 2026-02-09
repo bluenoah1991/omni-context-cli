@@ -3,7 +3,9 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
 import { loadDesktopConfig, loadOmxConfig, saveDesktopConfig, saveOmxConfig } from './config';
+import { getStatus, install, uninstall } from './officeAddin';
 import { getOmxDir } from './paths';
+import { checkPort, getPort, isServerRunning, startServer, stopServer } from './server';
 import { getMainWindow, launchApp } from './window';
 
 export function registerIpcHandlers(): void {
@@ -24,6 +26,25 @@ export function registerIpcHandlers(): void {
     launchApp(workspace, approvalMode);
   });
 
+  ipcMain.handle('start-serve', async (_, workspace: string, approvalMode: string) => {
+    try {
+      const port = await startServer(workspace, approvalMode as ApprovalMode);
+      for (let i = 0; i < 300; i++) {
+        if (await checkPort(port)) return {success: true, port};
+        await new Promise(r => setTimeout(r, 100));
+      }
+      return {success: false, error: 'Server did not start in time'};
+    } catch (err: any) {
+      return {success: false, error: err?.message || String(err)};
+    }
+  });
+
+  ipcMain.handle('stop-serve', () => {
+    stopServer();
+  });
+
+  ipcMain.handle('get-serve-status', () => ({running: isServerRunning(), port: getPort()}));
+
   ipcMain.handle('get-custom-prompt', (_, name: string) => {
     const path = join(getOmxDir(), `${name}.txt`);
     if (existsSync(path)) {
@@ -43,4 +64,8 @@ export function registerIpcHandlers(): void {
       unlinkSync(path);
     }
   });
+
+  ipcMain.handle('get-office-status', () => getStatus());
+  ipcMain.handle('install-office-addin', () => install());
+  ipcMain.handle('uninstall-office-addin', () => uninstall());
 }

@@ -28,6 +28,9 @@ interface PortalState {
   customPrompts: CustomPrompts;
   selectedPromptType: PromptType;
   promptEditorValue: string;
+  officeInstalled: boolean;
+  officeRunning: boolean;
+  officePort: number;
 
   setOmxConfig: (config: OmxConfig) => void;
   setDesktopConfig: (config: DesktopConfig) => void;
@@ -43,6 +46,7 @@ interface PortalState {
   setCustomPrompts: (prompts: CustomPrompts) => void;
   setSelectedPromptType: (type: PromptType) => void;
   setPromptEditorValue: (value: string) => void;
+  setOfficeStatus: (status: {installed: boolean; running: boolean; port: number;}) => void;
 }
 
 function computeDerivedState(omxConfig: OmxConfig, selectedWorkspace: string) {
@@ -81,6 +85,9 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   customPrompts: {specialist: null, artist: null, explorer: null},
   selectedPromptType: 'specialist',
   promptEditorValue: '',
+  officeInstalled: false,
+  officeRunning: false,
+  officePort: 52810,
 
   setOmxConfig: config => {
     const {selectedWorkspace} = get();
@@ -105,4 +112,10 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
     set({selectedPromptType: type, promptEditorValue: customPrompts[type] ?? ''});
   },
   setPromptEditorValue: value => set({promptEditorValue: value}),
+  setOfficeStatus: status =>
+    set({
+      officeInstalled: status.installed,
+      officeRunning: status.running,
+      officePort: status.port,
+    }),
 }));
