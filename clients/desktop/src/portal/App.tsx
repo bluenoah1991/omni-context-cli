@@ -95,6 +95,7 @@ export default function App() {
   const [isOfficeLoading, setIsOfficeLoading] = useState(false);
   const [serveOnly, setServeOnly] = useState(false);
   const [servePort, setServePort] = useState<number | null>(null);
+  const [serveTls, setServeTls] = useState(false);
   const [serveSnapshot, setServeSnapshot] = useState<
     {workspace: string; models: number; approval: string;} | null
   >(null);
@@ -154,6 +155,7 @@ export default function App() {
       const serveStatus = await window.electronAPI.getServeStatus();
       if (serveStatus.running && serveStatus.port) {
         setServePort(serveStatus.port);
+        setServeTls(serveStatus.tls);
         setServeSnapshot({
           workspace: workspace,
           models: omx.models.length,
@@ -333,6 +335,7 @@ export default function App() {
         );
         if (result.success && result.port) {
           setServePort(result.port);
+          setServeTls(result.tls ?? false);
           setServeSnapshot({
             workspace: selectedWorkspace,
             models: omxConfig.models.length,
@@ -347,9 +350,12 @@ export default function App() {
     }
   };
 
+  const serveUrl = servePort ? `${serveTls ? 'https' : 'http'}://localhost:${servePort}` : null;
+
   const handleStopServe = async () => {
     await window.electronAPI.stopServe();
     setServePort(null);
+    setServeTls(false);
     setServeSnapshot(null);
   };
 
@@ -459,7 +465,7 @@ export default function App() {
                 <div
                   className='flex items-center gap-3 p-3 bg-vscode-bg rounded-lg border border-vscode-border cursor-pointer hover:border-vscode-accent transition-colors group'
                   onClick={() => {
-                    navigator.clipboard.writeText(`http://localhost:${servePort}`);
+                    navigator.clipboard.writeText(serveUrl!);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
@@ -467,7 +473,7 @@ export default function App() {
                 >
                   <div className='w-2.5 h-2.5 rounded-full bg-green-500 shrink-0' />
                   <span className='text-sm text-vscode-text-header font-mono flex-1 truncate'>
-                    http://localhost:{servePort}
+                    {serveUrl}
                   </span>
                   <ClipboardCopy
                     size={14}

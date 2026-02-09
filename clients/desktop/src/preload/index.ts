@@ -12,7 +12,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startServe: (workspace: string, approvalMode: string, workflow?: string) =>
     ipcRenderer.invoke('start-serve', workspace, approvalMode, workflow),
   stopServe: () => ipcRenderer.invoke('stop-serve'),
-  getServeStatus: () => ipcRenderer.invoke('get-serve-status'),
+  getServeStatus: () =>
+    ipcRenderer.invoke('get-serve-status') as Promise<
+      {running: boolean; port: number | null; tls: boolean;}
+    >,
   getCustomPrompt: (name: string) => ipcRenderer.invoke('get-custom-prompt', name),
   saveCustomPrompt: (name: string, content: string) =>
     ipcRenderer.invoke('save-custom-prompt', name, content),

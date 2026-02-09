@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [serverAddress, setServerAddress] = useState('localhost:5281');
+  const [serverAddress, setServerAddress] = useState('http://localhost:5281');
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [state, setState] = useState('disconnected');
 
@@ -12,7 +12,7 @@ function App() {
       setState(s.state);
       setServerUrl(s.baseUrl);
       if (!initialized && s.baseUrl) {
-        setServerAddress(s.baseUrl.replace(/^https?:\/\//, ''));
+        setServerAddress(s.baseUrl);
         initialized = true;
       }
     };
@@ -43,7 +43,7 @@ function App() {
         value={serverAddress}
         onChange={e => setServerAddress(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && handleConnect()}
-        placeholder='localhost:5281'
+        placeholder='http://localhost:5281'
       />
       <button onClick={handleConnect} disabled={!serverAddress.trim() || state === 'connecting'}>
         {state === 'connecting' ? 'Connecting...' : 'Connect'}

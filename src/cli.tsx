@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 import { Command } from '@commander-js/extra-typings';
 import { render } from 'ink';
+import { execSync } from 'node:child_process';
 import dns from 'node:dns';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import type https from 'node:https';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
@@ -62,19 +68,19 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('--approve-all', 'Require user approval before running any tool').option(
   '--workflow <preset>',
   'Override workflow preset (normal, specialist, artist, explorer, assistant)',
-).option('--scope <scope>', 'Where to save config changes: global (default), project, or memory')
-  .parse(process.argv, {from: 'node'});
+).option('--tls', 'Enable HTTPS for server mode').option(
+  '--tls-cert <path>',
+  'Path to TLS certificate file',
+).option('--tls-key <path>', 'Path to TLS private key file').option(
+  '--scope <scope>',
+  'Where to save config changes: global (default), project, or memory',
+).parse(process.argv, {from: 'node'});
 
 const opts = program.opts();
 
 initializeProviders();
 
 if (opts.installVscodeExtension) {
-  const {execSync} = await import('node:child_process');
-  const {existsSync, mkdirSync, writeFileSync} = await import('node:fs');
-  const {homedir} = await import('node:os');
-  const {dirname, join} = await import('node:path');
-  const {fileURLToPath} = await import('node:url');
   const distDir = dirname(fileURLToPath(import.meta.url));
   const vsixPath = join(distDir, 'clients', 'extension.vsix');
   if (!existsSync(vsixPath)) {
@@ -210,13 +216,28 @@ if (opts.approveAll) {
 if (opts.serve) {
   const port = opts.port ? parseInt(opts.port, 10) : 5281;
   const host = opts.host || 'localhost';
+  let tls: https.ServerOptions | undefined;
+
+  if (opts.tls || opts.tlsCert || opts.tlsKey) {
+    const {tlsKey: keyPath, tlsCert: certPath} = opts;
+
+    if (!keyPath || !certPath || !existsSync(keyPath) || !existsSync(certPath)) {
+      console.error('Both --tls-cert and --tls-key are required for HTTPS.');
+      process.exit(1);
+    }
+
+    tls = {key: readFileSync(keyPath), cert: readFileSync(certPath)};
+  }
+
+  const protocol = tls ? 'https' : 'http';
+
   try {
-    await startServer(port, host);
+    await startServer(port, host, tls);
   } catch (err) {
     console.error(`Failed to start server on ${host}:${port}`);
     process.exit(1);
   }
-  console.log(`Server running at http://${host}:${port}`);
+  console.log(`Server running at ${protocol}://${host}:${port}`);
 
   if (opts.web) {
     const {exec} = await import('node:child_process');
@@ -226,7 +247,7 @@ if (opts.serve) {
       ? 'open'
       : 'xdg-open';
     const browserHost = host === '0.0.0.0' ? 'localhost' : host;
-    exec(`${cmd} http://${browserHost}:${port}`);
+    exec(`${cmd} ${protocol}://${browserHost}:${port}`);
   }
 
   if (opts.parentPid) {

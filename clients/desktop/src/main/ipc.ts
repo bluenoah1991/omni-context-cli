@@ -5,7 +5,7 @@ import type { ApprovalMode } from '../portal/types/config';
 import { loadDesktopConfig, loadOmxConfig, saveDesktopConfig, saveOmxConfig } from './config';
 import { getStatus, install, uninstall } from './officeAddin';
 import { getOmxDir } from './paths';
-import { checkPort, getPort, isServerRunning, startServer, stopServer } from './server';
+import { checkPort, getPort, isServerRunning, isTls, startServer, stopServer } from './server';
 import { getMainWindow, launchApp } from './window';
 
 export function registerIpcHandlers(): void {
@@ -32,7 +32,7 @@ export function registerIpcHandlers(): void {
       try {
         const port = await startServer(workspace, approvalMode as ApprovalMode, workflow);
         for (let i = 0; i < 300; i++) {
-          if (await checkPort(port)) return {success: true, port};
+          if (await checkPort(port)) return {success: true, port, tls: isTls()};
           await new Promise(r => setTimeout(r, 100));
         }
         return {success: false, error: 'Server did not start in time'};
@@ -46,7 +46,10 @@ export function registerIpcHandlers(): void {
     stopServer();
   });
 
-  ipcMain.handle('get-serve-status', () => ({running: isServerRunning(), port: getPort()}));
+  ipcMain.handle(
+    'get-serve-status',
+    () => ({running: isServerRunning(), port: getPort(), tls: isTls()}),
+  );
 
   ipcMain.handle('get-custom-prompt', (_, name: string) => {
     const path = join(getOmxDir(), `${name}.txt`);

@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
 import { getPath, isDev } from './paths';
-import { checkPort, startServer } from './server';
+import { checkPort, isTls, startServer } from './server';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -19,7 +19,8 @@ function createWebviewHtml(port: number): string {
     '{{OMNI_CONTEXT_WEBSESSION_ID}}',
     `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`,
   );
-  html = html.replaceAll('{{OMNI_CONTEXT_SERVER_URL}}', `http://localhost:${port}`);
+  const protocol = isTls() ? 'https' : 'http';
+  html = html.replaceAll('{{OMNI_CONTEXT_SERVER_URL}}', `${protocol}://localhost:${port}`);
   const tempPath = join(tmpdir(), 'omnicontext-app.html');
   writeFileSync(tempPath, html);
   return tempPath;

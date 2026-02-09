@@ -26,7 +26,7 @@ function registerTools(host: number | null) {
 }
 
 function App() {
-  const [serverAddress, setServerAddress] = useState('localhost:5281');
+  const [serverAddress, setServerAddress] = useState('http://localhost:5281');
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [state, setState] = useState('disconnected');
   const [officeReady, setOfficeReady] = useState(false);
@@ -54,7 +54,7 @@ function App() {
       if (!initialized) {
         const saved = loadServerUrl();
         if (saved) {
-          setServerAddress(saved.replace(/^https?:\/\//, ''));
+          setServerAddress(saved);
         }
         initialized = true;
       }
@@ -95,7 +95,7 @@ function App() {
         value={serverAddress}
         onChange={e => setServerAddress(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && handleConnect()}
-        placeholder='localhost:5281'
+        placeholder='http://localhost:5281'
       />
       <button onClick={handleConnect} disabled={!serverAddress.trim() || state === 'connecting'}>
         {state === 'connecting' ? 'Connecting...' : 'Connect'}

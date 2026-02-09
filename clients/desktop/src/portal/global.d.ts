@@ -14,9 +14,9 @@ declare global {
         workspace: string,
         approvalMode: string,
         workflow?: string,
-      ) => Promise<{success: boolean; port?: number; error?: string;}>;
+      ) => Promise<{success: boolean; port?: number; tls?: boolean; error?: string;}>;
       stopServe: () => Promise<void>;
-      getServeStatus: () => Promise<{running: boolean; port: number | null;}>;
+      getServeStatus: () => Promise<{running: boolean; port: number | null; tls: boolean;}>;
       getCustomPrompt: (name: string) => Promise<string | null>;
       saveCustomPrompt: (name: string, content: string) => Promise<void>;
       deleteCustomPrompt: (name: string) => Promise<void>;

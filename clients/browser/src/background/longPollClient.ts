@@ -15,13 +15,16 @@ export function getState(): ConnectionState {
   return state;
 }
 
-export async function connect(url?: string): Promise<void> {
-  let baseUrl = url?.trim().replace(/\/+$/, '') || await loadServerUrl();
-  if (!baseUrl) return;
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim().replace(/\/+$/, '');
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return `http://${trimmed}`;
+}
 
-  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-    baseUrl = `http://${baseUrl}`;
-  }
+export async function connect(url?: string): Promise<void> {
+  const raw = url || await loadServerUrl();
+  if (!raw) return;
+  const baseUrl = normalizeUrl(raw);
 
   if (baseUrl === getServerUrl() && state !== 'disconnected') return;
 
@@ -29,7 +32,6 @@ export async function connect(url?: string): Promise<void> {
   if (polling) await polling;
 
   state = 'connecting';
-  await setServerUrl(baseUrl);
 
   try {
     const resp = await fetch(`${baseUrl}/api/health`);
@@ -41,6 +43,8 @@ export async function connect(url?: string): Promise<void> {
     state = 'disconnected';
     return;
   }
+
+  await setServerUrl(baseUrl);
 
   state = 'connected';
   if (baseUrl !== getServerUrl()) return;
