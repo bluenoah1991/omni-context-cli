@@ -1,44 +1,5 @@
 import { registerTool } from '../services/toolManager';
 
-const FIELD_TYPES: Record<string, string> = {
-  DATE: 'Date',
-  PAGE: 'Page',
-  NUMPAGES: 'NumPages',
-  AUTHOR: 'Author',
-  TIME: 'Time',
-  TITLE: 'Title',
-  SUBJECT: 'Subject',
-  KEYWORDS: 'Keywords',
-  COMMENTS: 'Comments',
-  FILENAME: 'FileName',
-  FILESIZE: 'FileSize',
-  CREATEDATE: 'CreateDate',
-  SAVEDATE: 'SaveDate',
-  PRINTDATE: 'PrintDate',
-  EDITTIME: 'EditTime',
-  LASTSAVEDBY: 'LastSavedBy',
-  REVNUM: 'RevisionNum',
-  NUMWORDS: 'NumWords',
-  NUMCHARS: 'NumChars',
-  TOC: 'TOC',
-  INDEX: 'Index',
-  BIBLIOGRAPHY: 'Bibliography',
-  REF: 'Ref',
-  PAGEREF: 'PageRef',
-  NOTEREF: 'NoteRef',
-  STYLEREF: 'StyleRef',
-  SEQ: 'Seq',
-  SECTION: 'Section',
-  SECTIONPAGES: 'SectionPages',
-  HYPERLINK: 'Hyperlink',
-  MERGEFIELD: 'MergeField',
-  DOCPROPERTY: 'DocProperty',
-  DOCVARIABLE: 'DocVariable',
-  IF: 'If',
-  SET: 'Set',
-  SYMBOL: 'Symbol',
-};
-
 export function registerWordTools(): void {
   registerTool({
     name: 'GetDocumentText',
@@ -1060,27 +1021,27 @@ export function registerWordTools(): void {
 
   registerTool({
     name: 'InsertField',
-    description:
-      'Insert a field at the current selection using a raw field code, e.g. "DATE \\\\@ \\"yyyy-MM-dd\\"", "PAGE", "NUMPAGES", "AUTHOR".',
+    description: 'Insert a field at the current selection.',
     parameters: {
       properties: {
-        code: {
+        type: {
           type: 'string',
-          description: 'Field code, e.g. "DATE", "PAGE", "NUMPAGES", "AUTHOR".',
+          description:
+            'Word.FieldType value: "Date", "Page", "NumPages", "Author", "Time", "Title", "FileName", "CreateDate", "SaveDate", "TOC", "Index", "Seq", "Ref", "Hyperlink", etc.',
+        },
+        switches: {
+          type: 'string',
+          description: 'Optional field switches, e.g. "\\\\@ \\"yyyy-MM-dd\\"" for date format.',
         },
       },
-      required: ['code'],
+      required: ['type'],
     },
-  }, async (args: {code: string;}) => {
+  }, async (args: {type: string; switches?: string;}) => {
     return Word.run(async ctx => {
-      const parts = args.code.trim().split(/\s+/);
-      const name = parts[0].toUpperCase();
-      const switches = parts.slice(1).join(' ') || undefined;
-      const fieldType = (FIELD_TYPES[name] || 'Addin') as any;
       ctx.document.getSelection().insertField(
         Word.InsertLocation.replace,
-        fieldType,
-        switches,
+        args.type as any,
+        args.switches,
         true,
       );
       await ctx.sync();
