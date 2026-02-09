@@ -73,8 +73,24 @@ export async function startServer(
   const execInfo = getExecutableInfo();
   const command = execInfo ? execInfo.node : 'node';
   const args = execInfo
-    ? [execInfo.script, '--serve', '--port', String(port), '--parent-pid', String(process.pid)]
-    : ['omni-context-cli', '--serve', '--port', String(port), '--parent-pid', String(process.pid)];
+    ? [
+      execInfo.script,
+      '--serve',
+      '--scope=project',
+      '--port',
+      String(port),
+      '--parent-pid',
+      String(process.pid),
+    ]
+    : [
+      'omni-context-cli',
+      '--serve',
+      '--scope=project',
+      '--port',
+      String(port),
+      '--parent-pid',
+      String(process.pid),
+    ];
 
   let stderrOutput = '';
   serverProcess = spawn(command, args, {
