@@ -383,7 +383,7 @@ export function registerWordTools(): void {
         styleName: {
           type: 'string',
           description:
-            'Built-in style name. English Word uses "Heading1", "Normal", "Title", etc. Localized Word requires native names (e.g. Chinese: "标题 1", "正文", "标题"). Use GetDocumentInfo to check the locale if unsure.',
+            'Built-in style name, e.g. "Heading1", "Normal", "Title". Localized Word requires locale-specific names.',
         },
       },
       required: ['styleName'],
