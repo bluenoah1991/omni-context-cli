@@ -23,8 +23,11 @@ function App() {
 
   const handleConnect = async () => {
     if (!serverAddress.trim()) return;
-    await chrome.runtime.sendMessage({type: 'connect', url: serverAddress.trim()});
     setState('connecting');
+    await chrome.runtime.sendMessage({type: 'connect', url: serverAddress.trim()});
+    const s = await chrome.runtime.sendMessage({type: 'getStatus'});
+    setState(s.state);
+    setServerUrl(s.baseUrl);
   };
 
   if (state === 'connected' && serverUrl) {

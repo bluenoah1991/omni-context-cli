@@ -42,16 +42,15 @@ function App() {
     if (!officeReady) return;
 
     let initialized = false;
-    const check = async () => {
+    const check = () => {
       setState(getState());
       setServerUrl(getServerUrl());
       if (!initialized) {
         const saved = loadServerUrl();
         if (saved) {
           setServerAddress(saved.replace(/^https?:\/\//, ''));
-          await connect();
-          initialized = true;
         }
+        initialized = true;
       }
     };
 
@@ -65,6 +64,8 @@ function App() {
     if (!serverAddress.trim()) return;
     setState('connecting');
     await connect(serverAddress.trim());
+    setState(getState());
+    setServerUrl(getServerUrl());
   };
 
   if (!officeReady) {

@@ -1,4 +1,4 @@
-import { getServerUrl } from './config';
+import { getServerUrl, loadServerUrl } from './config';
 import { connect, getState } from './longPollClient';
 import { registerBookmarksTool } from './tools/bookmarks';
 import { registerCDPTool } from './tools/cdp';
@@ -20,7 +20,7 @@ registerWaitTool();
 registerScreenshotTool();
 registerCDPTool();
 
-connect();
+loadServerUrl();
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const handlers: Record<string, () => Promise<any>> = {

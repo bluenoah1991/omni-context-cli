@@ -33,11 +33,17 @@ export async function connect(url?: string): Promise<void> {
 
   try {
     const resp = await fetch(`${baseUrl}/api/health`);
-    if (resp.ok) {
-      state = 'connected';
+    if (!resp.ok) {
+      state = 'disconnected';
+      return;
     }
-  } catch {}
+  } catch {
+    state = 'disconnected';
+    return;
+  }
 
+  state = 'connected';
+  if (baseUrl !== getServerUrl()) return;
   abortController = new AbortController();
   polling = poll(baseUrl, abortController.signal);
 }
