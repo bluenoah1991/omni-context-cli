@@ -1311,7 +1311,7 @@ export function registerExcelTools(): void {
         shapeType: {
           type: 'string',
           description:
-            'Shape type: "Rectangle", "Oval", "Diamond", "Triangle", "RightArrow", "Star5", etc.',
+            'Shape type: "Rectangle", "Ellipse", "Diamond", "Triangle", "RightArrow", "Star5", etc.',
         },
         left: {type: 'number', description: 'Left position in points.'},
         top: {type: 'number', description: 'Top position in points.'},

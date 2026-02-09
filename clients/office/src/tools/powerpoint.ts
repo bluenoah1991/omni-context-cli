@@ -410,7 +410,7 @@ export function registerPowerPointTools(): void {
         geometricShapeType: {
           type: 'string',
           description:
-            'Shape type: "Rectangle", "Oval", "Triangle", "RightArrow", "Star5", "Diamond", "RoundedRectangle", etc.',
+            'Shape type: "Rectangle", "Round1Rectangle", "Ellipse", "Triangle", "RightArrow", "Star5", "Diamond", etc.',
         },
         left: {type: 'number', description: 'Left in points. Default: 100.'},
         top: {type: 'number', description: 'Top in points. Default: 100.'},

@@ -1,5 +1,44 @@
 import { registerTool } from '../services/toolManager';
 
+const FIELD_TYPES: Record<string, string> = {
+  DATE: 'Date',
+  PAGE: 'Page',
+  NUMPAGES: 'NumPages',
+  AUTHOR: 'Author',
+  TIME: 'Time',
+  TITLE: 'Title',
+  SUBJECT: 'Subject',
+  KEYWORDS: 'Keywords',
+  COMMENTS: 'Comments',
+  FILENAME: 'FileName',
+  FILESIZE: 'FileSize',
+  CREATEDATE: 'CreateDate',
+  SAVEDATE: 'SaveDate',
+  PRINTDATE: 'PrintDate',
+  EDITTIME: 'EditTime',
+  LASTSAVEDBY: 'LastSavedBy',
+  REVNUM: 'RevisionNum',
+  NUMWORDS: 'NumWords',
+  NUMCHARS: 'NumChars',
+  TOC: 'TOC',
+  INDEX: 'Index',
+  BIBLIOGRAPHY: 'Bibliography',
+  REF: 'Ref',
+  PAGEREF: 'PageRef',
+  NOTEREF: 'NoteRef',
+  STYLEREF: 'StyleRef',
+  SEQ: 'Seq',
+  SECTION: 'Section',
+  SECTIONPAGES: 'SectionPages',
+  HYPERLINK: 'Hyperlink',
+  MERGEFIELD: 'MergeField',
+  DOCPROPERTY: 'DocProperty',
+  DOCVARIABLE: 'DocVariable',
+  IF: 'If',
+  SET: 'Set',
+  SYMBOL: 'Symbol',
+};
+
 export function registerWordTools(): void {
   registerTool({
     name: 'GetDocumentText',
@@ -383,7 +422,7 @@ export function registerWordTools(): void {
         styleName: {
           type: 'string',
           description:
-            'Style name, e.g. "Heading1", "Heading2", "Normal", "Title", "Subtitle", "Quote", "IntenseQuote", "ListBullet", "ListNumber".',
+            'Built-in style name. English Word uses "Heading1", "Normal", "Title", etc. Localized Word requires native names (e.g. Chinese: "标题 1", "正文", "标题"). Use GetDocumentInfo to check the locale if unsure.',
         },
       },
       required: ['styleName'],
@@ -432,7 +471,7 @@ export function registerWordTools(): void {
     description: 'Set paragraph formatting on the current selection.',
     parameters: {
       properties: {
-        alignment: {type: 'string', description: '"Left", "Center", "Right", "Justified".'},
+        alignment: {type: 'string', description: '"Left", "Centered", "Right", "Justified".'},
         lineSpacing: {
           type: 'number',
           description: 'Line spacing in points (e.g. 12 for single, 24 for double at 12pt font).',
@@ -1034,10 +1073,14 @@ export function registerWordTools(): void {
     },
   }, async (args: {code: string;}) => {
     return Word.run(async ctx => {
+      const parts = args.code.trim().split(/\s+/);
+      const name = parts[0].toUpperCase();
+      const switches = parts.slice(1).join(' ') || undefined;
+      const fieldType = (FIELD_TYPES[name] || 'Addin') as any;
       ctx.document.getSelection().insertField(
         Word.InsertLocation.replace,
-        Word.FieldType.addin,
-        args.code,
+        fieldType,
+        switches,
         true,
       );
       await ctx.sync();
