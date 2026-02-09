@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 60" width="230" height="60">
+  <defs>
+    <mask id="cutout">
+      <rect width="230" height="60" fill="white"/>
+      <polygon points="19,16.9 10.1,40.7 27.9,40.7" fill="black"/>
+    </mask>
+  </defs>
+  <circle cx="19" cy="30" r="19" fill="#FFFFFF" mask="url(#cutout)"/>
+  <text x="50" y="40" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF">OmniContext</text>
+</svg>
