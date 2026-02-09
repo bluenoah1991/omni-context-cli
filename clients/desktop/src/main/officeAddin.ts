@@ -22,6 +22,7 @@ const ADDIN_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const REG_KEY = 'HKCU\\Software\\Microsoft\\Office\\16.0\\WEF\\Developer';
 
 let server: Server | null = null;
+let portInUse = false;
 
 export interface OfficeAddinStatus {
   installed: boolean;
@@ -30,7 +31,7 @@ export interface OfficeAddinStatus {
 }
 
 export function getStatus(): OfficeAddinStatus {
-  return {installed: isInstalled(), running: server !== null, port: PORT};
+  return {installed: isInstalled(), running: server !== null || portInUse, port: PORT};
 }
 
 function isInstalled(): boolean {
@@ -132,15 +133,22 @@ export async function startServer(): Promise<void> {
     createReadStream(filePath).pipe(res);
   });
 
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
+    server!.on('error', (err: NodeJS.ErrnoException) => {
+      server = null;
+      if (err.code === 'EADDRINUSE') {
+        portInUse = true;
+      }
+      resolve();
+    });
     server!.listen(PORT, () => resolve());
-    server!.on('error', reject);
   });
 }
 
 export function stopServer(): void {
   server?.close();
   server = null;
+  portInUse = false;
 }
 
 function sideload(): void {
