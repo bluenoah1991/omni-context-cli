@@ -1,6 +1,6 @@
 {
   "name": "omni-context-office",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Connect Microsoft Office to OmniContext CLI",
   "private": true,
   "scripts": {
