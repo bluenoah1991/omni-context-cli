@@ -326,7 +326,11 @@ export default function App() {
       await window.electronAPI.saveDesktopConfig(newConfig);
 
       if (serveOnly) {
-        const result = await window.electronAPI.startServe(selectedWorkspace, approvalMode);
+        const result = await window.electronAPI.startServe(
+          selectedWorkspace,
+          approvalMode,
+          'assistant',
+        );
         if (result.success && result.port) {
           setServePort(result.port);
           setServeSnapshot({

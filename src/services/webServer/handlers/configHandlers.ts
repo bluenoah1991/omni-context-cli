@@ -1,6 +1,20 @@
 import http from 'node:http';
 import path from 'node:path';
-import { findModelById, loadAppConfig, saveAppConfig } from '../../configManager';
+import {
+  findModelById,
+  loadAppConfig,
+  setAgentModel,
+  setCacheTtl,
+  setContextEditing,
+  setDefaultModel,
+  setIDEContext,
+  setMemoryEnabled,
+  setNotificationEnabled,
+  setServerCompaction,
+  setThinking,
+  setWebTheme,
+  setWorkflowPreset,
+} from '../../configManager';
 import { WebSession } from '../../webSessionManager';
 import {
   parseRequestBody,
@@ -103,21 +117,17 @@ export async function handleSetConfig(
     return true;
   }
 
-  const config = loadAppConfig();
-
-  if ('defaultModelId' in body) config.defaultModelId = body.defaultModelId;
-  if ('agentModelId' in body) config.agentModelId = body.agentModelId;
-  if ('enableThinking' in body) config.enableThinking = body.enableThinking;
-  if ('workflowPreset' in body) config.workflowPreset = body.workflowPreset;
-  if ('ideContext' in body) config.ideContext = body.ideContext;
-  if ('memoryEnabled' in body) config.memoryEnabled = body.memoryEnabled;
-  if ('notificationEnabled' in body) config.notificationEnabled = body.notificationEnabled;
-  if ('contextEditing' in body) config.contextEditing = body.contextEditing;
-  if ('cacheTtl' in body) config.cacheTtl = body.cacheTtl;
-  if ('serverCompaction' in body) config.serverCompaction = body.serverCompaction;
-  if ('webTheme' in body) config.webTheme = body.webTheme;
-
-  saveAppConfig(config);
+  if ('defaultModelId' in body) setDefaultModel(body.defaultModelId);
+  if ('agentModelId' in body) setAgentModel(body.agentModelId);
+  if ('enableThinking' in body) setThinking(body.enableThinking);
+  if ('workflowPreset' in body) setWorkflowPreset(body.workflowPreset);
+  if ('ideContext' in body) setIDEContext(body.ideContext);
+  if ('memoryEnabled' in body) setMemoryEnabled(body.memoryEnabled);
+  if ('notificationEnabled' in body) setNotificationEnabled(body.notificationEnabled);
+  if ('contextEditing' in body) setContextEditing(body.contextEditing);
+  if ('cacheTtl' in body) setCacheTtl(body.cacheTtl);
+  if ('serverCompaction' in body) setServerCompaction(body.serverCompaction);
+  if ('webTheme' in body) setWebTheme(body.webTheme);
   sendJsonResponse(res, {ok: true});
   return true;
 }

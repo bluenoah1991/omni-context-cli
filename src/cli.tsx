@@ -7,9 +7,12 @@ import React from 'react';
 import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
 import {
+  type ConfigScope,
   findModelById,
   initializeCurrentModel,
   loadAppConfig,
+  setConfigOverride,
+  setConfigScope,
   setCurrentModel,
 } from './services/configManager.js';
 import { enableCostAnalysis } from './services/costAnalysis.js';
@@ -29,6 +32,7 @@ import { enableToolApproval } from './services/toolApproval.js';
 import { initializeTools } from './services/tools/index.js';
 import { startServer } from './services/webServer/index.js';
 import { useChatStore } from './store/chatStore.js';
+import type { WorkflowPreset } from './types/config.js';
 import { ChatView } from './ui/components/ChatView.js';
 
 const program = new Command().name('omx').description('Omni Context CLI').version(
@@ -55,9 +59,11 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('--install-vscode-extension', 'Install VS Code extension').option(
   '--approve-write',
   'Require user approval before running Bash, Edit, and Write tools',
-).option('--approve-all', 'Require user approval before running any tool').parse(process.argv, {
-  from: 'node',
-});
+).option('--approve-all', 'Require user approval before running any tool').option(
+  '--workflow <preset>',
+  'Override workflow preset (normal, specialist, artist, explorer, assistant)',
+).option('--scope <scope>', 'Where to save config changes: global (default), project, or memory')
+  .parse(process.argv, {from: 'node'});
 
 const opts = program.opts();
 
@@ -185,6 +191,14 @@ if (opts.diagnostic) {
 
 if (opts.costAnalysis) {
   enableCostAnalysis();
+}
+
+if (opts.scope) {
+  setConfigScope(opts.scope as ConfigScope);
+}
+
+if (opts.workflow) {
+  setConfigOverride('workflowPreset', opts.workflow as WorkflowPreset);
 }
 
 if (opts.approveAll) {

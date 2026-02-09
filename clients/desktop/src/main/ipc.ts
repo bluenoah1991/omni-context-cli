@@ -26,18 +26,21 @@ export function registerIpcHandlers(): void {
     launchApp(workspace, approvalMode);
   });
 
-  ipcMain.handle('start-serve', async (_, workspace: string, approvalMode: string) => {
-    try {
-      const port = await startServer(workspace, approvalMode as ApprovalMode);
-      for (let i = 0; i < 300; i++) {
-        if (await checkPort(port)) return {success: true, port};
-        await new Promise(r => setTimeout(r, 100));
+  ipcMain.handle(
+    'start-serve',
+    async (_, workspace: string, approvalMode: string, workflow?: string) => {
+      try {
+        const port = await startServer(workspace, approvalMode as ApprovalMode, workflow);
+        for (let i = 0; i < 300; i++) {
+          if (await checkPort(port)) return {success: true, port};
+          await new Promise(r => setTimeout(r, 100));
+        }
+        return {success: false, error: 'Server did not start in time'};
+      } catch (err: any) {
+        return {success: false, error: err?.message || String(err)};
       }
-      return {success: false, error: 'Server did not start in time'};
-    } catch (err: any) {
-      return {success: false, error: err?.message || String(err)};
-    }
-  });
+    },
+  );
 
   ipcMain.handle('stop-serve', () => {
     stopServer();

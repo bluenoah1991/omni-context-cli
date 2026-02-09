@@ -1,14 +1,67 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import path from 'node:path';
 import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig, WorkflowPreset } from '../types/config';
-import { ensureDir, getOmxDir, getOmxFilePath } from '../utils/omxPaths';
+import { ensureDir, getOmxDir, getOmxFilePath, getProjectFilePath } from '../utils/omxPaths';
 
 function generateClientId(): string {
   return crypto.randomUUID();
 }
 
+export type ConfigScope = 'global' | 'project' | 'memory';
+
 let cachedAppConfig: AppConfig | undefined = undefined;
 let currentModel: ModelConfig | undefined = undefined;
+let memoryOverrides: Partial<AppConfig> = {};
+let saveScope: ConfigScope = 'global';
+
+export function setConfigScope(scope: ConfigScope): void {
+  saveScope = scope;
+}
+
+export function setConfigOverride<K extends keyof AppConfig>(key: K, value: AppConfig[K]): void {
+  memoryOverrides[key] = value;
+  cachedAppConfig = undefined;
+}
+
+function loadGlobalConfig(): Partial<AppConfig> {
+  try {
+    const content = fs.readFileSync(getOmxFilePath('omx.json'), 'utf-8');
+    return JSON.parse(content);
+  } catch {
+    return {};
+  }
+}
+
+function loadProjectConfig(): Partial<AppConfig> {
+  try {
+    const projectPath = getProjectFilePath('omx.json');
+    if (fs.existsSync(projectPath)) {
+      return JSON.parse(fs.readFileSync(projectPath, 'utf-8'));
+    }
+  } catch {}
+  return {};
+}
+
+function loadScopedConfig(): Partial<AppConfig> {
+  if (saveScope === 'memory') return {...memoryOverrides};
+  if (saveScope === 'project') return loadProjectConfig();
+  return loadGlobalConfig();
+}
+
+function saveScopedConfig(config: Partial<AppConfig>): void {
+  if (saveScope === 'memory') {
+    memoryOverrides = config;
+  } else if (saveScope === 'project') {
+    const dir = path.dirname(getProjectFilePath('omx.json'));
+    ensureDir(dir);
+    fs.writeFileSync(getProjectFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
+  } else {
+    ensureDir(getOmxDir());
+    fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
+  }
+  cachedAppConfig = undefined;
+}
 
 export function loadAppConfig(): AppConfig {
   if (cachedAppConfig) {
@@ -17,26 +70,29 @@ export function loadAppConfig(): AppConfig {
 
   ensureDir(getOmxDir());
 
-  try {
-    const content = fs.readFileSync(getOmxFilePath('omx.json'), 'utf-8');
-    const loadedConfig: AppConfig = JSON.parse(content);
-    cachedAppConfig = {...DEFAULT_APP_CONFIG, ...loadedConfig};
-    if (!cachedAppConfig.clientId) {
-      cachedAppConfig.clientId = generateClientId();
-      saveAppConfig(cachedAppConfig);
-    }
-    return cachedAppConfig;
-  } catch {
-    const config = {...DEFAULT_APP_CONFIG, clientId: generateClientId()};
+  const globalConfig = loadGlobalConfig();
+  const projectConfig = loadProjectConfig();
+
+  const config: AppConfig = {
+    ...DEFAULT_APP_CONFIG,
+    ...globalConfig,
+    ...projectConfig,
+    ...memoryOverrides,
+  };
+
+  if (!config.clientId) {
+    config.clientId = generateClientId();
     saveAppConfig(config);
-    return config;
   }
+
+  cachedAppConfig = config;
+  return config;
 }
 
 export function saveAppConfig(config: AppConfig): void {
   ensureDir(getOmxDir());
   fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
-  cachedAppConfig = config;
+  cachedAppConfig = undefined;
 }
 
 export function getDefaultModel(config: AppConfig): ModelConfig | undefined {
@@ -48,9 +104,9 @@ export function getDefaultModel(config: AppConfig): ModelConfig | undefined {
 }
 
 export function setDefaultModel(modelId: string): void {
-  const config = loadAppConfig();
-  config.defaultModelId = modelId;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.defaultModelId = modelId;
+  saveScopedConfig(scoped);
 }
 
 export function getAgentModel(config: AppConfig): ModelConfig | undefined {
@@ -62,9 +118,9 @@ export function getAgentModel(config: AppConfig): ModelConfig | undefined {
 }
 
 export function setAgentModel(modelId: string): void {
-  const config = loadAppConfig();
-  config.agentModelId = modelId;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.agentModelId = modelId;
+  saveScopedConfig(scoped);
 }
 
 export function addModel(model: Omit<ModelConfig, 'id'>): void {
@@ -103,57 +159,63 @@ export function removeModel(modelId: string): void {
 }
 
 export function setThinking(value: boolean): void {
-  const config = loadAppConfig();
-  config.enableThinking = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.enableThinking = value;
+  saveScopedConfig(scoped);
 }
 
 export function setStreamingOutput(value: boolean): void {
-  const config = loadAppConfig();
-  config.streamingOutput = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.streamingOutput = value;
+  saveScopedConfig(scoped);
 }
 
 export function setWorkflowPreset(value: WorkflowPreset): void {
-  const config = loadAppConfig();
-  config.workflowPreset = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.workflowPreset = value;
+  saveScopedConfig(scoped);
 }
 
 export function setIDEContext(value: boolean): void {
-  const config = loadAppConfig();
-  config.ideContext = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.ideContext = value;
+  saveScopedConfig(scoped);
 }
 
 export function setMemoryEnabled(value: boolean): void {
-  const config = loadAppConfig();
-  config.memoryEnabled = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.memoryEnabled = value;
+  saveScopedConfig(scoped);
 }
 
 export function setNotificationEnabled(value: boolean): void {
-  const config = loadAppConfig();
-  config.notificationEnabled = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.notificationEnabled = value;
+  saveScopedConfig(scoped);
 }
 
 export function setCacheTtl(value: '5m' | '1h'): void {
-  const config = loadAppConfig();
-  config.cacheTtl = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.cacheTtl = value;
+  saveScopedConfig(scoped);
 }
 
 export function setServerCompaction(value: boolean): void {
-  const config = loadAppConfig();
-  config.serverCompaction = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.serverCompaction = value;
+  saveScopedConfig(scoped);
 }
 
 export function setContextEditing(value: boolean): void {
-  const config = loadAppConfig();
-  config.contextEditing = value;
-  saveAppConfig(config);
+  const scoped = loadScopedConfig();
+  scoped.contextEditing = value;
+  saveScopedConfig(scoped);
+}
+
+export function setWebTheme(value: 'dark' | 'light' | 'auto'): void {
+  const scoped = loadScopedConfig();
+  scoped.webTheme = value;
+  saveScopedConfig(scoped);
 }
 
 export function initializeCurrentModel(): void {

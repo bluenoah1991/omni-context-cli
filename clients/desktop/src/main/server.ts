@@ -29,13 +29,24 @@ export const checkPort = (port: number): Promise<boolean> =>
     socket.once('error', () => resolve(false));
   });
 
-export async function startServer(cwd: string, approvalMode: ApprovalMode): Promise<number> {
+export async function startServer(
+  cwd: string,
+  approvalMode: ApprovalMode,
+  workflow?: string,
+): Promise<number> {
   const port = await findFreePort();
   currentPort = port;
 
-  const args = [getPath('cli'), '--serve', `--port=${port}`, `--parent-pid=${process.pid}`];
+  const args = [
+    getPath('cli'),
+    '--serve',
+    '--scope=project',
+    `--port=${port}`,
+    `--parent-pid=${process.pid}`,
+  ];
   if (approvalMode === 'write') args.push('--approve-write');
   if (approvalMode === 'all') args.push('--approve-all');
+  if (workflow) args.push(`--workflow=${workflow}`);
 
   serverProcess = spawn(process.execPath, args, {
     stdio: ['pipe', 'pipe', 'pipe'],

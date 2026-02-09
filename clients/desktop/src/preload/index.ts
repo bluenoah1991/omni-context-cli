@@ -9,8 +9,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   launch: (workspace: string, approvalMode: string) =>
     ipcRenderer.send('launch', workspace, approvalMode),
-  startServe: (workspace: string, approvalMode: string) =>
-    ipcRenderer.invoke('start-serve', workspace, approvalMode),
+  startServe: (workspace: string, approvalMode: string, workflow?: string) =>
+    ipcRenderer.invoke('start-serve', workspace, approvalMode, workflow),
   stopServe: () => ipcRenderer.invoke('stop-serve'),
   getServeStatus: () => ipcRenderer.invoke('get-serve-status'),
   getCustomPrompt: (name: string) => ipcRenderer.invoke('get-custom-prompt', name),

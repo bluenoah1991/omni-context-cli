@@ -13,6 +13,7 @@ declare global {
       startServe: (
         workspace: string,
         approvalMode: string,
+        workflow?: string,
       ) => Promise<{success: boolean; port?: number; error?: string;}>;
       stopServe: () => Promise<void>;
       getServeStatus: () => Promise<{running: boolean; port: number | null;}>;
