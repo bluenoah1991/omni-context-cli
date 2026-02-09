@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getServerUrl, loadServerUrl } from '../services/config';
-import { connect, getState } from '../services/longPollClient';
+import { connect, getState, setClientType } from '../services/longPollClient';
 import { registerCommonTools } from '../tools/common';
 import { registerExcelTools } from '../tools/excel';
 import { registerPowerPointTools } from '../tools/powerpoint';
@@ -33,6 +33,12 @@ function App() {
 
   useEffect(() => {
     Office.onReady(({host}) => {
+      const hostMap: Record<number, string> = {
+        [Office.HostType.Word]: 'word',
+        [Office.HostType.Excel]: 'excel',
+        [Office.HostType.PowerPoint]: 'powerpoint',
+      };
+      setClientType(hostMap[host as number] || 'office');
       registerTools(host);
       setOfficeReady(true);
     });

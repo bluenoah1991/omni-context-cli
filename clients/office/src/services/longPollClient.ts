@@ -2,8 +2,13 @@ import { ToolExecutionResult } from '../types/tool';
 import { getServerUrl, loadServerUrl, setServerUrl } from './config';
 import { executeTool, getToolDefinitions } from './toolManager';
 
-const CLIENT_TYPE = 'office';
 const MAX_FAILURES = 3;
+
+let clientType = 'office';
+
+export function setClientType(type: string): void {
+  clientType = type;
+}
 
 type ConnectionState = 'disconnected' | 'connecting' | 'connected';
 
@@ -55,7 +60,7 @@ async function poll(baseUrl: string, signal: AbortSignal): Promise<void> {
 
   while (!signal.aborted && failures < MAX_FAILURES) {
     try {
-      const body: Record<string, unknown> = {clientType: CLIENT_TYPE, toolDefinitions};
+      const body: Record<string, unknown> = {clientType, toolDefinitions};
       if (pendingResult) {
         body.toolResult = pendingResult;
       }
