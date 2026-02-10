@@ -44,5 +44,5 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   serverCompaction: false,
   contextEditing: true,
   contextEditingRounds: 0,
-  webTheme: 'dark',
+  webTheme: 'auto',
 };
