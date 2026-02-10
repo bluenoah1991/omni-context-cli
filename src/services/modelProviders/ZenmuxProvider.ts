@@ -21,9 +21,9 @@ interface GeminiModelResponse {
   models: GeminiModel[];
 }
 
-const ANTHROPIC_PREFIXES = ['anthropic', 'moonshotai', 'deepseek'];
+const ANTHROPIC_PREFIXES = ['anthropic', 'moonshotai', 'deepseek', 'stepfun'];
 const RESPONSES_PREFIXES = ['openai', 'x-ai'];
-const GEMINI_PREFIXES = ['google'];
+const GEMINI_PREFIXES = ['google', 'openai'];
 const OPENAI_PREFIXES = ['z-ai', 'minimax'];
 
 function matchesPrefix(id: string, prefixes: string[]): boolean {
