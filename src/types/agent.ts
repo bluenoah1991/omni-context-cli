@@ -4,5 +4,6 @@ export interface AgentDefinition {
   promptTemplate: string;
   allowedTools?: string[];
   parameters: {properties: Record<string, unknown>; required?: string[];};
+  model?: string;
   builtin?: boolean;
 }

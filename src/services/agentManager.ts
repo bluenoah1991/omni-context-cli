@@ -29,6 +29,7 @@ function loadAgentsFromDir(dir: string, builtin = false): AgentDefinition[] {
       promptTemplate: body.trim(),
       allowedTools: metadata.allowedTools,
       parameters: metadata.parameters || {properties: {}},
+      model: metadata.model,
       builtin,
     };
   });

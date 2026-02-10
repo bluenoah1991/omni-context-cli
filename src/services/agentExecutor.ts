@@ -1,11 +1,12 @@
 import Handlebars from 'handlebars';
 import { AgentDefinition } from '../types/agent';
+import { ModelConfig } from '../types/config';
 import { StreamCallbacks } from '../types/streamCallbacks';
 import { FileDiff, ToolHandlerResult } from '../types/tool';
 import { extractTextContent } from '../utils/messageUtils';
 import { injectAgentInstructions } from './agentInstructionsManager';
 import { runConversation } from './chatOrchestrator';
-import { getAgentModel, loadAppConfig } from './configManager';
+import { findModelByName, getAgentModel, loadAppConfig } from './configManager';
 import { addUserMessage, createSession } from './sessionManager';
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -23,7 +24,13 @@ export async function executeAgent(
 ): Promise<ToolHandlerResult> {
   const appConfig = loadAppConfig();
 
-  const agentModel = getAgentModel(appConfig);
+  let agentModel: ModelConfig | undefined;
+  if (agent.model) {
+    agentModel = findModelByName(agent.model);
+  }
+  if (!agentModel) {
+    agentModel = getAgentModel(appConfig);
+  }
   if (!agentModel) {
     throw new Error('Cannot execute agent without a configured model');
   }

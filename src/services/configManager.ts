@@ -233,3 +233,9 @@ export function findModelById(modelId: string): ModelConfig | undefined {
   const config = loadAppConfig();
   return config.models.find(m => m.id === modelId);
 }
+
+export function findModelByName(keyword: string): ModelConfig | undefined {
+  const config = loadAppConfig();
+  const k = keyword.toLowerCase();
+  return config.models.find(m => m.name.toLowerCase().includes(k));
+}
