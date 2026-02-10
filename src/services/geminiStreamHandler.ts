@@ -2,6 +2,7 @@ import { ModelConfig } from '../types/config';
 import { GeminiMessage, GeminiPart } from '../types/geminiMessage';
 import { StreamResult } from '../types/streamCallbacks';
 import { BaseStreamHandler } from './baseStreamHandler';
+import { setMedia } from './mediaBuffer';
 
 interface ToolCallAccumulator {
   id?: string;
@@ -82,6 +83,7 @@ export class GeminiStreamHandler extends BaseStreamHandler {
 
     if (part.inlineData?.mimeType) {
       this.accumulatedMedia.push(part.inlineData);
+      setMedia({data: part.inlineData.data, mimeType: part.inlineData.mimeType});
       this.callbacks.onMedia?.({
         url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
         mimeType: part.inlineData.mimeType,

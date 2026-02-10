@@ -6,6 +6,7 @@ import { registerEditTool } from './edit';
 import { registerGlobTool } from './glob';
 import { registerGrepTool } from './grep';
 import { registerReadTool } from './read';
+import { registerSaveArtifactTool } from './saveArtifact';
 import { registerWebSearchTool } from './webSearch';
 import { registerWriteTool } from './write';
 
@@ -16,6 +17,7 @@ export function initializeTools(): void {
   registerGlobTool();
   registerGrepTool();
   registerReadTool();
+  registerSaveArtifactTool();
   registerWebSearchTool();
   registerWriteTool();
   registerAgents();

@@ -13,6 +13,18 @@ const DOCUMENT_EXTENSIONS: Record<string, string> = {'.pdf': 'application/pdf'};
 
 const MEDIA_EXTENSIONS: Record<string, string> = {...IMAGE_EXTENSIONS, ...DOCUMENT_EXTENSIONS};
 
+const MIME_TYPE_EXTENSIONS: Record<string, string> = {
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+  'application/pdf': '.pdf',
+};
+
+export function getExtensionForMimeType(mimeType: string): string | null {
+  return MIME_TYPE_EXTENSIONS[mimeType] || null;
+}
+
 export function getMediaMimeType(filePath: string): string | null {
   const ext = path.extname(filePath).toLowerCase();
   return MEDIA_EXTENSIONS[ext] || null;
