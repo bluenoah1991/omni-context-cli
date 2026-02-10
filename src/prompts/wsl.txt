@@ -1,0 +1,4 @@
+The Bash tool runs commands in WSL (Linux), not PowerShell. Use Linux
+commands (ls, cat, grep) and Linux-style paths (/mnt/c/... instead of
+C:\...) when running shell commands. Other tools like Read, Write, Edit,
+Glob, and Grep accept Windows paths normally.

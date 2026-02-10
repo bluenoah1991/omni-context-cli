@@ -3,14 +3,19 @@ import os from 'node:os';
 import { getSkills } from '../services/skillManager';
 import { WorkflowPreset } from '../types/config';
 import { getOmxFilePath } from '../utils/omxPaths';
+import { checkWSL } from '../utils/wsl';
 import artistPrompt from './artist.txt';
 import assistantPrompt from './assistant.txt';
 import explorerPrompt from './explorer.txt';
 import { buildSkillsPrompt } from './skillsPromptBuilder';
 import specialistPrompt from './specialist.txt';
 import systemPrompt from './system.txt';
+import wslPrompt from './wsl.txt';
 
-export function buildSystemPrompt(workflowPreset?: WorkflowPreset, isFromAgent?: boolean): string {
+export async function buildSystemPrompt(
+  workflowPreset?: WorkflowPreset,
+  isFromAgent?: boolean,
+): Promise<string> {
   const effectiveMode = isFromAgent ? 'normal' : (workflowPreset ?? 'normal');
   let result = getPresetPrompt(effectiveMode);
   result = result.replace('{{OS_TYPE}}', getOSType());
@@ -18,6 +23,10 @@ export function buildSystemPrompt(workflowPreset?: WorkflowPreset, isFromAgent?:
   result = result.replace('{{ARCH}}', os.arch());
   result = result.replace('{{CWD}}', process.cwd());
   result = result.replace('{{TODAY}}', new Date().toISOString().split('T')[0]);
+
+  if (effectiveMode === 'normal' && await checkWSL()) {
+    result += '\n\n' + wslPrompt;
+  }
 
   if (effectiveMode === 'normal' && !isFromAgent) {
     const skillsPrompt = buildSkillsPrompt(getSkills());
@@ -48,11 +57,10 @@ function getPresetPrompt(preset: WorkflowPreset): string {
 function getUserPromptOrDefault(filename: string, defaultPrompt: string): string {
   try {
     const userPath = getOmxFilePath(filename);
-    if (fs.existsSync(userPath)) {
-      return fs.readFileSync(userPath, 'utf-8');
-    }
-  } catch {}
-  return defaultPrompt;
+    return fs.readFileSync(userPath, 'utf-8');
+  } catch {
+    return defaultPrompt;
+  }
 }
 
 function getOSType(): string {

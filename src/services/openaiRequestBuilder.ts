@@ -18,7 +18,7 @@ export async function buildOpenAIRequest(
   const config = loadAppConfig();
   const systemMessages = skipSystemPrompt
     ? []
-    : [{role: 'system', content: buildSystemPrompt(config.workflowPreset, isFromAgent)}];
+    : [{role: 'system', content: await buildSystemPrompt(config.workflowPreset, isFromAgent)}];
 
   const editedMessages = editOpenAIContext(messages);
 

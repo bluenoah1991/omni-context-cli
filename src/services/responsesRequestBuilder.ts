@@ -90,7 +90,7 @@ export async function buildResponsesRequest(
   }
 
   if (!skipSystemPrompt) {
-    const instructions = buildSystemPrompt(config.workflowPreset, isFromAgent);
+    const instructions = await buildSystemPrompt(config.workflowPreset, isFromAgent);
     if (instructions && instructions.trim()) {
       request.instructions = instructions;
     }
