@@ -1,5 +1,5 @@
 import { ModelConfig } from '../types/config';
-import { loadAppConfig, saveAppConfig } from './configManager';
+import { readGlobalConfig, writeGlobalConfig } from './configManager';
 
 export interface ModelProvider {
   readonly id: string;
@@ -28,23 +28,25 @@ export async function addProviderModels(providerId: string, apiKey: string): Pro
   }
 
   const models = await provider.listModels(apiKey);
-  const config = loadAppConfig();
+  const global = readGlobalConfig();
+  if (!global.models) global.models = [];
 
-  config.models = config.models.filter(m => m.source !== providerId);
+  global.models = global.models.filter(m => m.source !== providerId);
 
   for (const model of models) {
     model.source = providerId;
-    config.models.push(model);
+    global.models.push(model);
   }
 
-  saveAppConfig(config);
+  writeGlobalConfig(global);
   return models.length;
 }
 
 export function removeProviderModels(providerId: string): number {
-  const config = loadAppConfig();
-  const before = config.models.length;
-  config.models = config.models.filter(m => m.source !== providerId);
-  saveAppConfig(config);
-  return before - config.models.length;
+  const global = readGlobalConfig();
+  if (!global.models) return 0;
+  const before = global.models.length;
+  global.models = global.models.filter(m => m.source !== providerId);
+  writeGlobalConfig(global);
+  return before - global.models.length;
 }

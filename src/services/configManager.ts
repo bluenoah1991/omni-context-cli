@@ -24,7 +24,7 @@ export function setConfigOverride<K extends keyof AppConfig>(key: K, value: AppC
   cachedAppConfig = undefined;
 }
 
-function loadGlobalConfig(): Partial<AppConfig> {
+export function readGlobalConfig(): Partial<AppConfig> {
   try {
     const content = fs.readFileSync(getOmxFilePath('omx.json'), 'utf-8');
     return JSON.parse(content);
@@ -33,7 +33,7 @@ function loadGlobalConfig(): Partial<AppConfig> {
   }
 }
 
-function loadProjectConfig(): Partial<AppConfig> {
+function readProjectConfig(): Partial<AppConfig> {
   try {
     const projectPath = getProjectFilePath('omx.json');
     if (fs.existsSync(projectPath)) {
@@ -43,23 +43,16 @@ function loadProjectConfig(): Partial<AppConfig> {
   return {};
 }
 
-function loadScopedConfig(): Partial<AppConfig> {
-  if (saveScope === 'memory') return {...memoryOverrides};
-  if (saveScope === 'project') return loadProjectConfig();
-  return loadGlobalConfig();
+export function writeGlobalConfig(config: Partial<AppConfig>): void {
+  ensureDir(getOmxDir());
+  fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
+  cachedAppConfig = undefined;
 }
 
-function saveScopedConfig(config: Partial<AppConfig>): void {
-  if (saveScope === 'memory') {
-    memoryOverrides = config;
-  } else if (saveScope === 'project') {
-    const dir = path.dirname(getProjectFilePath('omx.json'));
-    ensureDir(dir);
-    fs.writeFileSync(getProjectFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
-  } else {
-    ensureDir(getOmxDir());
-    fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
-  }
+function writeProjectConfig(config: Partial<AppConfig>): void {
+  const dir = path.dirname(getProjectFilePath('omx.json'));
+  ensureDir(dir);
+  fs.writeFileSync(getProjectFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
   cachedAppConfig = undefined;
 }
 
@@ -70,8 +63,8 @@ export function loadAppConfig(): AppConfig {
 
   ensureDir(getOmxDir());
 
-  const globalConfig = loadGlobalConfig();
-  const projectConfig = loadProjectConfig();
+  const globalConfig = readGlobalConfig();
+  const projectConfig = readProjectConfig();
 
   const config: AppConfig = {
     ...DEFAULT_APP_CONFIG,
@@ -82,16 +75,32 @@ export function loadAppConfig(): AppConfig {
 
   if (!config.clientId) {
     config.clientId = generateClientId();
-    saveAppConfig(config);
+    const global = readGlobalConfig();
+    global.clientId = config.clientId;
+    writeGlobalConfig(global);
   }
 
   cachedAppConfig = config;
   return config;
 }
 
-export function saveAppConfig(config: AppConfig): void {
-  ensureDir(getOmxDir());
-  fs.writeFileSync(getOmxFilePath('omx.json'), JSON.stringify(config, null, 2), 'utf-8');
+export function saveAppConfig<K extends keyof AppConfig>(key: K, value: AppConfig[K]): void {
+  memoryOverrides = {...memoryOverrides, [key]: value};
+
+  if (saveScope === 'project' || saveScope === 'global') {
+    const projectConfig = readProjectConfig();
+    if (saveScope === 'project' || key in projectConfig) {
+      projectConfig[key] = value;
+      writeProjectConfig(projectConfig);
+    }
+  }
+
+  if (saveScope === 'global') {
+    const globalConfig = readGlobalConfig();
+    (globalConfig as Partial<AppConfig>)[key] = value;
+    writeGlobalConfig(globalConfig);
+  }
+
   cachedAppConfig = undefined;
 }
 
@@ -104,9 +113,7 @@ export function getDefaultModel(config: AppConfig): ModelConfig | undefined {
 }
 
 export function setDefaultModel(modelId: string): void {
-  const scoped = loadScopedConfig();
-  scoped.defaultModelId = modelId;
-  saveScopedConfig(scoped);
+  saveAppConfig('defaultModelId', modelId);
 }
 
 export function getAgentModel(config: AppConfig): ModelConfig | undefined {
@@ -118,104 +125,86 @@ export function getAgentModel(config: AppConfig): ModelConfig | undefined {
 }
 
 export function setAgentModel(modelId: string): void {
-  const scoped = loadScopedConfig();
-  scoped.agentModelId = modelId;
-  saveScopedConfig(scoped);
+  saveAppConfig('agentModelId', modelId);
 }
 
 export function addModel(model: Omit<ModelConfig, 'id'>): void {
-  const config = loadAppConfig();
+  const global = readGlobalConfig();
+  if (!global.models) global.models = [];
   const id = `${model.provider}-${Date.now()}`;
-  config.models.push({...model, id});
-  if (config.models.length === 1) {
-    config.defaultModelId = id;
+  global.models.push({...model, id} as ModelConfig);
+  if (global.models.length === 1) {
+    global.defaultModelId = id;
   }
-  saveAppConfig(config);
+  writeGlobalConfig(global);
 
-  if (config.models.length === 1) {
-    const defaultModel = getDefaultModel(config);
-    setCurrentModel(defaultModel);
+  if (global.models.length === 1) {
+    cachedAppConfig = undefined;
+    const config = loadAppConfig();
+    setCurrentModel(getDefaultModel(config));
   }
 }
 
 export function removeModel(modelId: string): void {
-  const config = loadAppConfig();
-  config.models = config.models.filter(m => m.id !== modelId);
+  const global = readGlobalConfig();
+  if (!global.models) return;
+  global.models = global.models.filter(m => m.id !== modelId);
 
-  if (config.defaultModelId === modelId) {
-    config.defaultModelId = config.models[0]?.id;
+  if (global.defaultModelId === modelId) {
+    global.defaultModelId = global.models[0]?.id;
   }
 
-  if (config.agentModelId === modelId) {
-    config.agentModelId = undefined;
+  if (global.agentModelId === modelId) {
+    global.agentModelId = undefined;
   }
 
-  saveAppConfig(config);
+  writeGlobalConfig(global);
 
   if (currentModel?.id === modelId) {
-    const defaultModel = getDefaultModel(config);
-    setCurrentModel(defaultModel);
+    cachedAppConfig = undefined;
+    const config = loadAppConfig();
+    setCurrentModel(getDefaultModel(config));
   }
 }
 
 export function setThinking(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.enableThinking = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('enableThinking', value);
 }
 
 export function setStreamingOutput(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.streamingOutput = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('streamingOutput', value);
 }
 
 export function setWorkflowPreset(value: WorkflowPreset): void {
-  const scoped = loadScopedConfig();
-  scoped.workflowPreset = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('workflowPreset', value);
 }
 
 export function setIDEContext(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.ideContext = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('ideContext', value);
 }
 
 export function setMemoryEnabled(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.memoryEnabled = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('memoryEnabled', value);
 }
 
 export function setNotificationEnabled(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.notificationEnabled = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('notificationEnabled', value);
 }
 
 export function setCacheTtl(value: '5m' | '1h'): void {
-  const scoped = loadScopedConfig();
-  scoped.cacheTtl = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('cacheTtl', value);
 }
 
 export function setServerCompaction(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.serverCompaction = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('serverCompaction', value);
 }
 
 export function setContextEditing(value: boolean): void {
-  const scoped = loadScopedConfig();
-  scoped.contextEditing = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('contextEditing', value);
 }
 
 export function setWebTheme(value: 'dark' | 'light' | 'auto'): void {
-  const scoped = loadScopedConfig();
-  scoped.webTheme = value;
-  saveScopedConfig(scoped);
+  saveAppConfig('webTheme', value);
 }
 
 export function initializeCurrentModel(): void {

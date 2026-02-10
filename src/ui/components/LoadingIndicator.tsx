@@ -74,7 +74,7 @@ export function LoadingIndicator(
         <Spinner type='dots' />
         {' '}
       </Text>
-      {workflowPreset !== 'normal'
+      {workflowPreset === 'specialist'
         ? <ShimmerText text={text + '...'} />
         : <Text color={colors.muted}>{text}...</Text>}
     </>
