@@ -1,4 +1,4 @@
-import { dialog, ipcMain } from 'electron';
+import { app, dialog, ipcMain } from 'electron';
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
@@ -9,6 +9,7 @@ import { checkPort, getPort, isServerRunning, isTls, startServer, stopServer } f
 import { getMainWindow, launchApp } from './window';
 
 export function registerIpcHandlers(): void {
+  ipcMain.handle('get-version', () => app.getVersion());
   ipcMain.handle('get-omx-config', () => loadOmxConfig());
   ipcMain.handle('save-omx-config', (_, config) => saveOmxConfig(config));
   ipcMain.handle('get-desktop-config', () => loadDesktopConfig());

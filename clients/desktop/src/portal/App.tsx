@@ -10,7 +10,6 @@ import {
   LayoutGrid,
   Loader2,
   type LucideIcon,
-  Monitor,
   Rocket,
   RotateCcw,
   Save,
@@ -91,6 +90,7 @@ export default function App() {
     setOfficeStatus,
   } = usePortalStore();
 
+  const [appVersion, setAppVersion] = useState('');
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
   const [isOfficeLoading, setIsOfficeLoading] = useState(false);
   const [serveOnly, setServeOnly] = useState(false);
@@ -125,7 +125,9 @@ export default function App() {
     try {
       const omx = await window.electronAPI.getOmxConfig();
       const desktop = await window.electronAPI.getDesktopConfig();
+      const version = await window.electronAPI.getVersion();
 
+      setAppVersion(version);
       setOmxConfig(omx);
       setDesktopConfig(desktop);
 
@@ -371,9 +373,31 @@ export default function App() {
     <div className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans select-none'>
       <div className='w-80 bg-vscode-sidebar border-r border-vscode-border flex flex-col shrink-0'>
         <div className='p-4'>
-          <h1 className='text-xl font-semibold text-vscode-text-header flex items-center gap-3'>
-            <Monitor size={24} className='text-vscode-accent' />
-            OmniContext
+          <h1 className='flex items-center gap-2'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 230 60'
+              className='h-10 text-vscode-text-header'
+              fill='currentColor'
+            >
+              <defs>
+                <mask id='cutout'>
+                  <rect width='230' height='60' fill='white' />
+                  <polygon points='19,16.9 10.1,40.7 27.9,40.7' fill='black' />
+                </mask>
+              </defs>
+              <circle cx='19' cy='30' r='19' mask='url(#cutout)' />
+              <text
+                x='50'
+                y='40'
+                fontFamily='Arial, Helvetica, sans-serif'
+                fontSize='28'
+                fontWeight='700'
+              >
+                OmniContext
+              </text>
+            </svg>
+            {appVersion && <span className='text-xs text-vscode-text-muted'>v{appVersion}</span>}
           </h1>
         </div>
 
@@ -850,9 +874,14 @@ export default function App() {
                     <strong className='text-vscode-text-header'>Artist Mode</strong>{' '}
                     focuses on image generation and responds primarily through visuals.
                   </p>
-                  <p>
+                  <p className='mb-2'>
                     <strong className='text-vscode-text-header'>Explorer Mode</strong>{' '}
                     prioritizes web search to find current information before answering.
+                  </p>
+                  <p>
+                    <strong className='text-vscode-text-header'>Assistant Mode</strong>{' '}
+                    is a general-purpose conversational mode without any specialized tools or
+                    workflows.
                   </p>
                 </div>
               </div>

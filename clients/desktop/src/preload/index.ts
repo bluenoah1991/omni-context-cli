@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  getVersion: () => ipcRenderer.invoke('get-version'),
   getOmxConfig: () => ipcRenderer.invoke('get-omx-config'),
   saveOmxConfig: (config: unknown) => ipcRenderer.invoke('save-omx-config', config),
   getDesktopConfig: () => ipcRenderer.invoke('get-desktop-config'),

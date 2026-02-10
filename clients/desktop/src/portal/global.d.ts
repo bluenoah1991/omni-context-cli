@@ -3,6 +3,7 @@ import type { ApprovalMode, DesktopConfig, OmxConfig } from './types/config';
 declare global {
   interface Window {
     electronAPI: {
+      getVersion: () => Promise<string>;
       getOmxConfig: () => Promise<OmxConfig>;
       saveOmxConfig: (config: OmxConfig) => Promise<void>;
       getDesktopConfig: () => Promise<DesktopConfig>;
