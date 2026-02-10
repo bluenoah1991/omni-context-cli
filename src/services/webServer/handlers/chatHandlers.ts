@@ -239,6 +239,7 @@ export async function handleChat(
           }
         },
         onSessionUpdate: updatedSession => {
+          webSession.chatSession = updatedSession;
           if (!res.writableEnded) {
             sendSseEvent(res, 'usage', {
               inputTokens: updatedSession.inputTokens ?? 0,
