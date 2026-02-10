@@ -38,7 +38,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   streamingOutput: false,
   workflowPreset: 'specialist',
   ideContext: true,
-  memoryEnabled: false,
+  memoryEnabled: true,
   notificationEnabled: false,
   cacheTtl: '5m',
   serverCompaction: false,
