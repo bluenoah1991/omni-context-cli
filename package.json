@@ -1,6 +1,6 @@
 {
   "name": "omni-context-cli",
-  "version": "0.0.56",
+  "version": "0.0.57",
   "description": "Omx is a small, helpful, zero-telemetry coding assistant.",
   "type": "module",
   "bin": {
@@ -11,7 +11,7 @@
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
     "start": "node dist/cli.js",
-    "clean": "rimraf dist clients/desktop/out clients/desktop/dist clients/desktop/webview clients/vscode/dist clients/vscode/webview clients/web/dist clients/browser/dist clients/office/dist",
+    "clean": "rimraf dist clients/desktop/out clients/desktop/dist clients/desktop/webview clients/vscode/dist clients/vscode/webview clients/web/dist clients/browser/dist clients/office/dist clients/figma/dist",
     "format": "dprint fmt",
     "format:check": "dprint check",
     "postinstall": "node scripts/fix-bin-permissions.js"
