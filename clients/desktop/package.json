@@ -12,7 +12,7 @@
     "postinstall": "cross-env ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ electron-builder install-app-deps && cd cli-deps && npm install",
     "package": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --dir",
     "package:win": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --win",
-    "package:mac": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --mac"
+    "package:mac": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --mac zip"
   },
   "dependencies": {
     "lucide-react": "^0.563.0",
