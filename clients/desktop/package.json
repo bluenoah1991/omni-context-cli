@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "npm run build && electron .",
     "build": "node build.mjs",
+    "install:cn": "ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm install",
     "postinstall": "cross-env ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ electron-builder install-app-deps && cd cli-deps && npm install",
     "package": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --dir",
     "package:win": "npm run build && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --win",
