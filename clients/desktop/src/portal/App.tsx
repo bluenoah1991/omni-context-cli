@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Chrome,
   ClipboardCopy,
+  Figma,
   FileSpreadsheet,
   FileText,
   FolderOpen,
@@ -435,6 +436,13 @@ export default function App() {
             id='browser'
             icon={Chrome}
             label='Browser Integration'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
+            id='figma'
+            icon={Figma}
+            label='Figma Integration'
             activeTab={activeTab}
             onClick={setActiveTab}
           />
@@ -963,6 +971,106 @@ export default function App() {
                 <p>
                   The Desktop app must be running for the add-in to work. It starts automatically
                   when you launch OmniContext Desktop.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'figma' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Figma Plugin</h2>
+                <p className='text-vscode-text-muted text-sm'>Connect Figma to OmniContext</p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    1
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Download the plugin
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted mb-2'>
+                      Go to the releases page and download the latest{' '}
+                      <strong className='text-vscode-text-header'>OmniContext Figma</strong>{' '}
+                      plugin package (.zip).
+                    </p>
+                    <a
+                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                      target='_blank'
+                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                    >
+                      Open Releases Page
+                    </a>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    2
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Unzip the package
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Extract the downloaded .zip file to a folder on your computer. You'll need the
+                      {' '}
+                      <strong className='text-vscode-text-header'>dist</strong> folder inside.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    3
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Load in Figma
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Open the{' '}
+                      <strong className='text-vscode-text-header'>Figma desktop app</strong>, go to
+                      the menu{' '}
+                      <strong className='text-vscode-text-header'>
+                        Plugins &gt; Development &gt; Import plugin from manifest...
+                      </strong>{' '}
+                      and select the{' '}
+                      <strong className='text-vscode-text-header'>manifest.json</strong>{' '}
+                      file inside the <strong className='text-vscode-text-header'>dist</strong>{' '}
+                      folder.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    4
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>Connect</h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Run the plugin from{' '}
+                      <strong className='text-vscode-text-header'>
+                        Plugins &gt; Development &gt; OmniContext
+                      </strong>{' '}
+                      and enter the server address. Use{' '}
+                      <strong className='text-vscode-text-header'>Serve only</strong>{' '}
+                      mode to start a server from the Workspaces tab.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
+                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>Note</h3>
+                <p className='text-xs text-vscode-text-muted'>
+                  The Figma plugin only works in the{' '}
+                  <strong className='text-vscode-text-header'>Figma desktop app</strong>. The web
+                  version of Figma does not support loading local development plugins.
                 </p>
               </div>
             </div>

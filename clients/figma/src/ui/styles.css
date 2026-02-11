@@ -1,0 +1,120 @@
+:root {
+  --bg: #2c2c2c;
+  --border: #3c3c3c;
+  --text: #cccccc;
+  --text-header: #e0e0e0;
+  --text-muted: #858585;
+  --accent: #0d99ff;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --border: #cecece;
+    --text: #3b3b3b;
+    --text-header: #1e1e1e;
+    --text-muted: #616161;
+    --accent: #0c8ce9;
+    color-scheme: light;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.connect-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+}
+
+.connect-panel h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-header);
+  margin-bottom: 8px;
+}
+
+.connect-panel .subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.connect-panel input {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 12px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+}
+
+.connect-panel input:focus {
+  border-color: var(--accent);
+}
+
+.connect-panel button {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.connect-panel button:hover {
+  filter: brightness(1.1);
+}
+
+.connect-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.server-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--text-muted) 50%, transparent 55%, var(--text-muted) 70%, transparent 72%);
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.resize-handle:hover {
+  opacity: 1;
+}

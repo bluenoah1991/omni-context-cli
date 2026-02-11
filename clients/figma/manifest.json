@@ -1,0 +1,13 @@
+{
+  "name": "OmniContext",
+  "id": "000000000000000000000",
+  "api": "1.0.0",
+  "main": "sandbox.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reasoning": "Connects to the user's OmniContext CLI server for AI-assisted design"
+  }
+}

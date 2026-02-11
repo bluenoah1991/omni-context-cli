@@ -11,7 +11,14 @@ export interface OmxConfig {
 
 export type ApprovalMode = 'none' | 'write' | 'all';
 
-export type Tab = 'workspaces' | 'models' | 'permissions' | 'prompts' | 'office' | 'browser';
+export type Tab =
+  | 'workspaces'
+  | 'models'
+  | 'permissions'
+  | 'prompts'
+  | 'office'
+  | 'browser'
+  | 'figma';
 
 export interface DesktopConfig {
   workspaces: Array<{name: string; path: string;}>;
