@@ -34,11 +34,29 @@ npm start -- --cost-analysis
 # Start web server mode
 npm start -- --serve
 
+# Start server and open web UI in browser
+npm start -- --serve --web
+
+# Override workflow preset
+npm start -- --workflow artist
+
+# Add models from a provider
+npm start -- --add-provider openrouter --api-key <key>
+
+# List available model providers
+npm start -- --list-providers
+
+# Install VS Code extension
+npm start -- --install-vscode-extension
+
 # Require approval for write tools (Bash, Edit, Write)
 npm start -- --approve-write
 
 # Require approval for all tools
 npm start -- --approve-all
+
+# Enable HTTPS for server mode
+npm start -- --serve --tls --tls-cert cert.pem --tls-key key.pem
 
 # Format code
 npm run format
@@ -62,7 +80,12 @@ Service Layer
     |-- sessionManager - Session persistence
     |-- memoryManager - Cross-session memory and key points
     |-- compactionManager - Auto-summarization at context limits
-    +-- skillManager - Skill system management
+    |-- skillManager - Skill system management
+    |-- remoteToolBridge - Remote tool execution for external clients
+    |-- longPollTransport - Long-poll transport for remote clients
+    |-- ideIntegration - IDE integration via MCP/WebSocket
+    |-- gitService - Git operations (commit message generation)
+    +-- costAnalysis - Token usage and cost tracking
     |
 Provider Adapters
     |-- anthropic/openai/gemini/responsesRequestBuilder - Format API requests
@@ -80,12 +103,14 @@ Storage/State
 - Tool execution runs in parallel when possible
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
-- Request interceptors modify requests for specific providers (Codex, MiniMax, Xai, Zenmux, Zhipu)
+- Request interceptors modify requests for specific providers (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu)
 - Media files (images, PDFs, documents) can be attached to user messages across all providers
 - Tool approval system allows requiring user confirmation before tool execution
 
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
+- `AnthropicLegacyInterceptor` - Anthropic legacy model handling
+- `AnthropicOpus46Interceptor` - Anthropic Opus 4.6 adjustments
 - `CodexInterceptor` - Responses API adjustments
 - `MiniMaxInterceptor` - MiniMax API compatibility
 - `XaiInterceptor` - xAI API compatibility
@@ -106,11 +131,13 @@ Provider-specific interceptors modify API requests before sending:
 - **Model Sources**: DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu (via pluggable model providers)
 - **Protocol**: MCP (Model Context Protocol) via @modelcontextprotocol/sdk
 - **HTTP Client**: Undici (with connection pooling)
+- **WebSocket**: ws (IDE integration)
+- **CLI Framework**: Commander.js
 - **Build Tool**: esbuild 0.27 (bundles to dist/cli.js)
 - **Code Obfuscation**: javascript-obfuscator (production builds only)
 - **Templating**: Handlebars (slash commands)
-- **File Operations**: glob, gray-matter (frontmatter parsing)
-- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting), diff (unified diffs)
+- **File Operations**: glob, gray-matter (frontmatter parsing), ignore (gitignore parsing)
+- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting), diff (unified diffs), node-notifier (desktop notifications)
 
 ## Development
 
@@ -120,10 +147,11 @@ Provider-specific interceptors modify API requests before sending:
 omx/
 |-- src/
 |   |-- cli.tsx                    # Entry point, CLI setup
-|   |-- services/                  # Core business logic (35 services)
+|   |-- services/                  # Core business logic
 |   |   |-- chatOrchestrator.ts    # Main conversation orchestration
 |   |   |-- agentManager.ts        # Agent loading from markdown
 |   |   |-- agentExecutor.ts       # Agent execution with parameters
+|   |   |-- agentInstructionsManager.ts # Agent instructions loading
 |   |   |-- toolExecutor.ts        # Tool registry and dispatcher
 |   |   |-- toolApproval.ts        # Tool approval before execution
 |   |   |-- mcpManager.ts          # MCP server lifecycle
@@ -131,18 +159,31 @@ omx/
 |   |   |-- webSessionManager.ts   # Web session state and approval flow
 |   |   |-- configManager.ts       # Model configuration and API keys
 |   |   |-- slashManager.ts        # Slash command loading
+|   |   |-- slashHandlers.ts       # Functional slash command handlers
 |   |   |-- memoryManager.ts       # Cross-session memory system
 |   |   |-- compactionManager.ts   # Context summarization
 |   |   |-- skillManager.ts        # Skill system management
 |   |   |-- messageConverter.ts    # Message format conversion between providers
+|   |   |-- modelProvider.ts       # Model provider registry
+|   |   |-- projectInstructionsManager.ts # Project instructions loading
+|   |   |-- remoteToolBridge.ts    # Remote tool execution for external clients
+|   |   |-- longPollTransport.ts   # Long-poll transport for remote clients
+|   |   |-- ideIntegration.ts      # IDE integration via MCP/WebSocket
+|   |   |-- gitService.ts          # Git operations (commit messages)
+|   |   |-- gitignoreParser.ts     # Gitignore file parsing
+|   |   |-- inputHistoryManager.ts # Input history persistence
+|   |   |-- mediaBuffer.ts         # Media buffer for artifact saving
+|   |   |-- taskManager.ts         # Background task management
+|   |   |-- diagnostic.ts          # Diagnostic mode management
+|   |   |-- costAnalysis.ts        # Token usage and cost tracking
 |   |   |-- modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
 |   |   |-- interceptors/          # Provider-specific interceptors
 |   |   |-- tools/                 # Built-in tool implementations
 |   |   +-- webServer/             # HTTP API and static server
 |   |-- types/                     # TypeScript definitions (16 type files)
-|   |-- prompts/                   # System prompt templates (16 files)
+|   |-- prompts/                   # System prompt templates (20 files)
 |   |-- store/                     # Zustand state management
-|   |-- ui/                        # React/Ink components (23 components)
+|   |-- ui/                        # React/Ink components (25 components)
 |   +-- utils/                     # Helper utilities (7 files)
 |-- clients/
 |   |-- desktop/                   # Electron desktop client
@@ -154,10 +195,21 @@ omx/
 |   |   |-- src/extension.ts       # Extension entry point
 |   |   |-- src/webviewProvider.ts # Webview panel management
 |   |   +-- src/mcp/               # MCP server for IDE integration
-|   +-- web/                       # Web client (React SPA)
-|       |-- src/components/        # UI components
-|       |-- src/services/          # API service layer
-|       +-- src/store/             # Zustand state management
+|   |-- web/                       # Web client (React SPA)
+|   |   |-- src/components/        # UI components
+|   |   |-- src/services/          # API service layer
+|   |   +-- src/store/             # Zustand state management
+|   |-- browser/                   # Browser extension (Chrome)
+|   |   |-- src/background/        # Service worker and tool handlers
+|   |   |-- src/sidepanel/         # Side panel UI
+|   |   +-- src/content/           # Content scripts
+|   |-- office/                    # Office Add-in
+|   |   |-- src/taskpane/          # Taskpane UI
+|   |   |-- src/tools/             # Word, Excel, PowerPoint tools
+|   |   +-- src/services/          # Long-poll client and config
+|   +-- figma/                     # Figma plugin
+|       |-- src/ui/                # Plugin UI and tools
+|       +-- src/sandbox/           # Figma sandbox code
 |-- agents/                        # Built-in agent definitions (.md)
 |-- slash/                         # Built-in slash commands (.md)
 |-- assets/                        # Icons and images
@@ -230,7 +282,8 @@ description: Echo a message
 | Skills | `~/.omx/skills/` | `.omx/skills/` |
 | Custom Prompts | `~/.omx/*.txt` | - |
 | Memory | - | `.omx/memory.json` |
-| Agent Instructions | - | `.omx/OMX-AGENTS.md` |
+| Project Instructions | - | `OMX.md` or `CLAUDE.md` (project root) |
+| Agent Instructions | - | `OMX-AGENTS.md` (project root) or `.omx/OMX-AGENTS.md` |
 | Sessions | `~/.omx/projects/<id>/` | - |
 
 **Priority**: Project-level overrides user-level overrides built-in.
@@ -246,12 +299,16 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `agentModelId` | string | undefined | Model for agent execution |
 | `enableThinking` | boolean | true | Enable Claude thinking mode |
 | `streamingOutput` | boolean | false | Stream responses to terminal |
-| `workflowPreset` | 'normal' \| 'specialist' \| 'artist' \| 'explorer' | 'specialist' | Workflow mode: normal (basic), specialist (agent mode), artist (image-first responses), or explorer (web search-focused) |
+| `workflowPreset` | 'normal' \| 'specialist' \| 'artist' \| 'explorer' \| 'assistant' | 'specialist' | Workflow mode: normal (basic), specialist (agent mode), artist (image-first responses), explorer (web search-focused), or assistant |
 | `ideContext` | boolean | true | Include IDE context |
-| `memoryEnabled` | boolean | false | Enable memory features |
+| `memoryEnabled` | boolean | true | Enable memory features |
+| `notificationEnabled` | boolean | false | Enable desktop notifications |
 | `cacheTtl` | '5m' \| '1h' | '5m' | Response cache duration |
+| `serverCompaction` | boolean | false | Enable server-side context compaction |
 | `contextEditing` | boolean | true | Enable context editing |
 | `contextEditingRounds` | number | 0 | Number of context editing rounds |
+| `webTheme` | 'dark' \| 'light' \| 'auto' | 'auto' | Web client theme |
+| `proxy` | string | undefined | HTTP proxy URL |
 
 ### Tool Approval
 
@@ -287,7 +344,7 @@ Web server components in `src/services/webServer/`:
 - `staticServer.ts` - Static file serving
 - `httpUtils.ts` - HTTP utilities
 - `apiHandlers.ts` - API route handlers
-- `handlers/` - Route-specific handlers (chat, sessions, config)
+- `handlers/` - Route-specific handlers (chat, sessions, config, remote tools)
 
 ### Desktop Client
 
@@ -348,6 +405,51 @@ npm run build
 
 For VS Code extension embedding, use `npm run build:vscode`.
 
+### Browser Extension
+
+The browser extension (`clients/browser/`) adds a Chrome side panel for interacting with OMX:
+
+- Side panel UI connecting to OMX server via long-poll
+- Background service worker with tool handlers (tabs, screenshots, page content, bookmarks, history, CDP)
+- Content scripts for page text extraction (readability)
+
+Build the extension:
+```bash
+cd clients/browser
+npm install
+npm run build
+```
+
+### Office Add-in
+
+The Office Add-in (`clients/office/`) integrates OMX into Microsoft Office apps:
+
+- Taskpane UI connecting to OMX server via long-poll
+- Tools for Word, Excel, and PowerPoint manipulation
+- Manifest template with build-time base URL injection
+
+Build the add-in:
+```bash
+cd clients/office
+npm install
+npm run build
+```
+
+### Figma Plugin
+
+The Figma plugin (`clients/figma/`) integrates OMX into Figma:
+
+- Plugin UI connecting to OMX server via long-poll
+- Sandbox bridge for Figma API access
+- Tool execution within Figma context
+
+Build the plugin:
+```bash
+cd clients/figma
+npm install
+npm run build
+```
+
 ## Key Files
 
 | File | Purpose |
@@ -376,8 +478,18 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `src/services/skillManager.ts` | Skill discovery and loading |
 | `src/services/toolApproval.ts` | Tool approval mode and formatting |
 | `src/services/webSessionManager.ts` | Web session state and approval flow |
+| `src/services/remoteToolBridge.ts` | Remote tool execution bridge for external clients |
+| `src/services/longPollTransport.ts` | Long-poll transport for remote clients |
+| `src/services/ideIntegration.ts` | IDE integration via MCP/WebSocket |
+| `src/services/gitService.ts` | Git operations and commit message generation |
+| `src/services/projectInstructionsManager.ts` | Project instructions (OMX.md/CLAUDE.md) loading |
+| `src/services/agentInstructionsManager.ts` | Agent instructions (OMX-AGENTS.md) loading |
+| `src/services/inputHistoryManager.ts` | Input history persistence |
+| `src/services/costAnalysis.ts` | Token usage and cost tracking |
+| `src/services/diagnostic.ts` | Diagnostic mode management |
+| `src/services/modelProvider.ts` | Model provider registry |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
-| `src/services/interceptors/` | Provider-specific interceptors (Codex, MiniMax, Xai, Zenmux, Zhipu) |
+| `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu) |
 | `src/services/webServer/` | HTTP API and static server components |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
 | `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
@@ -386,6 +498,9 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
 | `clients/web/src/App.tsx` | Web client main component |
 | `clients/web/src/store/chatStore.ts` | Web client state management |
+| `clients/browser/src/background/index.ts` | Browser extension service worker |
+| `clients/office/src/taskpane/App.tsx` | Office Add-in taskpane UI |
+| `clients/figma/src/ui/App.tsx` | Figma plugin UI |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
 | `src/utils/mediaUtils.ts` | Media file handling and encoding |
 | `src/utils/messagePreprocessor.ts` | Message preprocessing for display and API calls |
@@ -431,8 +546,9 @@ For VS Code extension embedding, use `npm run build:vscode`.
 ### Prompt Engineering
 
 - Base system prompt in `src/prompts/system.txt`
-- Specialized prompts for specialist mode, artist mode, explorer mode, skills, compaction, memory, agent instructions
-- Dynamic prompt assembly via `systemPromptBuilder.ts`
+- Specialized prompts for specialist, artist, explorer, and assistant modes
+- Additional prompts for skills, compaction, memory, agent instructions, project instructions, WSL hints, reflection, commit messages, summary injection
+- Dynamic prompt assembly via `systemPromptBuilder.ts` and dedicated prompt builders
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 - Context editing via `contextEditor.ts` for configurable message modification rounds
 
@@ -476,6 +592,7 @@ For VS Code extension embedding, use `npm run build:vscode`.
 | `Glob` | Find files by pattern |
 | `Grep` | Search file contents using ripgrep |
 | `Read` | Read file contents with line numbers, images, and PDFs |
+| `SaveArtifact` | Save the most recently generated artifact to a file |
 | `WebSearch` | Perform web searches via Anthropic API |
 | `Write` | Create or overwrite files (supports base64 encoding for binary files) |
 
@@ -488,3 +605,6 @@ For VS Code extension embedding, use `npm run build:vscode`.
 - Desktop client: Built separately via `npm run build` in `clients/desktop/`
 - Web client: Built separately via `npm run build` in `clients/web/`
 - VS Code extension: Built separately via `npm run build` in `clients/vscode/`
+- Browser extension: Built separately via `npm run build` in `clients/browser/`
+- Office Add-in: Built separately via `npm run build` in `clients/office/`
+- Figma plugin: Built separately via `npm run build` in `clients/figma/`
