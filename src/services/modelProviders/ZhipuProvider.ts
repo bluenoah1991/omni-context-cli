@@ -2,6 +2,7 @@ import { ModelConfig } from '../../types/config';
 import { ModelProvider } from '../modelProvider';
 
 const MODELS: Array<{name: string; displayName: string;}> = [
+  {name: 'glm-5', displayName: 'GLM-5'},
   {name: 'glm-4.7', displayName: 'GLM-4.7'},
   {name: 'glm-4.6v', displayName: 'GLM-4.6V'},
   {name: 'glm-4.7-flash', displayName: 'GLM-4.7-Flash'},
