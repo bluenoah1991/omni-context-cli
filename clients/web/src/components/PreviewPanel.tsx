@@ -1,5 +1,7 @@
 import { ChevronLeft, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Prism } from 'react-syntax-highlighter';
+import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useChatStore } from '../store/chatStore';
 import type { PreviewTab } from '../types/uiMessage';
 
@@ -90,10 +92,66 @@ const DiffContent = memo(function DiffContent({patch}: {patch: string;}) {
   );
 });
 
+const EXTENSION_LANGUAGES: Record<string, string> = {
+  ts: 'typescript',
+  tsx: 'tsx',
+  js: 'javascript',
+  jsx: 'jsx',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  py: 'python',
+  rb: 'ruby',
+  go: 'go',
+  rs: 'rust',
+  java: 'java',
+  kt: 'kotlin',
+  swift: 'swift',
+  c: 'c',
+  cpp: 'cpp',
+  h: 'c',
+  cs: 'csharp',
+  php: 'php',
+  sh: 'bash',
+  bash: 'bash',
+  zsh: 'bash',
+  sql: 'sql',
+  json: 'json',
+  jsonc: 'json',
+  yml: 'yaml',
+  yaml: 'yaml',
+  toml: 'toml',
+  html: 'html',
+  xml: 'xml',
+  css: 'css',
+  scss: 'scss',
+  less: 'less',
+  md: 'markdown',
+  mdx: 'markdown',
+  vue: 'html',
+  svelte: 'html',
+  svg: 'xml',
+  graphql: 'graphql',
+  proto: 'protobuf',
+  dockerfile: 'docker',
+  makefile: 'makefile',
+};
+
+function langFromPath(filePath: string): string | undefined {
+  const name = filePath.split('/').pop()?.toLowerCase() || '';
+  if (name === 'dockerfile') return 'docker';
+  if (name === 'makefile') return 'makefile';
+  const dot = name.lastIndexOf('.');
+  if (dot === -1) return undefined;
+  return EXTENSION_LANGUAGES[name.slice(dot + 1)];
+}
+
 const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
   if (tab.kind === 'diff') return <DiffContent patch={tab.data.patch} />;
 
+  const theme = useChatStore(state => state.theme);
+  const codeStyle = theme === 'light' ? oneLight : vscDarkPlus;
   const {data} = tab;
+
   if (data.error) {
     return (
       <div className='flex-1 flex items-center justify-center text-vscode-text-muted p-8'>
@@ -122,17 +180,29 @@ const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
     );
   }
 
-  const lines = (data.content || '').split('\n');
+  const language = langFromPath(data.filePath);
   return (
-    <div className='font-mono text-xs leading-5 overflow-auto flex-1'>
-      {lines.map((line, i) => (
-        <div key={i} className='flex hover:bg-vscode-element/30'>
-          <span className='w-12 text-right pr-3 text-vscode-text-muted select-none shrink-0 border-r border-vscode-element'>
-            {i + 1}
-          </span>
-          <pre className='flex-1 whitespace-pre pl-3'>{line}</pre>
-        </div>
-      ))}
+    <div className='overflow-auto flex-1 text-xs'>
+      <Prism
+        style={codeStyle}
+        language={language || 'text'}
+        showLineNumbers
+        lineNumberStyle={{
+          minWidth: '3em',
+          paddingRight: '1em',
+          color: 'var(--color-vscode-text-muted)',
+          userSelect: 'none',
+        }}
+        codeTagProps={{style: {background: 'transparent'}}}
+        customStyle={{
+          margin: 0,
+          padding: '0.5rem 0',
+          background: 'var(--color-vscode-bg)',
+          fontSize: 'inherit',
+        }}
+      >
+        {data.content || ''}
+      </Prism>
     </div>
   );
 });
