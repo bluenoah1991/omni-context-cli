@@ -258,8 +258,8 @@ export default function Settings({onClose}: SettingsProps) {
               />
 
               <ToggleOption
-                label='Auto Open Diff Panel'
-                description='Automatically show file changes when editing'
+                label='Auto Show Diffs'
+                description='Show file diffs in preview panel and refresh each turn'
                 enabled={autoDiffPanel}
                 onChange={setAutoDiffPanel}
               />

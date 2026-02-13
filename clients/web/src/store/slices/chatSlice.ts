@@ -77,9 +77,9 @@ function autoOpenDiff(message: UIMessage, state: ChatState): void {
   try {
     const parsed = JSON.parse(message.content);
     if (parsed.success && parsed.diffs) {
-      parsed.diffs.forEach((diff: any) =>
-        state.openDiffPanel({...diff, toolUseId: message.toolCallId})
-      );
+      parsed.diffs.forEach((diff: any) => {
+        state.openDiffPanel({...diff, toolUseId: message.toolCallId});
+      });
     }
   } catch {}
 }
@@ -120,7 +120,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     content: string,
     attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>,
   ) => {
-    const {isLoading, currentModel, currentSession, inputHistory, autoDiffPanel, closeDiffPanel} =
+    const {isLoading, currentModel, currentSession, inputHistory, autoDiffPanel, clearDiffTabs} =
       get();
     if (isLoading || !currentModel || !currentSession) return;
 
@@ -131,7 +131,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     }
 
     if (autoDiffPanel) {
-      closeDiffPanel();
+      clearDiffTabs();
     }
 
     if (

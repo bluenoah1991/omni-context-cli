@@ -1,9 +1,10 @@
-import { Settings as SettingsIcon } from 'lucide-react';
+import { FolderTree, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { DiffPanel } from './components/DiffPanel';
+import { FileTree } from './components/FileTree';
 import { IconButton } from './components/IconButton';
 import InputBox from './components/InputBox';
 import MessageList from './components/MessageList';
+import { PreviewPanel } from './components/PreviewPanel';
 import SessionSelector from './components/SessionSelector';
 import Settings from './components/Settings';
 import { useChatStore } from './store/chatStore';
@@ -24,6 +25,7 @@ export default function App() {
     isLoading,
     currentModel,
     setTheme,
+    toggleFileTree,
   } = useChatStore();
 
   useEffect(() => {
@@ -73,18 +75,23 @@ export default function App() {
 
   return (
     <div className='flex h-screen bg-vscode-bg text-vscode-text text-sm overflow-hidden'>
+      {!isEmbed && <FileTree />}
+
       <div className='flex-1 flex flex-col min-w-0'>
         <header className='safe-area-top flex-none pb-2 bg-vscode-bg z-10 px-4 border-b border-vscode-element'>
           <div className='flex items-center justify-between w-full'>
-            <div className='min-w-0 max-w-[60%] sm:w-80'>
+            <div className='flex items-center gap-2 min-w-0 max-w-[60%] sm:w-80'>
+              {!isEmbed && (
+                <IconButton
+                  icon={FolderTree}
+                  title='Toggle file tree'
+                  onClick={toggleFileTree}
+                  className='hidden sm:flex'
+                />
+              )}
               <SessionSelector disabled={isLoading} />
             </div>
             <div className='flex items-center gap-4'>
-              {!isEmbed && (
-                <span className='hidden sm:block text-vscode-text font-medium uppercase'>
-                  {config?.projectName}
-                </span>
-              )}
               <IconButton
                 icon={SettingsIcon}
                 title='Settings'
@@ -104,7 +111,7 @@ export default function App() {
         </div>
       </div>
 
-      <DiffPanel />
+      <PreviewPanel />
 
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>

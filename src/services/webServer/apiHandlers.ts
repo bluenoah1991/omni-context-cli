@@ -18,6 +18,7 @@ import {
   handleSetConfig,
   handleSetModel,
 } from './handlers/configHandlers';
+import { handleListFiles, handleReadFile } from './handlers/fileHandlers';
 import { handleRemotePoll } from './handlers/remoteHandlers';
 import {
   handleGetSession,
@@ -81,6 +82,8 @@ export async function handleAPI(
     return handleToolApproval(req, res, webSession);
   }
   if (route === 'ide/context' && method === 'GET') return handleGetIDEContext(res);
+  if (route === 'files' && method === 'GET') return handleListFiles(req, res);
+  if (route === 'files/read' && method === 'GET') return handleReadFile(req, res);
 
   return false;
 }

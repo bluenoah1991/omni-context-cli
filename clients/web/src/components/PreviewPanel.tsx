@@ -1,6 +1,7 @@
 import { ChevronLeft, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChatStore } from '../store/chatStore';
+import type { PreviewTab } from '../types/uiMessage';
 
 interface DiffLine {
   type: 'add' | 'remove' | 'context' | 'header';
@@ -41,9 +42,10 @@ function parsePatch(patch: string): DiffLine[] {
   return result;
 }
 
-function getFileName(filePath: string): string {
-  const parts = filePath.replace(/\\/g, '/').split('/');
-  return parts[parts.length - 1] || filePath;
+function getTabLabel(tab: PreviewTab): string {
+  const parts = tab.data.filePath.replace(/\\/g, '/').split('/');
+  const name = parts[parts.length - 1] || tab.data.filePath;
+  return tab.kind === 'diff' ? `${name} (diff)` : name;
 }
 
 const DiffContent = memo(function DiffContent({patch}: {patch: string;}) {
@@ -88,16 +90,64 @@ const DiffContent = memo(function DiffContent({patch}: {patch: string;}) {
   );
 });
 
-export const DiffPanel = memo(function DiffPanel() {
+const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
+  if (tab.kind === 'diff') return <DiffContent patch={tab.data.patch} />;
+
+  const {data} = tab;
+  if (data.error) {
+    return (
+      <div className='flex-1 flex items-center justify-center text-vscode-text-muted p-8'>
+        {data.error}
+      </div>
+    );
+  }
+
+  if (data.type === 'image' && data.base64 && data.mimeType) {
+    return (
+      <div className='flex-1 overflow-auto flex items-center justify-center p-4'>
+        <img
+          src={`data:${data.mimeType};base64,${data.base64}`}
+          alt={data.filePath}
+          className='max-w-full max-h-full object-contain'
+        />
+      </div>
+    );
+  }
+
+  if (data.type === 'binary') {
+    return (
+      <div className='flex-1 flex items-center justify-center text-vscode-text-muted p-8'>
+        Binary file -- can't preview this one
+      </div>
+    );
+  }
+
+  const lines = (data.content || '').split('\n');
+  return (
+    <div className='font-mono text-xs leading-5 overflow-auto flex-1'>
+      {lines.map((line, i) => (
+        <div key={i} className='flex hover:bg-vscode-element/30'>
+          <span className='w-12 text-right pr-3 text-vscode-text-muted select-none shrink-0 border-r border-vscode-element'>
+            {i + 1}
+          </span>
+          <pre className='flex-1 whitespace-pre pl-3'>{line}</pre>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+export const PreviewPanel = memo(function PreviewPanel() {
   const {
-    diffPanelOpen,
-    diffPanelWidth,
-    diffTabs,
-    activeDiffTab,
-    closeDiffPanel,
-    closeDiffTab,
-    setActiveDiffTab,
-    setDiffPanelWidth,
+    previewPanelOpen,
+    previewPanelWidth,
+    previewTabs,
+    activePreviewTab,
+    closePreviewPanel,
+    closePreviewTab,
+    setActivePreviewTab,
+    setPreviewPanelWidth,
+    pinPreviewTab,
   } = useChatStore();
 
   const [isResizing, setIsResizing] = useState(false);
@@ -107,16 +157,16 @@ export const DiffPanel = memo(function DiffPanel() {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setIsResizing(true);
     startX.current = e.clientX;
-    startWidth.current = diffPanelWidth;
+    startWidth.current = previewPanelWidth;
     e.preventDefault();
-  }, [diffPanelWidth]);
+  }, [previewPanelWidth]);
 
   useEffect(() => {
     if (!isResizing) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const delta = startX.current - e.clientX;
-      setDiffPanelWidth(startWidth.current + delta);
+      setPreviewPanelWidth(startWidth.current + delta);
     };
 
     const handleMouseUp = () => setIsResizing(false);
@@ -127,14 +177,14 @@ export const DiffPanel = memo(function DiffPanel() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizing, setDiffPanelWidth]);
+  }, [isResizing, setPreviewPanelWidth]);
 
-  if (!diffPanelOpen || diffTabs.length === 0) return null;
+  if (!previewPanelOpen || previewTabs.length === 0) return null;
 
-  const activeTab = diffTabs[activeDiffTab];
+  const activeTab = previewTabs[activePreviewTab];
 
   return (
-    <div className='flex-none flex text-sm' style={{width: diffPanelWidth}}>
+    <div className='flex-none flex text-sm' style={{width: previewPanelWidth}}>
       <div
         className={`w-1 flex-none cursor-col-resize transition-colors ${
           isResizing ? 'bg-vscode-accent' : 'bg-vscode-element hover:bg-vscode-accent'
@@ -142,35 +192,39 @@ export const DiffPanel = memo(function DiffPanel() {
         onMouseDown={handleMouseDown}
       />
       <div className='flex-1 flex flex-col bg-vscode-bg min-w-0'>
-        <div className='flex items-center gap-3 pt-3 pb-2 px-4 border-b border-vscode-element'>
+        <div className='safe-area-top flex items-center gap-3 pb-2 px-4 border-b border-vscode-element'>
           <button
-            onClick={closeDiffPanel}
+            onClick={closePreviewPanel}
             className='p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-md border border-vscode-border hover:border-vscode-border-active'
             title='Close panel'
           >
             <ChevronLeft size={16} />
           </button>
-          <span className='font-medium text-vscode-text'>Diff View</span>
+          <span className='font-medium text-vscode-text'>Preview</span>
         </div>
 
         <div className='flex border-b border-vscode-element overflow-x-auto'>
-          {diffTabs.map((tab, i) => (
+          {previewTabs.map((tab, i) => (
             <div
-              key={`${tab.filePath}:${tab.toolUseId ?? i}`}
+              key={`${tab.data.filePath}:${i}`}
               className={`group flex items-center gap-2 px-4 py-2.5 cursor-pointer border-b-2 -mb-px ${
-                i === activeDiffTab
+                i === activePreviewTab
                   ? 'border-vscode-accent text-vscode-text'
                   : 'border-transparent text-vscode-text-muted hover:text-vscode-text'
               }`}
-              onClick={() => setActiveDiffTab(i)}
+              onClick={() => setActivePreviewTab(i)}
+              onDoubleClick={() => pinPreviewTab(i)}
             >
-              <span className='truncate max-w-37.5' title={tab.filePath}>
-                {getFileName(tab.filePath)}
+              <span
+                className={`truncate max-w-37.5 ${!tab.pinned ? 'italic' : ''}`}
+                title={tab.data.filePath}
+              >
+                {getTabLabel(tab)}
               </span>
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  closeDiffTab(i);
+                  closePreviewTab(i);
                 }}
                 className='p-0.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-vscode-element text-vscode-text-muted'
               >
@@ -181,10 +235,10 @@ export const DiffPanel = memo(function DiffPanel() {
         </div>
 
         <div className='px-4 py-2.5 text-xs text-vscode-text-muted border-b border-vscode-element truncate font-mono'>
-          {activeTab?.filePath}
+          {activeTab && activeTab.data.filePath}
         </div>
 
-        {activeTab && <DiffContent patch={activeTab.patch} />}
+        {activeTab && <FileContent tab={activeTab} />}
       </div>
     </div>
   );

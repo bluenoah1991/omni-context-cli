@@ -6,10 +6,13 @@ interface IconButtonProps {
   title: string;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export const IconButton = memo(
-  function IconButton({icon: Icon, title, onClick, disabled = false}: IconButtonProps) {
+  function IconButton(
+    {icon: Icon, title, onClick, disabled = false, className = ''}: IconButtonProps,
+  ) {
     return (
       <button
         type='button'
@@ -19,7 +22,7 @@ export const IconButton = memo(
           disabled
             ? 'text-vscode-text-muted cursor-not-allowed opacity-50'
             : 'text-vscode-text-muted hover:text-vscode-text hover:bg-vscode-element'
-        }`}
+        } ${className}`}
         title={title}
       >
         <Icon size={16} />
