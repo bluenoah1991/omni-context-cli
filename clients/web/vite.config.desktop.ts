@@ -16,7 +16,7 @@ export default defineConfig({
           tag: 'meta',
           attrs: {name: 'server-url', content: '{{OMNI_CONTEXT_SERVER_URL}}'},
           injectTo: 'head',
-        }, {tag: 'meta', attrs: {name: 'embed', content: 'true'}, injectTo: 'head'}];
+        }];
       },
     },
   }],
