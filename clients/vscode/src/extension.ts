@@ -146,6 +146,11 @@ async function openInEditor() {
     {enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [webviewUri]},
   );
 
+  panel.iconPath = {
+    light: vscode.Uri.joinPath(extensionUri, 'resources', 'cone-bw.svg'),
+    dark: vscode.Uri.joinPath(extensionUri, 'resources', 'cone-bw-white.svg'),
+  };
+
   panel.webview.html = loadTemplate('loading', {status: 'Starting server...'});
 
   try {
