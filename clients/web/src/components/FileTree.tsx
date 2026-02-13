@@ -31,7 +31,7 @@ const FileTreeNode = memo(
     return (
       <>
         <button
-          className='flex items-center gap-1.5 w-full px-2 py-1.5 text-left text-sm hover:bg-vscode-element/50 rounded-sm truncate'
+          className='flex items-center gap-1.5 w-full px-2 py-1.5 text-left text-sm cursor-pointer hover:bg-vscode-element/50 rounded-sm truncate'
           style={{paddingLeft: `${depth * 12 + 8}px`}}
           onClick={() => isDir ? onToggle(entry.path) : onFileClick(entry.path)}
           title={entry.path}

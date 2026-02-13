@@ -187,6 +187,8 @@ const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
         style={codeStyle}
         language={language || 'text'}
         showLineNumbers
+        wrapLines
+        lineProps={{style: {background: 'transparent'}}}
         lineNumberStyle={{
           minWidth: '3em',
           paddingRight: '1em',
