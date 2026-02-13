@@ -85,6 +85,9 @@ function autoOpenDiff(message: UIMessage, state: ChatState): void {
 }
 
 function updateSession(state: ChatState, session: Session, overwrite = false): Partial<ChatState> {
+  if (!session.id) {
+    return {};
+  }
   const exists = state.sessions.some(s => s.id === session.id);
   const processed = session.messages
     ? {...session, messages: preprocessMessages(session.messages)}

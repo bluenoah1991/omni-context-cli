@@ -85,7 +85,23 @@ export async function handleChat(
           timestamp: Date.now(),
         });
       }
-      sendSseEvent(res, 'done', {});
+      const current = webSession.chatSession;
+      sendSseEvent(
+        res,
+        'done',
+        current
+          ? {
+            id: current.id,
+            title: current.title,
+            provider: current.provider,
+            createdAt: current.createdAt,
+            updatedAt: current.updatedAt,
+            inputTokens: current.inputTokens ?? 0,
+            outputTokens: current.outputTokens ?? 0,
+            cachedTokens: current.cachedTokens ?? 0,
+          }
+          : {},
+      );
       res.end();
       return true;
     }
