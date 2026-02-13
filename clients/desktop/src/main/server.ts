@@ -6,6 +6,7 @@ import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
 import { getStatus as getOfficeStatus } from './officeAddin';
 import { getPath } from './paths';
+import { resolveShellEnv } from './shellEnv';
 
 let serverProcess: ChildProcess | null = null;
 let currentPort: number | null = null;
@@ -40,6 +41,7 @@ export async function startServer(
   approvalMode: ApprovalMode,
   workflow?: string,
 ): Promise<number> {
+  await resolveShellEnv();
   const port = await findFreePort();
   currentPort = port;
 
