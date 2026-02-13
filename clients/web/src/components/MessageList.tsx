@@ -6,8 +6,16 @@ import { MessageItem } from './MessageItem';
 
 const SCROLL_THRESHOLD = 150;
 
+const emptyStateSubtitle: Record<string, string> = {
+  artist: 'Ready to bring your ideas to life visually. Pick a model in settings to get started.',
+  explorer: 'Ready to help you research and discover. Pick a model in settings to get started.',
+  assistant: 'Ready to help with whatever you need. Pick a model in settings to get started.',
+};
+const defaultSubtitle =
+  'Ready to help with your coding tasks. Pick a model in settings to get started.';
+
 export default function MessageList() {
-  const {currentSession, isLoading, isCompacting, error} = useChatStore();
+  const {currentSession, isLoading, isCompacting, error, config} = useChatStore();
   const messages = currentSession?.messages ?? [];
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -57,7 +65,7 @@ export default function MessageList() {
         <Sparkles size={48} className='opacity-40 mb-6' />
         <h3 className='text-lg font-medium text-vscode-text mb-2'>OmniContext</h3>
         <p className='text-center max-w-sm text-sm opacity-80'>
-          Ready to help with your coding tasks. Pick a model in settings to get started.
+          {emptyStateSubtitle[config?.workflowPreset ?? ''] ?? defaultSubtitle}
         </p>
       </div>
     );
