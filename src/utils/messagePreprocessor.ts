@@ -1,5 +1,9 @@
 import { IDESelection } from '../types/ide';
 
+export function wrapDualMessage(uiMessage: string, promptMessage: string): string {
+  return `<dual_message>\n<ui>${uiMessage}</ui>\n<prompt>\n${promptMessage}\n</prompt>\n</dual_message>`;
+}
+
 export function unwrapUIMessage(text: string): string {
   const match = text.match(
     /<dual_message>\s*<ui>([\s\S]*?)<\/ui>\s*<prompt>[\s\S]*?<\/prompt>\s*<\/dual_message>/,
@@ -20,10 +24,6 @@ export function unwrapPromptMessage(text: string): string {
   return text;
 }
 
-export function wrapDualMessage(uiMessage: string, promptMessage: string): string {
-  return `<dual_message>\n<ui>${uiMessage}</ui>\n<prompt>\n${promptMessage}\n</prompt>\n</dual_message>`;
-}
-
 export function wrapIDEContext(text: string, selection: IDESelection | null): string {
   if (!selection) return text;
 
@@ -41,4 +41,13 @@ export function removeIDEContext(text: string): string {
     /<ide_context[^>]*\/>/g,
     '',
   ).trim();
+}
+
+export function wrapFileContext(text: string, name: string, content: string): string {
+  const tag = `<file_context path="${name}">\n${content}\n</file_context>`;
+  return text ? `${text}\n\n${tag}` : tag;
+}
+
+export function removeFileContext(text: string): string {
+  return text.replace(/<file_context path="[^"]*">[\s\S]*?<\/file_context>/g, '').trim();
 }

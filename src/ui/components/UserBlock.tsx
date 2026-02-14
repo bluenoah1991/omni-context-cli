@@ -1,6 +1,10 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { removeIDEContext, unwrapUIMessage } from '../../utils/messagePreprocessor';
+import {
+  removeFileContext,
+  removeIDEContext,
+  unwrapUIMessage,
+} from '../../utils/messagePreprocessor';
 import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
@@ -13,6 +17,7 @@ export const UserBlock = React.memo(
     const contentWidth = useContentWidth();
     let displayContent = unwrapUIMessage(content);
     displayContent = removeIDEContext(displayContent);
+    displayContent = removeFileContext(displayContent);
 
     return (
       <Box marginBottom={1}>

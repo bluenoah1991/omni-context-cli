@@ -17,6 +17,10 @@ export function removeIDEContext(text: string): string {
   ).trim();
 }
 
+export function removeFileContext(text: string): string {
+  return text.replace(/<file_context path="[^"]*">[\s\S]*?<\/file_context>/g, '').trim();
+}
+
 export function preprocessMessages(messages: UIMessage[]): UIMessage[] {
   const result: UIMessage[] = [];
   for (const message of messages) {

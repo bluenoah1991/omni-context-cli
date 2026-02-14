@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { Attachment } from '../types/uiMessage';
-import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
+import { removeFileContext, removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { AttachmentList } from './AttachmentList';
 
 interface UserBlockProps {
@@ -9,7 +9,7 @@ interface UserBlockProps {
 }
 
 export const UserBlock = memo(function UserBlock({content, attachments}: UserBlockProps) {
-  const displayContent = removeIDEContext(unwrapUIMessage(content));
+  const displayContent = removeFileContext(removeIDEContext(unwrapUIMessage(content)));
 
   if (!displayContent.trim() && (!attachments || attachments.length === 0)) return null;
 

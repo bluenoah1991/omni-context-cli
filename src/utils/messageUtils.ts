@@ -1,5 +1,5 @@
 import { ChatMessage, Session } from '../types/session';
-import { removeIDEContext, unwrapPromptMessage } from './messagePreprocessor';
+import { removeFileContext, removeIDEContext, unwrapPromptMessage } from './messagePreprocessor';
 
 export function extractThinking(message: any): string {
   if (!message) return '';
@@ -55,7 +55,7 @@ export function distillMessages(messages: ChatMessage[]): string {
 
     let content = extractTextContent(message);
     if (content) {
-      content = removeIDEContext(unwrapPromptMessage(content));
+      content = removeFileContext(removeIDEContext(unwrapPromptMessage(content)));
       distilled.push({role: message.role, content});
     }
   }

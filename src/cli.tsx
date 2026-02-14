@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher } from 'undici';
 import packageJson from '../package.json';
+import { startAcpAgent } from './services/acpAgent.js';
 import {
   type ConfigScope,
   findModelById,
@@ -68,13 +69,12 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
 ).option('--approve-all', 'Require user approval before running any tool').option(
   '--workflow <preset>',
   'Override workflow preset (normal, specialist, artist, explorer, assistant)',
-).option('--tls', 'Enable HTTPS for server mode').option(
-  '--tls-cert <path>',
-  'Path to TLS certificate file',
-).option('--tls-key <path>', 'Path to TLS private key file').option(
-  '--scope <scope>',
-  'Where to save config changes: global (default), project, or memory',
-).parse(process.argv, {from: 'node'});
+).option('--acp', 'Run as ACP agent over stdio').option('--tls', 'Enable HTTPS for server mode')
+  .option('--tls-cert <path>', 'Path to TLS certificate file').option(
+    '--tls-key <path>',
+    'Path to TLS private key file',
+  ).option('--scope <scope>', 'Where to save config changes: global (default), project, or memory')
+  .parse(process.argv, {from: 'node'});
 
 const opts = program.opts();
 
@@ -213,7 +213,9 @@ if (opts.approveAll) {
   enableToolApproval('write');
 }
 
-if (opts.serve) {
+if (opts.acp) {
+  startAcpAgent();
+} else if (opts.serve) {
   const port = opts.port ? parseInt(opts.port, 10) : 5281;
   const host = opts.host || 'localhost';
   let tls: https.ServerOptions | undefined;

@@ -23,7 +23,7 @@ import {
 
 import { ToolCall, ToolResult } from '../types/streamCallbacks';
 import { isDocumentMimeType, parseDataUrl } from '../utils/mediaUtils';
-import { removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
+import { removeFileContext, removeIDEContext, unwrapUIMessage } from '../utils/messagePreprocessor';
 import { ensureProjectDir, getProjectDir } from '../utils/omxPaths';
 import { getCurrentModel } from './configManager';
 
@@ -69,6 +69,7 @@ function generateId(): string {
 function normalizeMessageContent(text: string, maxLength = 50): string {
   let normalized = unwrapUIMessage(text);
   normalized = removeIDEContext(normalized);
+  normalized = removeFileContext(normalized);
   normalized = normalized.replace(/\s+/g, ' ').trim();
   if (normalized.length > maxLength) {
     normalized = normalized.substring(0, maxLength) + '...';

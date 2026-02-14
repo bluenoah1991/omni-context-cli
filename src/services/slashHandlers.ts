@@ -77,5 +77,5 @@ function handleStatus(): SlashHandlerResult {
   lines.push(`IDE context: ${config.ideContext ? '√' : '✗'}`);
   lines.push(`Streaming output: ${config.streamingOutput ? '√' : '✗'}`);
 
-  return {message: lines.join('\n')};
+  return {message: lines.join('  \n')};
 }
