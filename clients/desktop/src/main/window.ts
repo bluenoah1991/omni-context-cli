@@ -7,8 +7,10 @@ import { getPath, isDev } from './paths';
 import { checkPort, isTls, startServer } from './server';
 
 let mainWindow: BrowserWindow | null = null;
+let webviewActive = false;
 
 export const getMainWindow = () => mainWindow;
+export const isWebviewActive = () => webviewActive;
 
 function createWebviewHtml(port: number): string {
   const webviewPath = getPath('webview');
@@ -62,6 +64,7 @@ export async function createWindow(): Promise<void> {
 }
 
 export async function showPortal(): Promise<void> {
+  webviewActive = false;
   await mainWindow?.loadFile(join(getPath('portal'), 'index.html'));
 }
 
@@ -71,6 +74,7 @@ export async function launchApp(cwd: string, approvalMode: ApprovalMode): Promis
 
   for (let i = 0; i < 300; i++) {
     if (await checkPort(port)) {
+      webviewActive = true;
       await mainWindow?.loadFile(createWebviewHtml(port));
       return;
     }
@@ -79,5 +83,6 @@ export async function launchApp(cwd: string, approvalMode: ApprovalMode): Promis
 }
 
 export async function resumeApp(port: number): Promise<void> {
+  webviewActive = true;
   await mainWindow?.loadFile(createWebviewHtml(port));
 }

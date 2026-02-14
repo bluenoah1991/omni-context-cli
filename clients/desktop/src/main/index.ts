@@ -4,7 +4,7 @@ import { join } from 'path';
 import { registerIpcHandlers } from './ipc';
 import { getStatus, startServer as startOfficeServer } from './officeAddin';
 import { checkPort, getPort } from './server';
-import { createWindow, resumeApp, showPortal } from './window';
+import { createWindow, isWebviewActive, resumeApp, showPortal } from './window';
 
 if (app.isPackaged) {
   const logPath = join(app.getPath('userData'), 'main.log');
@@ -34,7 +34,7 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       await createWindow();
       const port = getPort();
-      if (port && (await checkPort(port))) {
+      if (isWebviewActive() && port && (await checkPort(port))) {
         await resumeApp(port);
       } else {
         await showPortal();
