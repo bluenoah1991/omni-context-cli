@@ -104,6 +104,7 @@ export function addUserMessage(
   content: string,
   provider: Provider,
   media?: UserMessageMedia[],
+  modelId?: string,
 ): Session {
   let message: ChatMessage;
 
@@ -197,7 +198,7 @@ export function addUserMessage(
     provider,
     messages: [...session.messages, message],
     updatedAt: Date.now(),
-    modelId: getCurrentModel()?.id,
+    modelId: modelId ?? getCurrentModel()?.id,
   };
 }
 

@@ -148,7 +148,7 @@ export async function handleChat(
       session = injectSummary(session, summary, model.provider);
 
       if (slashCommand?.name !== 'compact') {
-        session = addUserMessage(session, text, model.provider, userMedia);
+        session = addUserMessage(session, text, model.provider, userMedia, model.id);
       }
       webSession.chatSession = session;
       sendSseEvent(res, 'session_updated', {
@@ -189,7 +189,7 @@ export async function handleChat(
       }
       session = injectProjectInstructions(session, model.provider);
     }
-    session = addUserMessage(session, text, model.provider, userMedia);
+    session = addUserMessage(session, text, model.provider, userMedia, model.id);
     webSession.chatSession = session;
     sendSseEvent(res, 'session_updated', {
       id: session.id,
