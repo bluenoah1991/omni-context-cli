@@ -69,9 +69,9 @@ export const CollapsibleBlock = memo(
             canExpand ? 'cursor-pointer hover:bg-white/5 light:hover:bg-black/5' : ''
           }`}
         >
-          <div className={styles.header}>{icon}</div>
-          <span className={`font-medium ${styles.header}`}>{title}</span>
-          <div className={`ml-auto ${styles.header} opacity-70`}>
+          <div className={`shrink-0 ${styles.header}`}>{icon}</div>
+          <span className={`font-medium truncate min-w-0 ${styles.header}`}>{title}</span>
+          <div className={`ml-auto shrink-0 ${styles.header} opacity-70`}>
             {loading
               ? <Loader2 size={14} className='animate-spin' />
               : hasContent

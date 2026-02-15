@@ -18,7 +18,7 @@ export const ToolCallBlock = memo(
 
     const {displayContent, isError, diffs} = useMemo(() => {
       if (!toolResult) {
-        return {displayContent: toolInput || '', isError: false, diffs: null};
+        return {displayContent: '', isError: false, diffs: null};
       }
       try {
         const resultData = JSON.parse(toolResult);
@@ -33,7 +33,7 @@ export const ToolCallBlock = memo(
       } catch {
         return {displayContent: toolResult, isError: false, diffs: null};
       }
-    }, [toolInput, toolResult]);
+    }, [toolResult]);
 
     const handleClick = useCallback(() => {
       if (diffs && diffs.length > 0) {
@@ -41,7 +41,7 @@ export const ToolCallBlock = memo(
       }
     }, [diffs, toolCallId, openDiffPanel]);
 
-    const title = `Calling: ${toolName.charAt(0).toUpperCase()}${toolName.slice(1)}`;
+    const title = toolInput || toolName;
     const hasDiffs = diffs && diffs.length > 0;
     const isWebSearch = toolName === 'WebSearch';
 
@@ -63,7 +63,6 @@ export const ToolCallBlock = memo(
           title={title}
           content={displayContent}
           loading={!toolResult}
-          expandableWhileLoading
           defaultExpanded={toolExpanded}
           variant={variant}
           clickable={hasDiffs || false}

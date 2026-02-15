@@ -53,11 +53,13 @@ export function clearTools(): void {
 }
 
 export function formatToolCall(toolName: string, args: any): string {
+  const capitalized = toolName.charAt(0).toUpperCase() + toolName.slice(1);
+  if (!args || typeof args !== 'object') return capitalized;
   const tool = tools.get(toolName);
-  if (tool?.definition.formatCall) {
-    return tool.definition.formatCall(args);
-  }
-  return Object.values(args).map(v => String(v)).join(' ');
+  const detail = tool?.definition.formatCall
+    ? tool.definition.formatCall(args)
+    : Object.values(args).map(v => String(v)).join(' ');
+  return detail ? `${capitalized}: ${detail}` : capitalized;
 }
 
 export async function executeTool(

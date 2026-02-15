@@ -16,6 +16,7 @@ import { generateMemory, injectMemory } from '../../services/memoryManager';
 import { injectProjectInstructions } from '../../services/projectInstructionsManager';
 import { addUserMessage, createSession, saveSession } from '../../services/sessionManager';
 import { parseSlashCommand } from '../../services/slashManager';
+import { formatToolCall } from '../../services/toolExecutor';
 import { useChatStore } from '../../store/chatStore';
 import { useIDEStore } from '../../store/ideStore';
 import { wrapDualMessage, wrapIDEContext } from '../../utils/messagePreprocessor';
@@ -285,7 +286,7 @@ export function ChatView(): React.ReactElement {
             updateMessages(
               messages => [...messages, {
                 role: 'tool_call',
-                content: JSON.stringify(toolCall.input),
+                content: formatToolCall(toolCall.name, toolCall.input),
                 timestamp: Date.now(),
                 toolName: toolCall.name,
                 toolCallId: toolCall.id,

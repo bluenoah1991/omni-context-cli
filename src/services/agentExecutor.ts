@@ -92,9 +92,7 @@ export async function executeAgent(
 
   return {
     result: fullText,
-    displayText: `Agent ${agent.name} done: ${displayText.slice(0, 200)}${
-      displayText.length > 200 ? '...' : ''
-    }`,
+    displayText: `${displayText.slice(0, 200)}${displayText.length > 200 ? '...' : ''}`,
     ...(collectedDiffs.length > 0 && {diffs: collectedDiffs}),
   };
 }

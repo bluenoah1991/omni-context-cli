@@ -14,6 +14,7 @@ import { ChatMessage } from '../types/session';
 import { PendingToolCall } from '../types/tool';
 import { UIMessage } from '../types/uiMessage';
 import { extractThinking } from '../utils/messageUtils';
+import { formatToolCall } from './toolExecutor';
 
 function openAIMessageToUI(
   message: OpenAIMessage,
@@ -82,8 +83,15 @@ function openAIMessageToUI(
 
       if (message.tool_calls && message.tool_calls.length > 0) {
         message.tool_calls.forEach(toolCall => {
+          let formatted = toolCall.function.arguments;
+          try {
+            formatted = formatToolCall(
+              toolCall.function.name,
+              JSON.parse(toolCall.function.arguments),
+            );
+          } catch {}
           pendingToolCalls.set(toolCall.id, {
-            content: toolCall.function.arguments,
+            content: formatted,
             timestamp,
             toolName: toolCall.function.name,
           });
@@ -187,7 +195,7 @@ function anthropicMessageToUI(
   message.content.forEach(block => {
     if (block.type === 'tool_use') {
       pendingToolCalls.set(block.id, {
-        content: JSON.stringify(block.input),
+        content: formatToolCall(block.name, block.input as Record<string, unknown>),
         timestamp,
         toolName: block.name,
       });
@@ -261,7 +269,7 @@ function geminiMessageToUI(
       const functionCall = part.functionCall;
       const id = functionCall.id || functionCall.name;
       pendingToolCalls.set(id, {
-        content: JSON.stringify(functionCall.args),
+        content: formatToolCall(functionCall.name, functionCall.args as Record<string, unknown>),
         timestamp,
         toolName: functionCall.name,
       });
@@ -338,8 +346,12 @@ function responsesItemToUI(
     }
   } else if (item.type === 'function_call') {
     const functionCall = item as ResponsesFunctionCall;
+    let formatted = functionCall.arguments;
+    try {
+      formatted = formatToolCall(functionCall.name, JSON.parse(functionCall.arguments));
+    } catch {}
     pendingToolCalls.set(functionCall.call_id, {
-      content: functionCall.arguments,
+      content: formatted,
       timestamp,
       toolName: functionCall.name,
     });

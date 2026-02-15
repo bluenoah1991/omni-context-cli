@@ -1,6 +1,5 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { formatToolCall } from '../../services/toolExecutor';
 import { useContentWidth } from '../hooks/useContentWidth';
 import { colors } from '../theme/colors';
 
@@ -18,14 +17,7 @@ export const ToolCallBlock = React.memo(
     let textColor: string = colors.secondary;
 
     if (type === 'call') {
-      try {
-        const data = JSON.parse(content);
-        const formattedCall = formatToolCall(toolName, data);
-        const capitalizedName = toolName.charAt(0).toUpperCase() + toolName.slice(1);
-        text = `${capitalizedName}: ${formattedCall}`;
-      } catch {
-        text = toolName.charAt(0).toUpperCase() + toolName.slice(1);
-      }
+      text = content || toolName;
     } else {
       try {
         const resultData = JSON.parse(content);

@@ -233,9 +233,7 @@ class OmxAgent implements acp.Agent {
             update: {
               sessionUpdate: 'tool_call',
               toolCallId,
-              title: `${call.name.charAt(0).toUpperCase() + call.name.slice(1)}: ${
-                formatToolCall(call.name, call.input)
-              }`,
+              title: formatToolCall(call.name, call.input),
               kind: this.mapToolKind(call.name),
               status: 'in_progress',
               locations,
