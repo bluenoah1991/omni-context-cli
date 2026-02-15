@@ -43,6 +43,9 @@ npm start -- --workflow artist
 # Add models from a provider
 npm start -- --add-provider openrouter --api-key <key>
 
+# Remove all models from a provider
+npm start -- --remove-provider openrouter
+
 # List available model providers
 npm start -- --list-providers
 
@@ -57,6 +60,12 @@ npm start -- --approve-all
 
 # Enable HTTPS for server mode
 npm start -- --serve --tls --tls-cert cert.pem --tls-key key.pem
+
+# Run as ACP (Agent Client Protocol) agent over stdio
+npm start -- --acp
+
+# Save config changes to project scope
+npm start -- --scope project
 
 # Format code
 npm run format
@@ -85,7 +94,8 @@ Service Layer
     |-- longPollTransport - Long-poll transport for remote clients
     |-- ideIntegration - IDE integration via MCP/WebSocket
     |-- gitService - Git operations (commit message generation)
-    +-- costAnalysis - Token usage and cost tracking
+    |-- costAnalysis - Token usage and cost tracking
+    +-- acpAgent - ACP (Agent Client Protocol) agent over stdio
     |
 Provider Adapters
     |-- anthropic/openai/gemini/responsesRequestBuilder - Format API requests
@@ -106,6 +116,7 @@ Storage/State
 - Request interceptors modify requests for specific providers (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu)
 - Media files (images, PDFs, documents) can be attached to user messages across all providers
 - Tool approval system allows requiring user confirmation before tool execution
+- ACP agent mode exposes OMX as an Agent Client Protocol agent over stdio
 
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
@@ -129,7 +140,7 @@ Provider-specific interceptors modify API requests before sending:
 - **State Management**: Zustand 5
 - **LLM API Types**: Anthropic, OpenAI, Gemini, Responses
 - **Model Sources**: DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu (via pluggable model providers)
-- **Protocol**: MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+- **Protocols**: MCP (Model Context Protocol) via @modelcontextprotocol/sdk, ACP (Agent Client Protocol) via @agentclientprotocol/sdk
 - **HTTP Client**: Undici (with connection pooling)
 - **WebSocket**: ws (IDE integration)
 - **CLI Framework**: Commander.js
@@ -176,6 +187,7 @@ omx/
 |   |   |-- taskManager.ts         # Background task management
 |   |   |-- diagnostic.ts          # Diagnostic mode management
 |   |   |-- costAnalysis.ts        # Token usage and cost tracking
+|   |   |-- acpAgent.ts            # ACP agent over stdio
 |   |   |-- modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
 |   |   |-- interceptors/          # Provider-specific interceptors
 |   |   |-- tools/                 # Built-in tool implementations
@@ -187,7 +199,7 @@ omx/
 |   +-- utils/                     # Helper utilities (7 files)
 |-- clients/
 |   |-- desktop/                   # Electron desktop client
-|   |   |-- src/main/              # Main process (window, server, config)
+|   |   |-- src/main/              # Main process (window, server, config, shell env)
 |   |   |-- src/preload/           # Preload scripts
 |   |   |-- src/portal/            # Configuration portal UI (React)
 |   |   +-- cli-deps/              # CLI dependencies for bundling
@@ -202,7 +214,8 @@ omx/
 |   |-- browser/                   # Browser extension (Chrome)
 |   |   |-- src/background/        # Service worker and tool handlers
 |   |   |-- src/sidepanel/         # Side panel UI
-|   |   +-- src/content/           # Content scripts
+|   |   |-- src/content/           # Content scripts
+|   |   +-- src/types/             # Tool type definitions
 |   |-- office/                    # Office Add-in
 |   |   |-- src/taskpane/          # Taskpane UI
 |   |   |-- src/tools/             # Word, Excel, PowerPoint tools
@@ -214,6 +227,7 @@ omx/
 |-- slash/                         # Built-in slash commands (.md)
 |-- assets/                        # Icons and images
 |-- bin/                           # Embedded ripgrep binaries
+|-- scripts/                       # Build and setup scripts
 |-- .omx/                          # User-level config and customizations
 |-- package.json
 |-- tsconfig.json
@@ -344,7 +358,7 @@ Web server components in `src/services/webServer/`:
 - `staticServer.ts` - Static file serving
 - `httpUtils.ts` - HTTP utilities
 - `apiHandlers.ts` - API route handlers
-- `handlers/` - Route-specific handlers (chat, sessions, config, remote tools)
+- `handlers/` - Route-specific handlers (chat, sessions, config, files, remote tools)
 
 ### Desktop Client
 
@@ -354,7 +368,9 @@ The Electron desktop client (`clients/desktop/`) provides a standalone applicati
 - Configuration portal for providers, permissions, and custom prompts
 - Custom system prompts for specialist, artist, and explorer modes
 - Auto-opens default workspace (Documents/OmniContext)
+- Shell environment resolution on macOS (inherits login shell PATH)
 - Bundles CLI dependencies for offline use
+- Built-in Office Add-in server for local Office integration
 - macOS and Windows support
 
 Build the desktop client:
@@ -393,6 +409,10 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Tool approval UI for confirming operations
 - Drag and drop file attachment
 - Document (PDF) and image support
+- File tree browser with file preview panel
+- Mermaid diagram rendering
+- LaTeX/KaTeX math rendering
+- Collapsible content blocks
 - Mobile-optimized with PWA support
 - Touch-friendly UI with safe area handling
 
@@ -403,14 +423,14 @@ npm install
 npm run build
 ```
 
-For VS Code extension embedding, use `npm run build:vscode`.
+For VS Code extension embedding, use `npm run build:vscode`. For desktop client embedding, use `npm run build:desktop`.
 
 ### Browser Extension
 
 The browser extension (`clients/browser/`) adds a Chrome side panel for interacting with OMX:
 
 - Side panel UI connecting to OMX server via long-poll
-- Background service worker with tool handlers (tabs, screenshots, page content, bookmarks, history, CDP)
+- Background service worker with tool handlers (tabs, screenshots, page content, bookmarks, history, CDP, executeScript, wait)
 - Content scripts for page text extraction (readability)
 
 Build the extension:
@@ -487,17 +507,22 @@ npm run build
 | `src/services/inputHistoryManager.ts` | Input history persistence |
 | `src/services/costAnalysis.ts` | Token usage and cost tracking |
 | `src/services/diagnostic.ts` | Diagnostic mode management |
+| `src/services/acpAgent.ts` | ACP agent over stdio |
 | `src/services/modelProvider.ts` | Model provider registry |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
 | `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu) |
 | `src/services/webServer/` | HTTP API and static server components |
+| `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
 | `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
+| `clients/desktop/src/main/shellEnv.ts` | Shell environment resolution (macOS) |
 | `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
 | `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
 | `clients/web/src/App.tsx` | Web client main component |
 | `clients/web/src/store/chatStore.ts` | Web client state management |
+| `clients/web/src/services/fileService.ts` | File browsing API service |
+| `clients/web/src/components/FileTree.tsx` | File tree browser component |
 | `clients/browser/src/background/index.ts` | Browser extension service worker |
 | `clients/office/src/taskpane/App.tsx` | Office Add-in taskpane UI |
 | `clients/figma/src/ui/App.tsx` | Figma plugin UI |
@@ -511,6 +536,7 @@ npm run build
 | `src/ui/components/MediaContextBar.tsx` | Media attachment preview bar |
 | `src/ui/components/OptionPicker.tsx` | Option selection UI |
 | `src/prompts/systemPromptBuilder.ts` | Assembles full system prompt |
+| `scripts/fix-bin-permissions.js` | Postinstall script to fix ripgrep binary permissions |
 | `build.mjs` | esbuild configuration with obfuscation |
 | `package.json` | Dependencies and scripts |
 
