@@ -77,7 +77,9 @@ function updateMemory(memory: Memory, reflectionResult: ReflectionResult): Memor
 
   for (const kp of memory.keyPoints) {
     const rating = evalMap.get(kp.name);
-    kp.score += rating ? (ratingDelta[rating] ?? 0) : -1;
+    if (rating) {
+      kp.score += ratingDelta[rating] ?? 0;
+    }
   }
 
   memory.keyPoints = memory.keyPoints.filter(kp => kp.score > -5);
