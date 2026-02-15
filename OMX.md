@@ -188,6 +188,10 @@ omx/
 |   |   |-- diagnostic.ts          # Diagnostic mode management
 |   |   |-- costAnalysis.ts        # Token usage and cost tracking
 |   |   |-- acpAgent.ts            # ACP agent over stdio
+|   |   |-- baseStreamHandler.ts   # Base class for streaming response handlers
+|   |   |-- requestInterceptor.ts  # Applies provider-specific request modifications
+|   |   |-- anthropic/openai/gemini/responsesRequestBuilder.ts # API request formatting
+|   |   |-- anthropic/openai/gemini/responsesStreamHandler.ts  # Streaming response handling
 |   |   |-- modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
 |   |   |-- interceptors/          # Provider-specific interceptors
 |   |   |-- tools/                 # Built-in tool implementations
@@ -195,24 +199,35 @@ omx/
 |   |-- types/                     # TypeScript definitions (16 type files)
 |   |-- prompts/                   # System prompt templates (20 files)
 |   |-- store/                     # Zustand state management
-|   |-- ui/                        # React/Ink components (25 components)
+|   |-- ui/
+|   |   |-- components/            # React/Ink terminal UI components (23 components)
+|   |   +-- markdown/              # Markdown rendering and syntax highlighting
 |   +-- utils/                     # Helper utilities (7 files)
 |-- clients/
 |   |-- desktop/                   # Electron desktop client
-|   |   |-- src/main/              # Main process (window, server, config, shell env)
+|   |   |-- src/main/              # Main process (window, server, config, paths, IPC, shell env, Office Add-in)
 |   |   |-- src/preload/           # Preload scripts
 |   |   |-- src/portal/            # Configuration portal UI (React)
+|   |   |   |-- components/        # Portal UI components (Select, ProviderItem)
+|   |   |   |-- store/             # Portal state management
+|   |   |   |-- providers/         # Provider configuration panels
+|   |   |   +-- types/             # Portal type definitions
 |   |   +-- cli-deps/              # CLI dependencies for bundling
 |   |-- vscode/                    # VS Code extension
 |   |   |-- src/extension.ts       # Extension entry point
 |   |   |-- src/webviewProvider.ts # Webview panel management
-|   |   +-- src/mcp/               # MCP server for IDE integration
+|   |   |-- src/utils.ts           # Extension utilities
+|   |   |-- src/providers/         # Content providers (diff)
+|   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components
+|   |   |-- src/components/        # UI components (24 components)
 |   |   |-- src/services/          # API service layer
-|   |   +-- src/store/             # Zustand state management
+|   |   |-- src/store/             # Zustand state management
+|   |   |-- src/types/             # TypeScript type definitions
+|   |   +-- src/utils/             # Client utilities
 |   |-- browser/                   # Browser extension (Chrome)
 |   |   |-- src/background/        # Service worker and tool handlers
+|   |   |   +-- tools/             # Individual tool implementations
 |   |   |-- src/sidepanel/         # Side panel UI
 |   |   |-- src/content/           # Content scripts
 |   |   +-- src/types/             # Tool type definitions
@@ -228,7 +243,7 @@ omx/
 |-- assets/                        # Icons and images
 |-- bin/                           # Embedded ripgrep binaries
 |-- scripts/                       # Build and setup scripts
-|-- .omx/                          # User-level config and customizations
+|-- .omx/                          # Project-level config and customizations
 |-- package.json
 |-- tsconfig.json
 +-- build.mjs                      # Build script with esbuild
@@ -346,6 +361,7 @@ Start OMX as an HTTP server with `--serve` flag (default port 5281):
 ```bash
 npm start -- --serve
 npm start -- --serve --port 8080
+npm start -- --serve --host 0.0.0.0
 ```
 
 The web server provides:
@@ -366,7 +382,7 @@ The Electron desktop client (`clients/desktop/`) provides a standalone applicati
 
 - Spawns OMX server with dynamic port allocation
 - Configuration portal for providers, permissions, and custom prompts
-- Custom system prompts for specialist, artist, and explorer modes
+- Custom system prompts for specialist, artist, explorer, and assistant modes
 - Auto-opens default workspace (Documents/OmniContext)
 - Shell environment resolution on macOS (inherits login shell PATH)
 - Bundles CLI dependencies for offline use
@@ -514,22 +530,47 @@ npm run build
 | `src/services/webServer/` | HTTP API and static server components |
 | `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
+| `clients/desktop/src/main/window.ts` | Window creation and management |
 | `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
+| `clients/desktop/src/main/config.ts` | Desktop configuration management |
+| `clients/desktop/src/main/paths.ts` | Path utilities for desktop app |
+| `clients/desktop/src/main/ipc.ts` | IPC handlers between main and renderer |
+| `clients/desktop/src/main/officeAddin.ts` | Built-in Office Add-in server |
 | `clients/desktop/src/main/shellEnv.ts` | Shell environment resolution (macOS) |
 | `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
+| `clients/desktop/src/portal/store/portalStore.ts` | Portal state management |
+| `clients/desktop/src/portal/providers/` | Provider configuration panels (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu) |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
+| `clients/vscode/src/webviewProvider.ts` | Webview panel management |
+| `clients/vscode/src/utils.ts` | Extension utilities |
+| `clients/vscode/src/providers/diffProvider.ts` | Diff content provider |
 | `clients/vscode/src/mcp/server.ts` | MCP server for IDE integration |
+| `clients/vscode/src/mcp/transport.ts` | MCP transport layer |
+| `clients/vscode/src/mcp/tools.ts` | MCP tool definitions |
+| `clients/vscode/src/mcp/selection.ts` | Editor selection handling |
+| `clients/vscode/src/mcp/lockFile.ts` | Lock file-based CLI discovery |
 | `clients/web/src/App.tsx` | Web client main component |
 | `clients/web/src/store/chatStore.ts` | Web client state management |
+| `clients/web/src/services/chatService.ts` | Chat message handling |
+| `clients/web/src/services/sessionService.ts` | Session management |
+| `clients/web/src/services/configService.ts` | Configuration API |
 | `clients/web/src/services/fileService.ts` | File browsing API service |
 | `clients/web/src/components/FileTree.tsx` | File tree browser component |
+| `clients/web/src/components/PreviewPanel.tsx` | File preview panel |
 | `clients/browser/src/background/index.ts` | Browser extension service worker |
+| `clients/browser/src/background/toolManager.ts` | Browser tool registration and dispatch |
+| `clients/browser/src/sidepanel/App.tsx` | Side panel UI |
 | `clients/office/src/taskpane/App.tsx` | Office Add-in taskpane UI |
 | `clients/figma/src/ui/App.tsx` | Figma plugin UI |
+| `src/ui/markdown/index.tsx` | Markdown rendering for terminal |
+| `src/ui/markdown/highlight-code.tsx` | Syntax highlighting for code blocks |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
+| `src/utils/frontmatter.ts` | YAML frontmatter parsing |
 | `src/utils/mediaUtils.ts` | Media file handling and encoding |
 | `src/utils/messagePreprocessor.ts` | Message preprocessing for display and API calls |
+| `src/utils/messageUtils.ts` | Message utility functions |
 | `src/utils/omxPaths.ts` | Path utilities for OMX directories |
+| `src/utils/wsl.ts` | WSL detection and utilities |
 | `src/store/chatStore.ts` | Zustand store for chat state |
 | `src/store/ideStore.ts` | Zustand store for IDE integration state |
 | `src/ui/components/ChatView.tsx` | Main terminal UI component |
@@ -619,6 +660,7 @@ npm run build
 | `Grep` | Search file contents using ripgrep |
 | `Read` | Read file contents with line numbers, images, and PDFs |
 | `SaveArtifact` | Save the most recently generated artifact to a file |
+| `Skill` | Load a skill from available skills to get detailed instructions |
 | `WebSearch` | Perform web searches via Anthropic API |
 | `Write` | Create or overwrite files (supports base64 encoding for binary files) |
 
