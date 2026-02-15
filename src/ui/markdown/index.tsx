@@ -5,6 +5,7 @@ import stringWidth from 'string-width';
 import { colors } from '../theme/colors';
 import { HighlightedCode } from './highlight-code';
 import {
+  isBrToken,
   isCodespanToken,
   isDelToken,
   isEmToken,
@@ -260,6 +261,9 @@ function renderTokensAsPlaintext(tokens: Token[]): string {
     }
     if (isCodespanToken(token)) {
       return ` ${token.text} `;
+    }
+    if (isBrToken(token)) {
+      return '\n';
     }
     if ('tokens' in token && Array.isArray(token.tokens)) {
       return renderTokensAsPlaintext(token.tokens);
