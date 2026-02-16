@@ -1,0 +1,48 @@
+.omni-context-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.omni-context-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  flex: 1;
+}
+
+.omni-context-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.omni-context-status .omni-context-spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid var(--text-muted);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: omni-context-spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes omni-context-spin {
+  to { transform: rotate(360deg); }
+}
+
+.omni-context-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-error);
+  font-size: var(--font-ui-small);
+  padding: 16px;
+  text-align: center;
+}
