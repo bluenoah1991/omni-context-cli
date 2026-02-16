@@ -36,15 +36,23 @@ export class SelectionBroadcaster {
     const clients = this.getClients();
     if (clients.size === 0) return;
 
+    let filePath: string;
+    let text = '';
+    let from = {line: 0, ch: 0};
+    let to = {line: 0, ch: 0};
+
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!view?.file) return;
-
-    const editor = view.editor;
-    const from = editor.getCursor('from');
-    const to = editor.getCursor('to');
-    const text = editor.getSelection();
-
-    const filePath = this.vaultPath ? path.join(this.vaultPath, view.file.path) : view.file.path;
+    if (view?.file) {
+      const editor = view.editor;
+      from = editor.getCursor('from');
+      to = editor.getCursor('to');
+      text = editor.getSelection();
+      filePath = this.vaultPath ? path.join(this.vaultPath, view.file.path) : view.file.path;
+    } else {
+      const activeFile = this.app.workspace.getActiveFile();
+      if (!activeFile) return;
+      filePath = this.vaultPath ? path.join(this.vaultPath, activeFile.path) : activeFile.path;
+    }
 
     const notification = JSON.stringify({
       jsonrpc: '2.0',
