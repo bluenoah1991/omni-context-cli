@@ -8,6 +8,7 @@ import {
   FileSpreadsheet,
   FileText,
   FolderOpen,
+  Gem,
   LayoutGrid,
   Loader2,
   type LucideIcon,
@@ -436,6 +437,13 @@ export default function App() {
             id='browser'
             icon={Chrome}
             label='Browser Integration'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
+            id='obsidian'
+            icon={Gem}
+            label='Obsidian Integration'
             activeTab={activeTab}
             onClick={setActiveTab}
           />
@@ -1161,6 +1169,111 @@ export default function App() {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'obsidian' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  Obsidian Plugin
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>Connect Obsidian to OmniContext</p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    1
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Download the plugin
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted mb-2'>
+                      Go to the releases page and download the latest{' '}
+                      <strong className='text-vscode-text-header'>OmniContext Obsidian</strong>{' '}
+                      plugin package (.zip).
+                    </p>
+                    <a
+                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                      target='_blank'
+                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                    >
+                      Open Releases Page
+                    </a>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    2
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Unzip the package
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Extract the downloaded .zip file. Inside you'll find a folder called{' '}
+                      <strong className='text-vscode-text-header'>omni-context</strong> containing
+                      {' '}
+                      <strong className='text-vscode-text-header'>main.js</strong>,{' '}
+                      <strong className='text-vscode-text-header'>manifest.json</strong>, and{' '}
+                      <strong className='text-vscode-text-header'>styles.css</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    3
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Copy to your vault
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Move the <strong className='text-vscode-text-header'>omni-context</strong>
+                      {' '}
+                      folder into your vault's plugin directory:{' '}
+                      <strong className='text-vscode-text-header'>
+                        &lt;vault&gt;/.obsidian/plugins/omni-context/
+                      </strong>. Create the{' '}
+                      <strong className='text-vscode-text-header'>plugins</strong>{' '}
+                      folder if it doesn't exist.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    4
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Enable the plugin
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Open Obsidian, go to{' '}
+                      <strong className='text-vscode-text-header'>
+                        Settings &gt; Community plugins
+                      </strong>, and enable{' '}
+                      <strong className='text-vscode-text-header'>OmniContext</strong>. You'll see a
+                      chat icon in the left ribbon bar.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
+                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>Note</h3>
+                <p className='text-xs text-vscode-text-muted'>
+                  The plugin is desktop-only and requires the OmniContext CLI to be installed. It
+                  launches a local server automatically when you open the panel. Obsidian plugins
+                  are vault-scoped, so you'll need to install it separately for each vault or use a
+                  symlink to share a single copy.
+                </p>
               </div>
             </div>
           )}

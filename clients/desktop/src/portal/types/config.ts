@@ -18,6 +18,7 @@ export type Tab =
   | 'prompts'
   | 'office'
   | 'browser'
+  | 'obsidian'
   | 'figma';
 
 export interface DesktopConfig {
