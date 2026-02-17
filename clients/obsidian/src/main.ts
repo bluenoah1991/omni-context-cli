@@ -6,6 +6,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { IdeServer } from './mcp/server';
+import { resolveShellEnv } from './shellEnv';
 import { OMNI_CONTEXT_VIEW_TYPE, OmniContextView } from './view';
 
 let serverProcess: ChildProcess | null = null;
@@ -60,12 +61,16 @@ export async function startServer(
     return `http://localhost:${serverPort}`;
   }
 
+  const execInfo = getExecutableInfo();
+
+  onStatus?.('Resolving shell environment...');
+  await resolveShellEnv(execInfo?.node);
+
   onStatus?.('Finding available port...');
   const port = await findFreePort();
   serverPort = port;
 
   onStatus?.('Launching server process...');
-  const execInfo = getExecutableInfo();
   const command = execInfo ? execInfo.node : 'node';
   const args = execInfo
     ? [
