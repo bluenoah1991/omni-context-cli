@@ -7,6 +7,7 @@ import { registerGlobTool } from './glob';
 import { registerGrepTool } from './grep';
 import { registerReadTool } from './read';
 import { registerSaveArtifactTool } from './saveArtifact';
+import { registerWebFetchTool } from './webFetch';
 import { registerWebSearchTool } from './webSearch';
 import { registerWriteTool } from './write';
 
@@ -18,6 +19,7 @@ export function initializeTools(): void {
   registerGrepTool();
   registerReadTool();
   registerSaveArtifactTool();
+  registerWebFetchTool();
   registerWebSearchTool();
   registerWriteTool();
   registerAgents();
