@@ -1,10 +1,13 @@
 import { ModelConfig } from '../../types/config';
 import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
-export class AnthropicOpus46Interceptor implements RequestInterceptor {
+function isNextModel(name: string): boolean {
+  return /(?:opus|sonnet)-4[._-]6/.test(name);
+}
+
+export class AnthropicNextInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
-    return model.provider === 'anthropic'
-      && (model.name.includes('opus-4-6') || model.name.includes('opus-4.6'));
+    return model.provider === 'anthropic' && isNextModel(model.name);
   }
 
   interceptRequest(

@@ -121,7 +121,7 @@ Storage/State
 **Request Interceptors:**
 Provider-specific interceptors modify API requests before sending:
 - `AnthropicLegacyInterceptor` - Anthropic legacy model handling
-- `AnthropicOpus46Interceptor` - Anthropic Opus 4.6 adjustments
+- `AnthropicNextInterceptor` - Anthropic next-gen model adjustments (Opus 4.6, Sonnet 4.6)
 - `CodexInterceptor` - Responses API adjustments
 - `MiniMaxInterceptor` - MiniMax API compatibility
 - `XaiInterceptor` - xAI API compatibility

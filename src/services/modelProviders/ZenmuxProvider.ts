@@ -58,7 +58,11 @@ async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
 
   const data: ZenmuxModelResponse = await response.json();
 
-  const DUAL_CONTEXT_MODELS = ['anthropic/claude-opus-4.6', 'anthropic/claude-sonnet-4.5'];
+  const DUAL_CONTEXT_MODELS = [
+    'anthropic/claude-opus-4.6',
+    'anthropic/claude-sonnet-4.6',
+    'anthropic/claude-sonnet-4.5',
+  ];
   const models: ModelConfig[] = [];
 
   for (const model of data.data.filter(m => matchesPrefix(m.id, ANTHROPIC_PREFIXES))) {

@@ -4,8 +4,7 @@ import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
 export class AnthropicLegacyInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
-    return model.provider === 'anthropic' && !model.name.includes('opus-4-6')
-      && !model.name.includes('opus-4.6');
+    return model.provider === 'anthropic' && !/(?:opus|sonnet)-4[._-]6/.test(model.name);
   }
 
   interceptRequest(
