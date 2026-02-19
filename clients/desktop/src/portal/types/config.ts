@@ -1,4 +1,4 @@
-import { ModelConfig } from './provider';
+import type { ModelConfig } from '../../../../../src/types/config';
 
 export type WebTheme = 'dark' | 'light' | 'auto';
 
