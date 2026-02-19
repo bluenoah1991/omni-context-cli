@@ -1,11 +1,5 @@
-import { ModelConfig } from '../types/config';
+import type { ModelProvider } from '../types/config';
 import { readGlobalConfig, writeGlobalConfig } from './configManager';
-
-export interface ModelProvider {
-  readonly id: string;
-  readonly name: string;
-  listModels(apiKey: string): Promise<ModelConfig[]>;
-}
 
 const providers = new Map<string, ModelProvider>();
 

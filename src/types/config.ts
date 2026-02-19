@@ -13,6 +13,12 @@ export interface ModelConfig {
   source?: string;
 }
 
+export interface ModelProvider {
+  readonly id: string;
+  readonly name: string;
+  listModels(apiKey: string): Promise<ModelConfig[]>;
+}
+
 export interface AppConfig {
   models: ModelConfig[];
   defaultModelId?: string;

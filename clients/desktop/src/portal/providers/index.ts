@@ -1,9 +1,9 @@
-import type { ModelConfig, ModelProvider } from '../types/provider';
-import { DeepSeekProvider } from './DeepSeekProvider';
-import { MiniMaxProvider } from './MiniMaxProvider';
-import { OpenRouterProvider } from './OpenRouterProvider';
-import { ZenmuxProvider } from './ZenmuxProvider';
-import { ZhipuProvider } from './ZhipuProvider';
+import { DeepSeekProvider } from '../../../../../src/services/modelProviders/DeepSeekProvider';
+import { MiniMaxProvider } from '../../../../../src/services/modelProviders/MiniMaxProvider';
+import { OpenRouterProvider } from '../../../../../src/services/modelProviders/OpenRouterProvider';
+import { ZenmuxProvider } from '../../../../../src/services/modelProviders/ZenmuxProvider';
+import { ZhipuProvider } from '../../../../../src/services/modelProviders/ZhipuProvider';
+import type { ModelConfig, ModelProvider } from '../../../../../src/types/config';
 
 const providers: ModelProvider[] = [
   DeepSeekProvider,

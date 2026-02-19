@@ -1,5 +1,4 @@
-import { ModelConfig } from '../../types/config';
-import { ModelProvider } from '../modelProvider';
+import type { ModelConfig, ModelProvider } from '../../types/config';
 
 export const MiniMaxProvider: ModelProvider = {
   id: 'minimax',
