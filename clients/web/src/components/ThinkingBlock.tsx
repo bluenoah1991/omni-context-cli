@@ -21,6 +21,7 @@ export const ThinkingBlock = memo(
         expandableWhileLoading
         defaultExpanded={thinkingExpanded}
         variant='purple'
+        renderMarkdown
       />
     );
   },
