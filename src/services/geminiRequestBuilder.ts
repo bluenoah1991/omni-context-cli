@@ -53,7 +53,7 @@ export async function buildGeminiRequest(
   const generationConfig: Record<string, unknown> = {};
 
   if (config.enableThinking) {
-    generationConfig.thinkingConfig = {thinkingBudget: 24576, includeThoughts: true};
+    generationConfig.thinkingConfig = {thinkingLevel: 'high', includeThoughts: true};
   }
 
   if (Object.keys(generationConfig).length > 0) {
