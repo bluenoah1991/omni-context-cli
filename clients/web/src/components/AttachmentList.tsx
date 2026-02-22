@@ -46,7 +46,7 @@ export const AttachmentList = memo(
                     src={attachment.url}
                     alt=''
                     className='max-w-full max-h-96 object-contain'
-                    loading='lazy'
+                    loading='eager'
                   />
                 </a>
               )

@@ -251,6 +251,46 @@ body {
   background-color: var(--vscode-element);
 }
 
+.thinking-markdown {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.thinking-markdown p,
+.thinking-markdown ul,
+.thinking-markdown ol,
+.thinking-markdown li,
+.thinking-markdown pre {
+  margin: 0;
+}
+
+.thinking-markdown h1,
+.thinking-markdown h2,
+.thinking-markdown h3,
+.thinking-markdown h4,
+.thinking-markdown h5,
+.thinking-markdown h6 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.thinking-markdown ul,
+.thinking-markdown ol {
+  padding-left: 1.5em;
+}
+
+.thinking-markdown code,
+.thinking-markdown pre {
+  font-family: inherit;
+  font-size: inherit;
+  background: transparent;
+}
+
+.thinking-markdown pre {
+  margin: 0.4em 0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
