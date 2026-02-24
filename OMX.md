@@ -31,6 +31,12 @@ npm start -- --diagnostic
 # Enable cost analysis
 npm start -- --cost-analysis
 
+# Export project data
+npm start -- --export-project backup.tar.gz
+
+# Import project data
+npm start -- --import-project backup.tar.gz
+
 # Start web server mode
 npm start -- --serve
 
@@ -95,6 +101,7 @@ Service Layer
     |-- ideIntegration - IDE integration via MCP/WebSocket
     |-- gitService - Git operations (commit message generation)
     |-- costAnalysis - Token usage and cost tracking
+    |-- projectExporter - Project data export/import
     +-- acpAgent - ACP (Agent Client Protocol) agent over stdio
     |
 Provider Adapters
@@ -113,7 +120,7 @@ Storage/State
 - Tool execution runs in parallel when possible
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
-- Request interceptors modify requests for specific providers (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu)
+- Request interceptors modify requests for specific providers (Anthropic, Codex, Gemini, MiniMax, Xai, Zenmux, Zhipu)
 - Media files (images, PDFs, documents) can be attached to user messages across all providers
 - Tool approval system allows requiring user confirmation before tool execution
 - ACP agent mode exposes OMX as an Agent Client Protocol agent over stdio
@@ -123,6 +130,7 @@ Provider-specific interceptors modify API requests before sending:
 - `AnthropicLegacyInterceptor` - Anthropic legacy model handling
 - `AnthropicNextInterceptor` - Anthropic next-gen model adjustments (Opus 4.6, Sonnet 4.6)
 - `CodexInterceptor` - Responses API adjustments
+- `GeminiLegacyInterceptor` - Gemini legacy model compatibility
 - `MiniMaxInterceptor` - MiniMax API compatibility
 - `XaiInterceptor` - xAI API compatibility
 - `ZenmuxInterceptor` - Zenmux proxy handling
@@ -148,7 +156,7 @@ Provider-specific interceptors modify API requests before sending:
 - **Code Obfuscation**: javascript-obfuscator (production builds only)
 - **Templating**: Handlebars (slash commands)
 - **File Operations**: glob, gray-matter (frontmatter parsing), ignore (gitignore parsing)
-- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting), diff (unified diffs), node-notifier (desktop notifications)
+- **Utilities**: figlet, marked (markdown), highlight.js (syntax highlighting), diff (unified diffs), turndown (HTML to markdown), node-notifier (desktop notifications)
 
 ## Development
 
@@ -187,6 +195,7 @@ omx/
 |   |   |-- taskManager.ts         # Background task management
 |   |   |-- diagnostic.ts          # Diagnostic mode management
 |   |   |-- costAnalysis.ts        # Token usage and cost tracking
+|   |   |-- projectExporter.ts    # Project data export/import
 |   |   |-- acpAgent.ts            # ACP agent over stdio
 |   |   |-- baseStreamHandler.ts   # Base class for streaming response handlers
 |   |   |-- requestInterceptor.ts  # Applies provider-specific request modifications
@@ -220,7 +229,7 @@ omx/
 |   |   |-- src/providers/         # Content providers (diff)
 |   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components (24 components)
+|   |   |-- src/components/        # UI components (25 components)
 |   |   |-- src/services/          # API service layer
 |   |   |-- src/store/             # Zustand state management
 |   |   |-- src/types/             # TypeScript type definitions
@@ -235,9 +244,14 @@ omx/
 |   |   |-- src/taskpane/          # Taskpane UI
 |   |   |-- src/tools/             # Word, Excel, PowerPoint tools
 |   |   +-- src/services/          # Long-poll client and config
-|   +-- figma/                     # Figma plugin
-|       |-- src/ui/                # Plugin UI and tools
-|       +-- src/sandbox/           # Figma sandbox code
+|   |-- figma/                     # Figma plugin
+|   |   |-- src/ui/                # Plugin UI and tools
+|   |   +-- src/sandbox/           # Figma sandbox code
+|   +-- obsidian/                  # Obsidian plugin
+|       |-- src/main.ts            # Plugin entry point, server lifecycle
+|       |-- src/view.ts            # Sidebar UI view (ItemView)
+|       |-- src/shellEnv.ts        # Shell environment resolution (Unix)
+|       +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |-- agents/                        # Built-in agent definitions (.md)
 |-- slash/                         # Built-in slash commands (.md)
 |-- assets/                        # Icons and images
@@ -486,6 +500,24 @@ npm install
 npm run build
 ```
 
+### Obsidian Plugin
+
+The Obsidian plugin (`clients/obsidian/`) integrates OMX as a sidebar view:
+
+- Sidebar iframe view connecting to spawned OMX server
+- MCP server exposing Obsidian vault tools (openNote, readNote, createNote, modifyNote, searchNotes, getBacklinks, getAllTags, etc.)
+- WebSocket transport for MCP communication
+- Lock file-based discovery for CLI-IDE communication
+- Selection broadcasting to MCP clients
+- Shell environment resolution on macOS/Linux
+
+Build the plugin:
+```bash
+cd clients/obsidian
+npm install
+npm run build
+```
+
 ## Key Files
 
 | File | Purpose |
@@ -524,9 +556,10 @@ npm run build
 | `src/services/costAnalysis.ts` | Token usage and cost tracking |
 | `src/services/diagnostic.ts` | Diagnostic mode management |
 | `src/services/acpAgent.ts` | ACP agent over stdio |
+| `src/services/projectExporter.ts` | Project data export/import |
 | `src/services/modelProvider.ts` | Model provider registry |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
-| `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, MiniMax, Xai, Zenmux, Zhipu) |
+| `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, Gemini, MiniMax, Xai, Zenmux, Zhipu) |
 | `src/services/webServer/` | HTTP API and static server components |
 | `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
@@ -562,6 +595,11 @@ npm run build
 | `clients/browser/src/sidepanel/App.tsx` | Side panel UI |
 | `clients/office/src/taskpane/App.tsx` | Office Add-in taskpane UI |
 | `clients/figma/src/ui/App.tsx` | Figma plugin UI |
+| `clients/obsidian/src/main.ts` | Obsidian plugin entry point |
+| `clients/obsidian/src/view.ts` | Obsidian sidebar view |
+| `clients/obsidian/src/mcp/server.ts` | MCP server for Obsidian integration |
+| `clients/obsidian/src/mcp/tools.ts` | MCP tool definitions (Obsidian API) |
+| `clients/obsidian/src/mcp/lockFile.ts` | Lock file-based CLI discovery |
 | `src/ui/markdown/index.tsx` | Markdown rendering for terminal |
 | `src/ui/markdown/highlight-code.tsx` | Syntax highlighting for code blocks |
 | `src/utils/contextEditor.ts` | Context editing utilities for configurable context rounds |
@@ -661,6 +699,7 @@ npm run build
 | `Read` | Read file contents with line numbers, images, and PDFs |
 | `SaveArtifact` | Save the most recently generated artifact to a file |
 | `Skill` | Load a skill from available skills to get detailed instructions |
+| `WebFetch` | Fetch URL content and convert HTML to readable markdown |
 | `WebSearch` | Perform web searches via Anthropic API |
 | `Write` | Create or overwrite files (supports base64 encoding for binary files) |
 
@@ -676,3 +715,4 @@ npm run build
 - Browser extension: Built separately via `npm run build` in `clients/browser/`
 - Office Add-in: Built separately via `npm run build` in `clients/office/`
 - Figma plugin: Built separately via `npm run build` in `clients/figma/`
+- Obsidian plugin: Built separately via `npm run build` in `clients/obsidian/`
