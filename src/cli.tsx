@@ -34,6 +34,7 @@ import {
   removeProviderModels,
 } from './services/modelProvider.js';
 import { initializeProviders } from './services/modelProviders/index.js';
+import { exportProject, importProject } from './services/projectExporter.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { enableToolApproval } from './services/toolApproval.js';
 import { initializeTools } from './services/tools/index.js';
@@ -74,7 +75,10 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
     '--tls-key <path>',
     'Path to TLS private key file',
   ).option('--scope <scope>', 'Where to save config changes: global (default), project, or memory')
-  .parse(process.argv, {from: 'node'});
+  .option('--export-project <path>', 'Export project data to a gzip archive').option(
+    '--import-project <path>',
+    'Import project data from a gzip archive',
+  ).parse(process.argv, {from: 'node'});
 
 const opts = program.opts();
 
@@ -140,6 +144,32 @@ if (opts.addProvider) {
 if (opts.removeProvider) {
   const count = removeProviderModels(opts.removeProvider);
   console.log(`Removed ${count} models from ${opts.removeProvider}`);
+  process.exit(0);
+}
+
+if (opts.exportProject) {
+  try {
+    const result = exportProject(opts.exportProject);
+    console.log(`Exported ${result.count} files to ${result.path}`);
+  } catch (e) {
+    console.error(`Export failed: ${e instanceof Error ? e.message : e}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (opts.importProject) {
+  if (!existsSync(opts.importProject)) {
+    console.error(`File not found: ${opts.importProject}`);
+    process.exit(1);
+  }
+  try {
+    const count = importProject(opts.importProject);
+    console.log(`Imported ${count} files`);
+  } catch (e) {
+    console.error(`Import failed: ${e instanceof Error ? e.message : e}`);
+    process.exit(1);
+  }
   process.exit(0);
 }
 
