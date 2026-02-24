@@ -62,6 +62,12 @@ async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
     'anthropic/claude-sonnet-4.6',
     'anthropic/claude-sonnet-4.5',
   ];
+  const PROVIDER_PINNED_MODELS: Record<string, {slug: string; label: string;}[]> = {
+    'anthropic/claude-opus-4.6': [{slug: 'anthropic', label: 'Anthropic'}, {
+      slug: 'google-vertex',
+      label: 'Google Vertex',
+    }, {slug: 'amazon-bedrock', label: 'Amazon Bedrock'}],
+  };
   const models: ModelConfig[] = [];
 
   for (const model of data.data.filter(m => matchesPrefix(m.id, ANTHROPIC_PREFIXES))) {
@@ -86,6 +92,21 @@ async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
         apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
         contextSize: 200,
       });
+    }
+
+    const pinnedProviders = PROVIDER_PINNED_MODELS[model.id];
+    if (pinnedProviders) {
+      for (const {slug, label} of pinnedProviders) {
+        models.push({
+          id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: `${model.id}:${slug}`,
+          nickname: `Zenmux ${model.display_name || model.id} [${label}]`,
+          provider: 'anthropic' as const,
+          apiKey,
+          apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
+          contextSize,
+        });
+      }
     }
   }
 
