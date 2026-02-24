@@ -999,7 +999,7 @@ export default function App() {
                     >
                       <div
                         className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                          lanAccess ? 'translate-x-[22px]' : 'translate-x-0.5'
+                          lanAccess ? 'translate-x-5.5' : 'translate-x-0.5'
                         }`}
                       />
                     </button>
@@ -1030,7 +1030,7 @@ export default function App() {
                     >
                       <div
                         className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                          fixedPort ? 'translate-x-[22px]' : 'translate-x-0.5'
+                          fixedPort ? 'translate-x-5.5' : 'translate-x-0.5'
                         }`}
                       />
                     </button>
