@@ -78,7 +78,7 @@ export const ToolCallBlock = memo(
           {showInline && diffs.map((diff, i) => (
             <div key={i}>
               <div className='h-px bg-white/5 light:bg-black/10' />
-              <div className='flex items-center gap-2 px-4 py-1 text-xs text-vscode-text-muted'>
+              <div className='flex items-center gap-2 px-4 py-2.5 text-xs text-vscode-text-muted font-mono border-b border-vscode-element'>
                 <span className='font-medium truncate' title={diff.filePath}>
                   {getFileName(diff.filePath)}
                 </span>
