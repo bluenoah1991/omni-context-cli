@@ -15,7 +15,9 @@ import {
   Rocket,
   RotateCcw,
   Save,
+  Settings,
   Shield,
+  Smartphone,
   Square,
   X,
 } from 'lucide-react';
@@ -90,6 +92,10 @@ export default function App() {
     officeRunning,
     officePort,
     setOfficeStatus,
+    lanAccess,
+    fixedPort,
+    setLanAccess,
+    setFixedPort,
   } = usePortalStore();
 
   const [appVersion, setAppVersion] = useState('');
@@ -134,6 +140,8 @@ export default function App() {
       setDesktopConfig(desktop);
 
       setApprovalMode(desktop.approvalMode ?? 'write');
+      setLanAccess(desktop.lanAccess ?? false);
+      setFixedPort(desktop.fixedPort ?? null);
 
       let workspace = desktop.defaultWorkspace;
       if (
@@ -336,6 +344,7 @@ export default function App() {
           selectedWorkspace,
           approvalMode,
           'assistant',
+          {lanAccess, fixedPort},
         );
         if (result.success && result.port) {
           setServePort(result.port);
@@ -455,15 +464,29 @@ export default function App() {
             onClick={setActiveTab}
           />
           <NavItem
+            id='mobile'
+            icon={Smartphone}
+            label='Mobile Access'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
             id='prompts'
             icon={FileText}
-            label='Prompts'
+            label='System Prompts'
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+          <NavItem
+            id='settings'
+            icon={Settings}
+            label='Settings'
             activeTab={activeTab}
             onClick={setActiveTab}
           />
         </nav>
 
-        <div className='px-4 py-4 border-t border-vscode-border bg-vscode-element/10'>
+        <div className='px-5 py-8 border-t border-vscode-border bg-vscode-element/10'>
           {servePort
             ? (
               <div className='space-y-4'>
@@ -530,9 +553,9 @@ export default function App() {
 
                 <button
                   onClick={handleStopServe}
-                  className='w-full py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-all flex items-center justify-center gap-2 font-medium text-sm'
+                  className='w-full px-5 py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-colors flex items-center justify-center gap-2 text-base font-medium'
                 >
-                  <Square size={16} />
+                  <Square size={18} />
                   Stop Serving
                 </button>
               </div>
@@ -597,9 +620,9 @@ export default function App() {
                 <button
                   onClick={handleLaunch}
                   disabled={!canLaunch}
-                  className='w-full py-2 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 font-medium text-sm'
+                  className='w-full px-5 py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-colors flex items-center justify-center gap-2 text-base font-medium'
                 >
-                  <Rocket size={16} />
+                  <Rocket size={18} />
                   {serveOnly ? 'Start Serving' : 'Launch'}
                 </button>
               </div>
@@ -725,7 +748,7 @@ export default function App() {
                 )}
               </header>
 
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 shadow-sm'>
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <h3 className='text-sm font-medium text-vscode-text-header mb-4'>
                   Add New Provider
                 </h3>
@@ -815,6 +838,236 @@ export default function App() {
                     provides maximum safety but may interrupt the workflow frequently.
                   </p>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'mobile' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Mobile Access</h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Use OmniContext on your phone as a native-like app
+                </p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    1
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Enable LAN access
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Go to the{' '}
+                      <button
+                        onClick={() => setActiveTab('settings')}
+                        className='text-vscode-accent hover:underline'
+                      >
+                        Settings
+                      </button>{' '}
+                      tab and turn on{' '}
+                      <strong className='text-vscode-text-header'>LAN Access</strong>. You may also
+                      want to enable <strong className='text-vscode-text-header'>Fixed Port</strong>
+                      {' '}
+                      so the address stays the same across restarts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    2
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Start the server
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Check <strong className='text-vscode-text-header'>Serve only</strong>{' '}
+                      on the left panel and click{' '}
+                      <strong className='text-vscode-text-header'>Start Serving</strong>. The server
+                      URL will appear at the bottom of the sidebar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    3
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Open on your phone
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      Make sure your phone is on the same Wi-Fi network. Open the browser and go to
+                      {' '}
+                      <strong className='text-vscode-text-header'>
+                        http://&lt;your-computer-ip&gt;:&lt;port&gt;
+                      </strong>
+                      . Replace the IP and port with the values shown in the server URL (use your
+                      computer's local IP instead of localhost).
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    4
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      Install as an app
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      The web UI supports PWA (Progressive Web App). Once the page loads:
+                    </p>
+                    <ul className='text-xs text-vscode-text-muted mt-2 space-y-1.5 list-disc list-inside'>
+                      <li>
+                        <strong className='text-vscode-text-header'>iOS Safari</strong>{' '}
+                        -- Tap the share button, then{' '}
+                        <strong className='text-vscode-text-header'>Add to Home Screen</strong>
+                      </li>
+                      <li>
+                        <strong className='text-vscode-text-header'>Android Chrome</strong>{' '}
+                        -- Tap the menu (three dots), then{' '}
+                        <strong className='text-vscode-text-header'>Add to Home screen</strong> or
+                        {' '}
+                        <strong className='text-vscode-text-header'>Install app</strong>
+                      </li>
+                    </ul>
+                    <p className='text-xs text-vscode-text-muted mt-2'>
+                      This gives you a full-screen, app-like experience with no browser chrome.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
+                <p>
+                  <strong className='text-vscode-text-header'>Tip:</strong>{' '}
+                  To find your computer's local IP, open a terminal and run{' '}
+                  <code className='px-1.5 py-0.5 bg-vscode-bg rounded text-vscode-text-header'>
+                    ipconfig
+                  </code>{' '}
+                  on Windows or{' '}
+                  <code className='px-1.5 py-0.5 bg-vscode-bg rounded text-vscode-text-header'>
+                    ifconfig
+                  </code>{' '}
+                  on macOS/Linux. Look for an address like 192.168.x.x.
+                </p>
+                <p>
+                  Your phone and computer must be on the same network. The server needs to be
+                  running for the app to work.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Settings</h2>
+                <p className='text-vscode-text-muted text-sm'>
+                  Configure server behavior for serve mode
+                </p>
+              </header>
+
+              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-6'>
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <h3 className='text-sm font-medium text-vscode-text-header'>LAN Access</h3>
+                      <p className='text-xs text-vscode-text-muted mt-1'>
+                        Allow devices on your local network to connect to the server
+                      </p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const next = !lanAccess;
+                        setLanAccess(next);
+                        const newConfig = {...desktopConfig, lanAccess: next};
+                        setDesktopConfig(newConfig);
+                        await window.electronAPI.saveDesktopConfig(newConfig);
+                      }}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        lanAccess ? 'bg-vscode-accent' : 'bg-vscode-border'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          lanAccess ? 'translate-x-[22px]' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className='border-t border-vscode-border' />
+
+                <div>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <h3 className='text-sm font-medium text-vscode-text-header'>Fixed Port</h3>
+                      <p className='text-xs text-vscode-text-muted mt-1'>
+                        Use a specific port instead of a random one each time
+                      </p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const next = fixedPort ? null : 5281;
+                        setFixedPort(next);
+                        const newConfig = {...desktopConfig, fixedPort: next};
+                        setDesktopConfig(newConfig);
+                        await window.electronAPI.saveDesktopConfig(newConfig);
+                      }}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        fixedPort ? 'bg-vscode-accent' : 'bg-vscode-border'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          fixedPort ? 'translate-x-[22px]' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {fixedPort !== null && (
+                    <div className='mt-3'>
+                      <input
+                        type='number'
+                        value={fixedPort}
+                        onChange={async e => {
+                          const val = parseInt(e.target.value, 10);
+                          const port = isNaN(val) ? null : Math.max(1, Math.min(65535, val));
+                          setFixedPort(port);
+                          const newConfig = {...desktopConfig, fixedPort: port};
+                          setDesktopConfig(newConfig);
+                          await window.electronAPI.saveDesktopConfig(newConfig);
+                        }}
+                        min={1}
+                        max={65535}
+                        className='w-32 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
+                <p>
+                  <strong className='text-vscode-text-header'>LAN Access</strong>{' '}
+                  binds the server to all network interfaces (0.0.0.0) so other devices on the same
+                  network can reach it. When off, only this computer can connect.
+                </p>
+                <p>
+                  <strong className='text-vscode-text-header'>Fixed Port</strong>{' '}
+                  keeps the server on the same port across restarts, so you don't have to update the
+                  address in your browser extension or Office add-in every time.
+                </p>
               </div>
             </div>
           )}

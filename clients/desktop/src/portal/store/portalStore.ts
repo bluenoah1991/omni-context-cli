@@ -32,6 +32,8 @@ interface PortalState {
   officeInstalled: boolean;
   officeRunning: boolean;
   officePort: number;
+  lanAccess: boolean;
+  fixedPort: number | null;
 
   setOmxConfig: (config: OmxConfig) => void;
   setDesktopConfig: (config: DesktopConfig) => void;
@@ -48,6 +50,8 @@ interface PortalState {
   setSelectedPromptType: (type: PromptType) => void;
   setPromptEditorValue: (value: string) => void;
   setOfficeStatus: (status: {installed: boolean; running: boolean; port: number;}) => void;
+  setLanAccess: (enabled: boolean) => void;
+  setFixedPort: (port: number | null) => void;
 }
 
 function computeDerivedState(omxConfig: OmxConfig, selectedWorkspace: string) {
@@ -89,6 +93,8 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   officeInstalled: false,
   officeRunning: false,
   officePort: 52810,
+  lanAccess: false,
+  fixedPort: null,
 
   setOmxConfig: config => {
     const {selectedWorkspace} = get();
@@ -119,4 +125,6 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
       officeRunning: status.running,
       officePort: status.port,
     }),
+  setLanAccess: enabled => set({lanAccess: enabled}),
+  setFixedPort: port => set({fixedPort: port}),
 }));

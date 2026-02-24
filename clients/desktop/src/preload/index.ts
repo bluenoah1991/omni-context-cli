@@ -10,8 +10,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   launch: (workspace: string, approvalMode: string) =>
     ipcRenderer.send('launch', workspace, approvalMode),
-  startServe: (workspace: string, approvalMode: string, workflow?: string) =>
-    ipcRenderer.invoke('start-serve', workspace, approvalMode, workflow),
+  startServe: (
+    workspace: string,
+    approvalMode: string,
+    workflow?: string,
+    options?: {lanAccess?: boolean; fixedPort?: number | null;},
+  ) => ipcRenderer.invoke('start-serve', workspace, approvalMode, workflow, options),
   stopServe: () => ipcRenderer.invoke('stop-serve'),
   getServeStatus: () =>
     ipcRenderer.invoke('get-serve-status') as Promise<

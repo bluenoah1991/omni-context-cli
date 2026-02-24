@@ -29,9 +29,15 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     'start-serve',
-    async (_, workspace: string, approvalMode: string, workflow?: string) => {
+    async (
+      _,
+      workspace: string,
+      approvalMode: string,
+      workflow?: string,
+      options?: {lanAccess?: boolean; fixedPort?: number | null;},
+    ) => {
       try {
-        const port = await startServer(workspace, approvalMode as ApprovalMode, workflow);
+        const port = await startServer(workspace, approvalMode as ApprovalMode, workflow, options);
         for (let i = 0; i < 300; i++) {
           if (await checkPort(port)) return {success: true, port, tls: isTls()};
           await new Promise(r => setTimeout(r, 100));

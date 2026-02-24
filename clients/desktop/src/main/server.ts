@@ -40,16 +40,20 @@ export async function startServer(
   cwd: string,
   approvalMode: ApprovalMode,
   workflow?: string,
+  options?: {lanAccess?: boolean; fixedPort?: number | null;},
 ): Promise<number> {
   await resolveShellEnv();
-  const port = await findFreePort();
+  const port = options?.fixedPort ?? await findFreePort();
   currentPort = port;
+
+  const host = options?.lanAccess ? '0.0.0.0' : '127.0.0.1';
 
   const args = [
     getPath('cli'),
     '--serve',
     '--scope=project',
     `--port=${port}`,
+    `--host=${host}`,
     `--parent-pid=${process.pid}`,
   ];
   if (approvalMode === 'write') args.push('--approve-write');

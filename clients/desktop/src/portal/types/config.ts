@@ -15,15 +15,19 @@ export type Tab =
   | 'workspaces'
   | 'models'
   | 'permissions'
+  | 'settings'
   | 'prompts'
   | 'office'
   | 'browser'
   | 'obsidian'
-  | 'figma';
+  | 'figma'
+  | 'mobile';
 
 export interface DesktopConfig {
   workspaces: Array<{name: string; path: string;}>;
   defaultWorkspace: string;
   lastWorkspace?: string;
   approvalMode?: ApprovalMode;
+  lanAccess?: boolean;
+  fixedPort?: number | null;
 }
