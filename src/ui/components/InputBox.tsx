@@ -1,6 +1,6 @@
 import { Box, Text, useInput } from 'ink';
 import path from 'node:path';
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
   addToInputHistory,
   getInputHistory,
@@ -167,6 +167,22 @@ export function InputBox(
   });
   const [pickerCancelled, setPickerCancelled] = useState(false);
   const [pendingMediaPath, setPendingMediaPath] = useState<string | null>(null);
+  const lastKeyIsBackspaceRef = useRef(true);
+
+  useEffect(() => {
+    const handleData = (data: Buffer) => {
+      const s = data.toString();
+      if (s === '\x7f' || s === '\b' || s === '\x1b\x7f' || s === '\x1b\b') {
+        lastKeyIsBackspaceRef.current = true;
+      } else if (s.startsWith('\x1b[3')) {
+        lastKeyIsBackspaceRef.current = false;
+      }
+    };
+    process.stdin.prependListener('data', handleData);
+    return () => {
+      process.stdin.removeListener('data', handleData);
+    };
+  }, []);
 
   const filteredSlashCommands = useMemo(() => {
     if (!state.value || !state.value.startsWith('/') || state.value.includes('\n')) return [];
@@ -280,10 +296,8 @@ export function InputBox(
       dispatch({type: 'move-to-line-start'});
     } else if (key.ctrl && input === 'e') {
       dispatch({type: 'move-to-line-end'});
-    } else if (key.backspace || (key.delete && process.platform !== 'win32')) {
-      dispatch({type: 'backspace'});
-    } else if (key.delete) {
-      dispatch({type: 'delete'});
+    } else if (key.backspace || key.delete) {
+      dispatch({type: lastKeyIsBackspaceRef.current ? 'backspace' : 'delete'});
     } else if (input) {
       const mediaPath = extractMediaPath(input);
       if (mediaPath) {
