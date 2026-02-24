@@ -51,14 +51,25 @@ export function StatusBar(
 
   return (
     <Box flexGrow={1} justifyContent='space-between' marginTop={1}>
-      <Text color={colors.muted}>
-        {ctrlCPressed
-          ? '(Press Ctrl+C again to exit)'
-          : `${nickname}${thinkingText} | ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
-      </Text>
-      <Text color={colors.muted}>
-        {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
-      </Text>
+      {ctrlCPressed
+        ? <Text color={colors.muted}>{'(Press Ctrl+C again to exit)'}</Text>
+        : (
+          <Box flexShrink={1}>
+            <Box flexShrink={1}>
+              <Text color={colors.muted} wrap='truncate-end'>{`${nickname}${thinkingText}`}</Text>
+            </Box>
+            <Box flexShrink={0} marginLeft={1}>
+              <Text color={colors.muted}>
+                {`| ${contextPercent}% (⇈ ${inputTokens} ⇊ ${outputTokens} ↺ ${cachedTokens})`}
+              </Text>
+            </Box>
+          </Box>
+        )}
+      <Box flexShrink={0} marginLeft={2}>
+        <Text color={colors.muted}>
+          {isLoading ? '(Press ESC to interrupt)' : '(Press ESC to enter the menu)'}
+        </Text>
+      </Box>
     </Box>
   );
 }
