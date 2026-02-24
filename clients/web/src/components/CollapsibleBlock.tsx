@@ -12,6 +12,7 @@ interface CollapsibleBlockProps {
   variant: 'purple' | 'blue' | 'red' | 'green';
   clickable?: boolean;
   renderMarkdown?: boolean;
+  children?: React.ReactNode;
 }
 
 const variantStyles = {
@@ -53,6 +54,7 @@ export const CollapsibleBlock = memo(
       variant,
       clickable = false,
       renderMarkdown = false,
+      children,
     }: CollapsibleBlockProps,
   ) {
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -103,6 +105,7 @@ export const CollapsibleBlock = memo(
               )}
           </div>
         )}
+        {children}
       </div>
     );
   },

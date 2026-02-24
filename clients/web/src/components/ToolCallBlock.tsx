@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useChatStore } from '../store/chatStore';
 import type { FileDiff } from '../types/uiMessage';
 import { CollapsibleBlock } from './CollapsibleBlock';
+import { DiffContent } from './DiffView';
 
 interface ToolCallBlockProps {
   toolName: string;
@@ -11,10 +12,16 @@ interface ToolCallBlockProps {
   toolResult?: string;
 }
 
+function getFileName(filePath: string): string {
+  const parts = filePath.replace(/\\/g, '/').split('/');
+  return parts[parts.length - 1] || filePath;
+}
+
 export const ToolCallBlock = memo(
   function ToolCallBlock({toolName, toolInput, toolCallId, toolResult}: ToolCallBlockProps) {
     const openDiffPanel = useChatStore(state => state.openDiffPanel);
     const toolExpanded = useChatStore(state => state.toolExpanded);
+    const inlineDiff = useChatStore(state => state.inlineDiff);
 
     const {displayContent, isError, diffs} = useMemo(() => {
       if (!toolResult) {
@@ -43,6 +50,7 @@ export const ToolCallBlock = memo(
 
     const title = toolInput || toolName;
     const hasDiffs = diffs && diffs.length > 0;
+    const showInline = hasDiffs && inlineDiff;
     const isWebSearch = toolName === 'WebSearch';
 
     const icon = isWebSearch
@@ -55,18 +63,33 @@ export const ToolCallBlock = memo(
 
     return (
       <div
-        onClick={hasDiffs ? handleClick : undefined}
-        className={hasDiffs ? 'cursor-pointer' : ''}
+        onClick={hasDiffs && !inlineDiff ? handleClick : undefined}
+        className={hasDiffs && !inlineDiff ? 'cursor-pointer' : ''}
       >
         <CollapsibleBlock
           icon={icon}
           title={title}
-          content={displayContent}
+          content={showInline ? undefined : displayContent}
           loading={!toolResult}
           defaultExpanded={toolExpanded}
           variant={variant}
-          clickable={hasDiffs || false}
-        />
+          clickable={hasDiffs && !inlineDiff || false}
+        >
+          {showInline && diffs.map((diff, i) => (
+            <div key={i}>
+              <div className='h-px bg-white/5 light:bg-black/10' />
+              <div className='flex items-center gap-2 px-4 py-1 text-xs text-vscode-text-muted'>
+                <span className='font-medium truncate' title={diff.filePath}>
+                  {getFileName(diff.filePath)}
+                </span>
+                <span className='opacity-50 truncate hidden sm:inline'>{diff.filePath}</span>
+              </div>
+              <div className='max-h-80 overflow-auto'>
+                <DiffContent patch={diff.patch} />
+              </div>
+            </div>
+          ))}
+        </CollapsibleBlock>
       </div>
     );
   },

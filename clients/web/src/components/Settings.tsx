@@ -24,6 +24,8 @@ export default function Settings({onClose}: SettingsProps) {
     setToolExpanded,
     autoDiffPanel,
     setAutoDiffPanel,
+    inlineDiff,
+    setInlineDiff,
   } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('models');
   const [currentModelId, setCurrentModelId] = useState(currentModel?.id || '');
@@ -262,6 +264,13 @@ export default function Settings({onClose}: SettingsProps) {
                 description='Show file diffs in preview panel and refresh each turn'
                 enabled={autoDiffPanel}
                 onChange={setAutoDiffPanel}
+              />
+
+              <ToggleOption
+                label='Inline Diffs'
+                description='Show diffs directly in the chat instead of the side panel'
+                enabled={inlineDiff}
+                onChange={setInlineDiff}
               />
             </>
           )}

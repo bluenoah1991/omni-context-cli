@@ -11,6 +11,7 @@ export interface UISlice {
   thinkingExpanded: boolean;
   toolExpanded: boolean;
   autoDiffPanel: boolean;
+  inlineDiff: boolean;
   ideContext: IDEContext | null;
   pollInterval: ReturnType<typeof setInterval> | null;
   previewPanelOpen: boolean;
@@ -23,6 +24,7 @@ export interface UISlice {
   setThinkingExpanded: (expanded: boolean) => void;
   setToolExpanded: (expanded: boolean) => void;
   setAutoDiffPanel: (enabled: boolean) => void;
+  setInlineDiff: (enabled: boolean) => void;
   startPolling: () => void;
   stopPolling: () => void;
   openDiffPanel: (diff: FileDiff) => void;
@@ -46,7 +48,8 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   theme: 'dark',
   thinkingExpanded: localStorage.getItem('thinkingExpanded') !== 'false',
   toolExpanded: localStorage.getItem('toolExpanded') !== 'false',
-  autoDiffPanel: localStorage.getItem('autoDiffPanel') !== 'false',
+  autoDiffPanel: localStorage.getItem('autoDiffPanel') === 'true',
+  inlineDiff: localStorage.getItem('inlineDiff') !== 'false',
   ideContext: null,
   pollInterval: null,
   previewPanelOpen: false,
@@ -71,6 +74,11 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   setAutoDiffPanel: enabled => {
     localStorage.setItem('autoDiffPanel', String(enabled));
     set({autoDiffPanel: enabled});
+  },
+
+  setInlineDiff: enabled => {
+    localStorage.setItem('inlineDiff', String(enabled));
+    set({inlineDiff: enabled});
   },
 
   startPolling: () => {

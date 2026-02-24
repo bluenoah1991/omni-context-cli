@@ -73,7 +73,7 @@ function appendMedia(session: Session, media: {url: string; mimeType: string;}):
 }
 
 function autoOpenDiff(message: UIMessage, state: ChatState): void {
-  if (message.role !== 'tool_result' || !state.autoDiffPanel) return;
+  if (message.role !== 'tool_result' || !state.autoDiffPanel || state.inlineDiff) return;
   try {
     const parsed = JSON.parse(message.content);
     if (parsed.success && parsed.diffs) {
