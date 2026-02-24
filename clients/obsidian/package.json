@@ -2,7 +2,7 @@
   "name": "omni-context-obsidian-plugin",
   "displayName": "OmniContext for Obsidian",
   "description": "OmniContext is a small, helpful, zero-telemetry coding assistant.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --outfile=dist/omni-context/main.js --external:obsidian --external:electron --external:@codemirror/autocomplete --external:@codemirror/collab --external:@codemirror/commands --external:@codemirror/language --external:@codemirror/lint --external:@codemirror/search --external:@codemirror/state --external:@codemirror/view --format=cjs --platform=node --minify && cp manifest.json styles.css dist/omni-context/",
     "dev": "mkdir -p dist/omni-context && cp manifest.json styles.css dist/omni-context/; esbuild src/main.ts --bundle --outfile=dist/omni-context/main.js --external:obsidian --external:electron --external:@codemirror/autocomplete --external:@codemirror/collab --external:@codemirror/commands --external:@codemirror/language --external:@codemirror/lint --external:@codemirror/search --external:@codemirror/state --external:@codemirror/view --format=cjs --platform=node --sourcemap --watch"
