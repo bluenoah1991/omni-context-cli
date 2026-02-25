@@ -15,7 +15,10 @@ let tlsEnabled = false;
 export const getPort = () => currentPort;
 export const isTls = () => tlsEnabled;
 
+const DEFAULT_PORT = 5281;
+
 async function findFreePort(): Promise<number> {
+  if (!(await checkPort(DEFAULT_PORT))) return DEFAULT_PORT;
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.listen(0, () => {
@@ -43,7 +46,9 @@ export async function startServer(
   options?: {lanAccess?: boolean; fixedPort?: number | null; language?: string;},
 ): Promise<number> {
   await resolveShellEnv();
-  const port = options?.fixedPort ?? await findFreePort();
+  const port = options?.fixedPort
+    ? (await checkPort(options.fixedPort) ? await findFreePort() : options.fixedPort)
+    : await findFreePort();
   currentPort = port;
 
   const host = options?.lanAccess ? '0.0.0.0' : '127.0.0.1';
