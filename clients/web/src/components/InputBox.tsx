@@ -498,26 +498,32 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     : Sparkles}
                   active={config?.workflowPreset !== 'normal'}
                   title={t.status.mode(
-                    (config?.workflowPreset ?? 'specialist').charAt(0).toUpperCase()
-                      + (config?.workflowPreset ?? 'specialist').slice(1),
+                    (t.settings as Record<string, unknown>)[
+                      config?.workflowPreset ?? 'specialist'
+                    ] as string ?? config?.workflowPreset ?? 'specialist',
                     config?.workflowPreset !== 'normal',
                   )}
-                  showStatus={false}
                 />
                 <StatusIcon
                   icon={Brain}
                   active={config?.enableThinking}
-                  title={t.status.extendedThinking}
+                  title={`${t.status.extendedThinking}: ${
+                    config?.enableThinking ? t.status.on : t.status.off
+                  }`}
                 />
                 <StatusIcon
                   icon={MessageSquare}
                   active={config?.memoryEnabled}
-                  title={t.status.memory}
+                  title={`${t.status.memory}: ${
+                    config?.memoryEnabled ? t.status.on : t.status.off
+                  }`}
                 />
                 <StatusIcon
                   icon={Scissors}
                   active={config?.contextEditing}
-                  title={t.status.contextEditing}
+                  title={`${t.status.contextEditing}: ${
+                    config?.contextEditing ? t.status.on : t.status.off
+                  }`}
                 />
               </div>
 
