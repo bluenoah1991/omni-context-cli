@@ -45,6 +45,7 @@ export const enUS = {
     enterApiKey: 'Enter API Key',
     adding: 'Adding...',
     addProvider: 'Add Provider',
+    addProviderFailed: 'Failed to add provider',
     configured: 'Configured',
     noProviders: 'No providers configured yet',
     removeProvider: 'Remove provider',

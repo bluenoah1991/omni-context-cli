@@ -238,7 +238,7 @@ export default function App() {
       await window.electronAPI.saveOmxConfig(newConfig);
       clearProviderForm();
     } catch (err) {
-      setProviderError(err instanceof Error ? err.message : 'Failed to add provider');
+      setProviderError(err instanceof Error ? err.message : t.models.addProviderFailed);
     } finally {
       setIsAddingProvider(false);
     }
@@ -1104,7 +1104,7 @@ export default function App() {
                   <textarea
                     value={promptEditorValue}
                     onChange={e => setPromptEditorValue(e.target.value)}
-                    placeholder={t.prompts.placeholder(selectedPromptType)}
+                    placeholder={t.prompts.placeholder(t.prompts[selectedPromptType])}
                     className='w-full h-64 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono resize-none focus:outline-none focus:border-vscode-accent select-text'
                   />
                 </div>

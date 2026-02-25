@@ -47,6 +47,7 @@ export const zhCN: Locale = {
     enterApiKey: '输入 API Key',
     adding: '添加中...',
     addProvider: '添加提供商',
+    addProviderFailed: '添加提供商失败',
     configured: '已配置',
     noProviders: '尚未配置任何提供商',
     removeProvider: '移除提供商',

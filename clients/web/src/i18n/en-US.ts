@@ -75,6 +75,8 @@ export const enUS = {
     closePanel: 'Close panel',
     loading: 'Loading...',
     preview: 'Preview',
+    binaryFile: "Binary file -- can't preview this one",
+    diff: 'diff',
   },
   app: {toggleFileTree: 'Toggle file tree', settings: 'Settings'},
 };

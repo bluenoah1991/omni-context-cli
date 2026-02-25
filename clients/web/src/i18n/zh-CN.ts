@@ -77,6 +77,8 @@ export const zhCN: Locale = {
     closePanel: '关闭面板',
     loading: '加载中...',
     preview: '预览',
+    binaryFile: '二进制文件，无法预览',
+    diff: '差异',
   },
   app: {toggleFileTree: '切换文件树', settings: '设置'},
 };

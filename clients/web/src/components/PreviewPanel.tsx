@@ -7,10 +7,10 @@ import { useChatStore } from '../store/chatStore';
 import type { PreviewTab } from '../types/uiMessage';
 import { DiffContent } from './DiffView';
 
-function getTabLabel(tab: PreviewTab): string {
+function getTabLabel(tab: PreviewTab, diffLabel: string): string {
   const parts = tab.data.filePath.replace(/\\/g, '/').split('/');
   const name = parts[parts.length - 1] || tab.data.filePath;
-  return tab.kind === 'diff' ? `${name} (diff)` : name;
+  return tab.kind === 'diff' ? `${name} (${diffLabel})` : name;
 }
 
 const EXTENSION_LANGUAGES: Record<string, string> = {
@@ -69,6 +69,7 @@ function langFromPath(filePath: string): string | undefined {
 const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
   if (tab.kind === 'diff') return <DiffContent patch={tab.data.patch} />;
 
+  const t = useLocale();
   const theme = useChatStore(state => state.theme);
   const codeStyle = theme === 'light' ? oneLight : vscDarkPlus;
   const {data} = tab;
@@ -96,7 +97,7 @@ const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
   if (data.type === 'binary') {
     return (
       <div className='flex-1 flex items-center justify-center text-vscode-text-muted p-8'>
-        Binary file -- can't preview this one
+        {t.files.binaryFile}
       </div>
     );
   }
@@ -213,7 +214,7 @@ export const PreviewPanel = memo(function PreviewPanel() {
                 className={`truncate max-w-37.5 ${!tab.pinned ? 'italic' : ''}`}
                 title={tab.data.filePath}
               >
-                {getTabLabel(tab)}
+                {getTabLabel(tab, t.files.diff)}
               </span>
               <button
                 onClick={e => {

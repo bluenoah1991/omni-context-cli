@@ -498,14 +498,13 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     : Sparkles}
                   active={config?.workflowPreset !== 'normal'}
                   title={t.status.mode(
-                    ({
+                    {
                       normal: t.settings.normal,
                       specialist: t.settings.specialist,
                       artist: t.settings.artist,
                       explorer: t.settings.explorer,
                       assistant: t.settings.assistant,
-                    } as Record<string, string>)[config?.workflowPreset ?? 'specialist']
-                      ?? t.settings.specialist,
+                    }[config?.workflowPreset ?? 'specialist'],
                     config?.workflowPreset !== 'normal',
                   )}
                 />
