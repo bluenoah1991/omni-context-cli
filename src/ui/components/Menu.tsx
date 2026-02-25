@@ -14,6 +14,7 @@ import {
   setIDEContext,
   setMemoryEnabled,
   setNotificationEnabled,
+  setResponseLanguage,
   setServerCompaction,
   setStreamingOutput,
   setThinking,
@@ -50,6 +51,7 @@ export type View =
   | 'pref-cache-ttl'
   | 'pref-context-editing'
   | 'pref-server-compaction'
+  | 'pref-response-language'
   | 'browse-sessions'
   | 'rewind-session';
 
@@ -97,6 +99,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [cacheTtlIndex, setCacheTtlIndex] = useState<number>();
   const [contextEditingIndex, setContextEditingIndex] = useState<number>();
   const [serverCompactionIndex, setServerCompactionIndex] = useState<number>();
+  const [responseLanguageIndex, setResponseLanguageIndex] = useState<number>();
   const [sessionsIndex, setSessionsIndex] = useState(0);
   const [rewindIndex, setRewindIndex] = useState(0);
   const [modelsIndex, setModelsIndex] = useState(0);
@@ -110,6 +113,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'sessions', label: '↻ Load a previous session'},
       {id: 'rewind', label: '↩ Rewind to a previous message'},
       {id: 'workflow-preset', label: '♪ Switch workflow preset'},
+      {id: 'response-language', label: '✦ Switch response language'},
       {id: 'models', label: '◈ Manage your model list →'},
       {id: 'settings', label: '⚙ Change your preferences →'},
       {id: 'exit', label: '× Quit Omx'},
@@ -120,6 +124,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'browse-sessions',
       'rewind-session',
       'pref-workflow-preset',
+      'pref-response-language',
       'model-ops',
       'prefs',
     ];
@@ -139,7 +144,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           selectedIndex={mainIndex}
           onSelect={setMainIndex}
           onConfirm={i => {
-            if (i === 6) process.exit(0);
+            if (i === 7) process.exit(0);
             else setView(viewMap[i]);
           }}
           onCancel={onClose}
@@ -736,6 +741,43 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             onClose();
           }}
           onCancel={() => setView('prefs')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'pref-response-language') {
+    const items: SelectItem[] = [{id: 'auto', label: '○ Auto'}, {id: 'en', label: '✦ English'}, {
+      id: 'zh',
+      label: '✦ Chinese (Simplified)',
+    }];
+    const langToIndex = {auto: 0, en: 1, zh: 2};
+    const current = config.responseLanguage ?? 'auto';
+    const initialIndex = langToIndex[current] ?? 0;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='response-language'
+          title='What language should the model respond in?'
+          items={items}
+          selectedIndex={responseLanguageIndex ?? initialIndex}
+          onSelect={setResponseLanguageIndex}
+          onConfirm={i => {
+            const langs = ['auto', 'en', 'zh'] as const;
+            const selected = langs[i];
+            if (selected !== current) {
+              setResponseLanguage(selected);
+            }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
         />
       </Box>
     );

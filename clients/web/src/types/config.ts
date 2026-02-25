@@ -11,6 +11,7 @@ export interface Config {
   notificationEnabled: boolean;
   contextEditing: boolean;
   serverCompaction: boolean;
+  responseLanguage?: 'auto' | 'en' | 'zh';
   cacheTtl?: '5m' | '1h';
   webTheme?: 'dark' | 'light' | 'auto';
   language?: string;

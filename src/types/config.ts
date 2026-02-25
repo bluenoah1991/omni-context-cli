@@ -33,6 +33,7 @@ export interface AppConfig {
   serverCompaction: boolean;
   contextEditing: boolean;
   contextEditingRounds: number;
+  responseLanguage?: 'auto' | 'en' | 'zh';
   webTheme?: 'dark' | 'light' | 'auto';
   language?: string;
   clientId?: string;

@@ -211,6 +211,10 @@ export function setLanguage(value: string): void {
   saveAppConfig('language', value);
 }
 
+export function setResponseLanguage(value: 'auto' | 'en' | 'zh'): void {
+  saveAppConfig('responseLanguage', value);
+}
+
 export function initializeCurrentModel(): void {
   const appConfig = loadAppConfig();
 

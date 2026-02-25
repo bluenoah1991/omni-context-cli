@@ -11,6 +11,7 @@ import {
   setLanguage,
   setMemoryEnabled,
   setNotificationEnabled,
+  setResponseLanguage,
   setServerCompaction,
   setThinking,
   setWebTheme,
@@ -103,6 +104,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     contextEditing: config.contextEditing ?? true,
     cacheTtl: config.cacheTtl ?? '5m',
     serverCompaction: config.serverCompaction ?? false,
+    responseLanguage: config.responseLanguage,
     webTheme: config.webTheme,
     language: config.language,
   });
@@ -129,6 +131,7 @@ export async function handleSetConfig(
   if ('contextEditing' in body) setContextEditing(body.contextEditing);
   if ('cacheTtl' in body) setCacheTtl(body.cacheTtl);
   if ('serverCompaction' in body) setServerCompaction(body.serverCompaction);
+  if ('responseLanguage' in body) setResponseLanguage(body.responseLanguage);
   if ('webTheme' in body) setWebTheme(body.webTheme);
   if ('language' in body) setLanguage(body.language);
   sendJsonResponse(res, {ok: true});

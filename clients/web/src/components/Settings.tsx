@@ -41,6 +41,9 @@ export default function Settings({onClose}: SettingsProps) {
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
   const [ideContext, setIdeContext] = useState(config?.ideContext ?? true);
   const [serverCompaction, setServerCompaction] = useState(config?.serverCompaction ?? false);
+  const [responseLanguage, setResponseLanguage] = useState<'auto' | 'en' | 'zh'>(
+    config?.responseLanguage ?? 'auto',
+  );
   const [cacheTtl, setCacheTtl] = useState<'5m' | '1h'>(config?.cacheTtl ?? '5m');
   const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
   const [language, setLanguage] = useState(config?.language || 'en-US');
@@ -58,6 +61,7 @@ export default function Settings({onClose}: SettingsProps) {
       setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
       setServerCompaction(config.serverCompaction ?? false);
+      setResponseLanguage(config.responseLanguage ?? 'auto');
       setIdeContext(config.ideContext ?? true);
       setCacheTtl(config.cacheTtl ?? '5m');
       setWebTheme(config.webTheme || 'dark');
@@ -77,6 +81,7 @@ export default function Settings({onClose}: SettingsProps) {
         notificationEnabled,
         contextEditing,
         serverCompaction,
+        responseLanguage,
         ideContext,
         cacheTtl,
         webTheme,
@@ -185,6 +190,18 @@ export default function Settings({onClose}: SettingsProps) {
                   {value: 'explorer', label: t.settings.explorer},
                   {value: 'assistant', label: t.settings.assistant},
                 ]}
+                placeholder=''
+              />
+
+              <Select
+                label={t.settings.responseLanguage}
+                description={t.settings.responseLanguageDescription}
+                value={responseLanguage}
+                onChange={v => setResponseLanguage(v as typeof responseLanguage)}
+                options={[{value: 'auto', label: t.settings.responseLanguageAuto}, {
+                  value: 'en',
+                  label: t.settings.responseLanguageEn,
+                }, {value: 'zh', label: t.settings.responseLanguageZh}]}
                 placeholder=''
               />
 

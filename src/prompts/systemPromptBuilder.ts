@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import os from 'node:os';
+import { loadAppConfig } from '../services/configManager';
 import { getSkills } from '../services/skillManager';
 import { WorkflowPreset } from '../types/config';
 import { getOmxFilePath } from '../utils/omxPaths';
@@ -33,6 +34,13 @@ export async function buildSystemPrompt(
     if (skillsPrompt) {
       result += '\n\n' + skillsPrompt;
     }
+  }
+
+  const responseLanguage = loadAppConfig().responseLanguage;
+  if (responseLanguage && responseLanguage !== 'auto') {
+    const langName = responseLanguage === 'zh' ? 'Chinese (Simplified)' : 'English';
+    result += '\n\nIMPORTANT: Always respond in ' + langName
+      + ', regardless of the language the user writes in.';
   }
 
   return result;
