@@ -57,6 +57,18 @@ const NavItem = memo(
   },
 );
 
+const Fmt = memo(function Fmt({text}: {text: string;}) {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? <strong key={i} className='text-vscode-text-header'>{part}</strong> : part
+      )}
+    </>
+  );
+});
+
 export default function App() {
   const {
     omxConfig,
@@ -510,7 +522,7 @@ export default function App() {
                     <div className='flex items-center gap-3'>
                       <Box size={16} className='text-vscode-accent shrink-0' />
                       <span className='text-vscode-text-header'>
-                        {serveSnapshot.models} {t.sidebar.models}
+                        {t.sidebar.models(serveSnapshot.models)}
                       </span>
                     </div>
                     <div className='flex items-center gap-3'>
@@ -594,7 +606,7 @@ export default function App() {
                         : 'text-vscode-text-muted'}
                     >
                       {omxConfig.models.length > 0
-                        ? `${omxConfig.models.length} ${t.sidebar.modelsReady}`
+                        ? t.sidebar.modelsReady(omxConfig.models.length)
                         : t.sidebar.noModels}
                     </span>
                   </div>
@@ -866,31 +878,48 @@ export default function App() {
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
-                {[
-                  t.mobile.step1Title,
-                  t.mobile.step2Title,
-                  t.mobile.step3Title,
-                  t.mobile.step4Title,
-                ].map((title, i) => (
+                <div className='flex items-start gap-4'>
+                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                    1
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      {t.mobile.step1Title}
+                    </h3>
+                    <p className='text-xs text-vscode-text-muted'>
+                      {t.mobile.step1TextBefore}
+                      <button
+                        onClick={() => setActiveTab('settings')}
+                        className='text-vscode-accent hover:underline'
+                      >
+                        {t.mobile.step1SettingsLink}
+                      </button>
+                      <Fmt text={t.mobile.step1TextAfter} />
+                    </p>
+                  </div>
+                </div>
+
+                {[t.mobile.step2Title, t.mobile.step3Title, t.mobile.step4Title].map((title, i) => (
                   <div key={i} className='flex items-start gap-4'>
                     <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                      {i + 1}
+                      {i + 2}
                     </div>
                     <div>
                       <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
                       <p className='text-xs text-vscode-text-muted'>
-                        {[
-                          t.mobile.step1Text,
-                          t.mobile.step2Text,
-                          t.mobile.step3Text,
-                          t.mobile.step4Intro,
-                        ][i]}
+                        <Fmt
+                          text={[t.mobile.step2Text, t.mobile.step3Text, t.mobile.step4Intro][i]}
+                        />
                       </p>
-                      {i === 3 && (
+                      {i === 2 && (
                         <>
                           <ul className='text-xs text-vscode-text-muted mt-2 space-y-1.5 list-disc list-inside'>
-                            <li>{t.mobile.step4Ios}</li>
-                            <li>{t.mobile.step4Android}</li>
+                            <li>
+                              <Fmt text={t.mobile.step4Ios} />
+                            </li>
+                            <li>
+                              <Fmt text={t.mobile.step4Android} />
+                            </li>
                           </ul>
                           <p className='text-xs text-vscode-text-muted mt-2'>
                             {t.mobile.step4Outro}
@@ -903,7 +932,9 @@ export default function App() {
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
-                <p>{t.mobile.tip}</p>
+                <p>
+                  <Fmt text={t.mobile.tip} />
+                </p>
                 <p>{t.mobile.networkNote}</p>
               </div>
             </div>
@@ -1183,8 +1214,12 @@ export default function App() {
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
-                <p>{t.office.howItWorks}</p>
-                <p>{t.office.afterInstalling}</p>
+                <p>
+                  <Fmt text={t.office.howItWorks} />
+                </p>
+                <p>
+                  <Fmt text={t.office.afterInstalling} />
+                </p>
                 <p>{t.office.desktopRequired}</p>
               </div>
             </div>
@@ -1211,12 +1246,14 @@ export default function App() {
                           {title}
                         </h3>
                         <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
-                          {[
-                            t.figma.step1Text,
-                            t.figma.step2Text,
-                            t.figma.step3Text,
-                            t.figma.step4Text,
-                          ][i]}
+                          <Fmt
+                            text={[
+                              t.figma.step1Text,
+                              t.figma.step2Text,
+                              t.figma.step3Text,
+                              t.figma.step4Text,
+                            ][i]}
+                          />
                         </p>
                         {i === 0 && (
                           <a
@@ -1234,7 +1271,9 @@ export default function App() {
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <h3 className='text-sm font-medium text-vscode-text-header mb-2'>{t.figma.note}</h3>
-                <p className='text-xs text-vscode-text-muted'>{t.figma.noteText}</p>
+                <p className='text-xs text-vscode-text-muted'>
+                  <Fmt text={t.figma.noteText} />
+                </p>
               </div>
             </div>
           )}
@@ -1262,12 +1301,14 @@ export default function App() {
                     <div>
                       <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
                       <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
-                        {[
-                          t.browserTab.step1Text,
-                          t.browserTab.step2Text,
-                          t.browserTab.step3Text,
-                          t.browserTab.step4Text,
-                        ][i]}
+                        <Fmt
+                          text={[
+                            t.browserTab.step1Text,
+                            t.browserTab.step2Text,
+                            t.browserTab.step3Text,
+                            t.browserTab.step4Text,
+                          ][i]}
+                        />
                       </p>
                       {i === 0 && (
                         <a
@@ -1308,12 +1349,14 @@ export default function App() {
                     <div>
                       <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
                       <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
-                        {[
-                          t.obsidian.step1Text,
-                          t.obsidian.step2Text,
-                          t.obsidian.step3Text,
-                          t.obsidian.step4Text,
-                        ][i]}
+                        <Fmt
+                          text={[
+                            t.obsidian.step1Text,
+                            t.obsidian.step2Text,
+                            t.obsidian.step3Text,
+                            t.obsidian.step4Text,
+                          ][i]}
+                        />
                       </p>
                       {i === 0 && (
                         <a
@@ -1333,7 +1376,9 @@ export default function App() {
                 <h3 className='text-sm font-medium text-vscode-text-header mb-2'>
                   {t.obsidian.note}
                 </h3>
-                <p className='text-xs text-vscode-text-muted'>{t.obsidian.noteText}</p>
+                <p className='text-xs text-vscode-text-muted'>
+                  <Fmt text={t.obsidian.noteText} />
+                </p>
               </div>
             </div>
           )}

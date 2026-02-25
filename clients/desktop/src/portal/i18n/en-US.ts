@@ -13,14 +13,14 @@ export const enUS = {
   },
   loading: 'Loading...',
   sidebar: {
-    models: 'models',
+    models: (count: number) => `${count} model${count !== 1 ? 's' : ''}`,
     noApproval: 'No Approval',
     writeApproval: 'Write Approval',
     fullApproval: 'Full Approval',
     pasteUrl: 'Paste this URL into the Office add-in or browser extension to connect.',
     stopServing: 'Stop Serving',
     noWorkspace: 'No workspace',
-    modelsReady: 'models ready',
+    modelsReady: (count: number) => `${count} model${count !== 1 ? 's' : ''} ready`,
     noModels: 'No models',
     serveOnly: 'Serve only (for Office / Browser)',
     startServing: 'Start Serving',
@@ -66,22 +66,24 @@ export const enUS = {
     title: 'Mobile Access',
     description: 'Use OmniContext on your phone as a native-like app',
     step1Title: 'Enable LAN access',
-    step1Text:
-      'Go to the Settings tab and turn on LAN Access. You may also want to enable Fixed Port so the address stays the same across restarts.',
+    step1TextBefore: 'Go to the ',
+    step1SettingsLink: 'Settings',
+    step1TextAfter:
+      ' tab and turn on **LAN Access**. You may also want to enable **Fixed Port** so the address stays the same across restarts.',
     step2Title: 'Start the server',
     step2Text:
-      'Check Serve only on the left panel and click Start Serving. The server URL will appear at the bottom of the sidebar.',
+      'Check **Serve only** on the left panel and click **Start Serving**. The server URL will appear at the bottom of the sidebar.',
     step3Title: 'Open on your phone',
     step3Text:
-      "Make sure your phone is on the same Wi-Fi network. Open the browser and go to http://<your-computer-ip>:<port>. Replace the IP and port with the values shown in the server URL (use your computer's local IP instead of localhost).",
+      "Make sure your phone is on the same Wi-Fi network. Open the browser and go to **http://<your-computer-ip>:<port>**. Replace the IP and port with the values shown in the server URL (use your computer's local IP instead of localhost).",
     step4Title: 'Install as an app',
-    step4Intro: 'The web UI supports PWA (Progressive Web App). Once the page loads:',
-    step4Ios: 'iOS Safari -- Tap the share button, then Add to Home Screen',
+    step4Intro: 'The web UI supports **PWA** (Progressive Web App). Once the page loads:',
+    step4Ios: '**iOS Safari** -- Tap the share button, then **Add to Home Screen**',
     step4Android:
-      'Android Chrome -- Tap the menu (three dots), then Add to Home screen or Install app',
+      '**Android Chrome** -- Tap the menu (three dots), then **Add to Home screen** or **Install app**',
     step4Outro: 'This gives you a full-screen, app-like experience with no browser chrome.',
     tip:
-      "To find your computer's local IP, open a terminal and run ipconfig on Windows or ifconfig on macOS/Linux. Look for an address like 192.168.x.x.",
+      "To find your computer's local IP, open a terminal and run **ipconfig** on Windows or **ifconfig** on macOS/Linux. Look for an address like **192.168.x.x**.",
     networkNote:
       'Your phone and computer must be on the same network. The server needs to be running for the app to work.',
   },
@@ -133,9 +135,9 @@ export const enUS = {
     removing: 'Removing...',
     uninstall: 'Uninstall',
     howItWorks:
-      'Installing registers the OmniContext add-in with Microsoft Office on this computer. A local HTTPS server provides the add-in interface.',
+      '**How it works:** Installing registers the OmniContext add-in with Microsoft Office on this computer. A local HTTPS server provides the add-in interface.',
     afterInstalling:
-      "After installing, open any Office app (Word, Excel, or PowerPoint). You'll find the OmniContext button on the Home tab.",
+      "After installing, open any Office app (Word, Excel, or PowerPoint). You'll find the **OmniContext** button on the Home tab.",
     desktopRequired:
       'The Desktop app must be running for the add-in to work. It starts automatically when you launch OmniContext Desktop.',
   },
@@ -144,19 +146,19 @@ export const enUS = {
     description: 'Connect Figma to OmniContext',
     step1Title: 'Download the plugin',
     step1Text:
-      'Go to the releases page and download the latest OmniContext Figma plugin package (.zip).',
+      'Go to the releases page and download the latest **OmniContext Figma** plugin package (.zip).',
     step2Title: 'Unzip the package',
     step2Text:
-      "Extract the downloaded .zip file to a folder on your computer. You'll need the dist folder inside.",
+      "Extract the downloaded .zip file to a folder on your computer. You'll need the **dist** folder inside.",
     step3Title: 'Load in Figma',
     step3Text:
-      'Open the Figma desktop app, go to the menu Plugins > Development > Import plugin from manifest... and select the manifest.json file inside the dist folder.',
+      'Open the **Figma desktop app**, go to the menu **Plugins > Development > Import plugin from manifest...** and select the **manifest.json** file inside the **dist** folder.',
     step4Title: 'Connect',
     step4Text:
-      'Run the plugin from Plugins > Development > OmniContext and enter the server address. Use Serve only mode to start a server from the Workspaces tab.',
+      'Run the plugin from **Plugins > Development > OmniContext** and enter the server address. Use **Serve only** mode to start a server from the Workspaces tab.',
     note: 'Note',
     noteText:
-      'The Figma plugin only works in the Figma desktop app. The web version of Figma does not support loading local development plugins.',
+      'The Figma plugin only works in the **Figma desktop app**. The web version of Figma does not support loading local development plugins.',
     openReleases: 'Open Releases Page',
   },
   browserTab: {
@@ -164,16 +166,16 @@ export const enUS = {
     description: 'Connect Google Chrome to OmniContext',
     step1Title: 'Download the extension',
     step1Text:
-      'Go to the releases page and download the latest OmniContext Connect extension package (.zip).',
+      'Go to the releases page and download the latest **OmniContext Connect** extension package (.zip).',
     step2Title: 'Unzip the package',
     step2Text:
-      "Extract the downloaded .zip file to a folder on your computer. You'll need the dist folder inside.",
+      "Extract the downloaded .zip file to a folder on your computer. You'll need the **dist** folder inside.",
     step3Title: 'Load in Chrome',
     step3Text:
-      'Open chrome://extensions in your browser, enable Developer mode, click Load unpacked, and select the dist folder.',
+      'Open **chrome://extensions** in your browser, enable **Developer mode**, click **Load unpacked**, and select the **dist** folder.',
     step4Title: 'Connect',
     step4Text:
-      "Open the extension's side panel in Chrome and enter the server address. Use Serve only mode to start a server from the Workspaces tab.",
+      "Open the extension's side panel in Chrome and enter the server address. Use **Serve only** mode to start a server from the Workspaces tab.",
     openReleases: 'Open Releases Page',
   },
   obsidian: {
@@ -181,19 +183,19 @@ export const enUS = {
     description: 'Connect Obsidian to OmniContext',
     step1Title: 'Download the plugin',
     step1Text:
-      'Go to the releases page and download the latest OmniContext Obsidian plugin package (.zip).',
+      'Go to the releases page and download the latest **OmniContext Obsidian** plugin package (.zip).',
     step2Title: 'Unzip the package',
     step2Text:
-      "Extract the downloaded .zip file. Inside you'll find a folder called omni-context containing main.js, manifest.json, and styles.css.",
+      "Extract the downloaded .zip file. Inside you'll find a folder called **omni-context** containing **main.js**, **manifest.json**, and **styles.css**.",
     step3Title: 'Copy to your vault',
     step3Text:
-      "Move the omni-context folder into your vault's plugin directory: <vault>/.obsidian/plugins/omni-context/. Create the plugins folder if it doesn't exist.",
+      "Move the **omni-context** folder into your vault's plugin directory: **<vault>/.obsidian/plugins/omni-context/**. Create the **plugins** folder if it doesn't exist.",
     step4Title: 'Enable the plugin',
     step4Text:
-      "Open Obsidian, go to Settings > Community plugins, and enable OmniContext. You'll see a chat icon in the left ribbon bar.",
+      "Open Obsidian, go to **Settings > Community plugins**, and enable **OmniContext**. You'll see a chat icon in the left ribbon bar.",
     note: 'Note',
     noteText:
-      "The plugin is desktop-only and requires the OmniContext CLI to be installed. It launches a local server automatically when you open the panel. Obsidian plugins are vault-scoped, so you'll need to install it separately for each vault or use a symlink to share a single copy.",
+      "The plugin is desktop-only and requires the **OmniContext CLI** to be installed. It launches a local server automatically when you open the panel. Obsidian plugins are vault-scoped, so you'll need to install it separately for each vault or use a symlink to share a single copy.",
     openReleases: 'Open Releases Page',
   },
 };
