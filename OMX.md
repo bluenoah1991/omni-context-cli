@@ -73,6 +73,9 @@ npm start -- --acp
 # Save config changes to project scope
 npm start -- --scope project
 
+# Set UI language
+npm start -- --lang zh-CN
+
 # Format code
 npm run format
 ```
@@ -220,6 +223,7 @@ omx/
 |   |   |   |-- components/        # Portal UI components (Select, ProviderItem)
 |   |   |   |-- store/             # Portal state management
 |   |   |   |-- providers/         # Provider configuration panels
+|   |   |   |-- i18n/              # Portal internationalization (en-US, zh-CN)
 |   |   |   +-- types/             # Portal type definitions
 |   |   +-- cli-deps/              # CLI dependencies for bundling
 |   |-- vscode/                    # VS Code extension
@@ -232,7 +236,9 @@ omx/
 |   |   |-- src/components/        # UI components (25 components)
 |   |   |-- src/services/          # API service layer
 |   |   |-- src/store/             # Zustand state management
+|   |   |   +-- slices/            # Store slices (chat, config, session, ui)
 |   |   |-- src/types/             # TypeScript type definitions
+|   |   |-- src/i18n/              # Internationalization (en-US, zh-CN)
 |   |   +-- src/utils/             # Client utilities
 |   |-- browser/                   # Browser extension (Chrome)
 |   |   |-- src/background/        # Service worker and tool handlers
@@ -243,9 +249,13 @@ omx/
 |   |-- office/                    # Office Add-in
 |   |   |-- src/taskpane/          # Taskpane UI
 |   |   |-- src/tools/             # Word, Excel, PowerPoint tools
-|   |   +-- src/services/          # Long-poll client and config
+|   |   |-- src/services/          # Long-poll client and config
+|   |   +-- src/types/             # Tool type definitions
 |   |-- figma/                     # Figma plugin
-|   |   |-- src/ui/                # Plugin UI and tools
+|   |   |-- src/ui/                # Plugin UI
+|   |   |   |-- tools/             # Figma tool implementations
+|   |   |   |-- services/          # Long-poll client, sandbox bridge, config
+|   |   |   +-- types/             # Tool type definitions
 |   |   +-- src/sandbox/           # Figma sandbox code
 |   +-- obsidian/                  # Obsidian plugin
 |       |-- src/main.ts            # Plugin entry point, server lifecycle
@@ -350,6 +360,8 @@ Key options in `~/.omx/omx.json` or `.omx/omx.json`:
 | `serverCompaction` | boolean | false | Enable server-side context compaction |
 | `contextEditing` | boolean | true | Enable context editing |
 | `contextEditingRounds` | number | 0 | Number of context editing rounds |
+| `responseLanguage` | 'auto' \| 'en' \| 'zh' | undefined | Override response language |
+| `language` | string | undefined | UI language code (e.g. en-US, zh-CN) |
 | `webTheme` | 'dark' \| 'light' \| 'auto' | 'auto' | Web client theme |
 | `proxy` | string | undefined | HTTP proxy URL |
 
@@ -401,6 +413,7 @@ The Electron desktop client (`clients/desktop/`) provides a standalone applicati
 - Shell environment resolution on macOS (inherits login shell PATH)
 - Bundles CLI dependencies for offline use
 - Built-in Office Add-in server for local Office integration
+- Internationalization support (English, Chinese)
 - macOS and Windows support
 
 Build the desktop client:
@@ -445,6 +458,7 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Collapsible content blocks
 - Mobile-optimized with PWA support
 - Touch-friendly UI with safe area handling
+- Internationalization support (English, Chinese)
 
 Build the web client:
 ```bash
@@ -573,6 +587,7 @@ npm run build
 | `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
 | `clients/desktop/src/portal/store/portalStore.ts` | Portal state management |
 | `clients/desktop/src/portal/providers/` | Provider configuration panels (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu) |
+| `clients/desktop/src/portal/i18n/` | Portal internationalization (en-US, zh-CN) |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
 | `clients/vscode/src/webviewProvider.ts` | Webview panel management |
 | `clients/vscode/src/utils.ts` | Extension utilities |
@@ -584,6 +599,8 @@ npm run build
 | `clients/vscode/src/mcp/lockFile.ts` | Lock file-based CLI discovery |
 | `clients/web/src/App.tsx` | Web client main component |
 | `clients/web/src/store/chatStore.ts` | Web client state management |
+| `clients/web/src/store/slices/` | Store slices (chat, config, session, ui) |
+| `clients/web/src/i18n/` | Web client internationalization (en-US, zh-CN) |
 | `clients/web/src/services/chatService.ts` | Chat message handling |
 | `clients/web/src/services/sessionService.ts` | Session management |
 | `clients/web/src/services/configService.ts` | Configuration API |
