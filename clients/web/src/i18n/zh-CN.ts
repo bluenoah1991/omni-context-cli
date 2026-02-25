@@ -63,13 +63,12 @@ export const zhCN: Locale = {
     notSet: '未设置',
   },
   status: {
-    on: '开启',
-    off: '关闭',
     extendedThinking: '扩展思维',
     memory: '记忆',
     contextEditing: '上下文编辑',
     tokenUsage: 'Token 用量',
     mode: (name: string, active: boolean) => `${name}模式${active ? '：已开启' : ''}`,
+    format: (label: string, active: boolean) => `${label}：${active ? '开启' : '关闭'}`,
   },
   session: {newChat: '新对话', noSessions: '暂无历史会话'},
   files: {

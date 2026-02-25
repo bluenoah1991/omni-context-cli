@@ -16,9 +16,7 @@ interface SelectProps {
 }
 
 export const Select = memo(
-  function Select(
-    {label, description, value, onChange, options, placeholder = 'Select an option'}: SelectProps,
-  ) {
+  function Select({label, description, value, onChange, options, placeholder}: SelectProps) {
     return (
       <div className='space-y-2'>
         <label className='block text-sm font-medium text-vscode-text'>{label}</label>

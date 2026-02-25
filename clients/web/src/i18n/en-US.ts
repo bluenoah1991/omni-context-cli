@@ -61,13 +61,12 @@ export const enUS = {
     notSet: 'Not Set',
   },
   status: {
-    on: 'On',
-    off: 'Off',
     extendedThinking: 'Extended Thinking',
     memory: 'Memory',
     contextEditing: 'Context Editing',
     tokenUsage: 'Token Usage',
     mode: (name: string, active: boolean) => `${name} Mode${active ? ': On' : ''}`,
+    format: (label: string, active: boolean) => `${label}: ${active ? 'On' : 'Off'}`,
   },
   session: {newChat: 'New Chat', noSessions: 'No previous sessions'},
   files: {

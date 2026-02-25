@@ -498,32 +498,31 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     : Sparkles}
                   active={config?.workflowPreset !== 'normal'}
                   title={t.status.mode(
-                    (t.settings as Record<string, unknown>)[
-                      config?.workflowPreset ?? 'specialist'
-                    ] as string ?? config?.workflowPreset ?? 'specialist',
+                    ({
+                      normal: t.settings.normal,
+                      specialist: t.settings.specialist,
+                      artist: t.settings.artist,
+                      explorer: t.settings.explorer,
+                      assistant: t.settings.assistant,
+                    } as Record<string, string>)[config?.workflowPreset ?? 'specialist']
+                      ?? t.settings.specialist,
                     config?.workflowPreset !== 'normal',
                   )}
                 />
                 <StatusIcon
                   icon={Brain}
                   active={config?.enableThinking}
-                  title={`${t.status.extendedThinking}: ${
-                    config?.enableThinking ? t.status.on : t.status.off
-                  }`}
+                  title={t.status.format(t.status.extendedThinking, !!config?.enableThinking)}
                 />
                 <StatusIcon
                   icon={MessageSquare}
                   active={config?.memoryEnabled}
-                  title={`${t.status.memory}: ${
-                    config?.memoryEnabled ? t.status.on : t.status.off
-                  }`}
+                  title={t.status.format(t.status.memory, !!config?.memoryEnabled)}
                 />
                 <StatusIcon
                   icon={Scissors}
                   active={config?.contextEditing}
-                  title={`${t.status.contextEditing}: ${
-                    config?.contextEditing ? t.status.on : t.status.off
-                  }`}
+                  title={t.status.format(t.status.contextEditing, !!config?.contextEditing)}
                 />
               </div>
 
