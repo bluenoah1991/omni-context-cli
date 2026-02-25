@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { useLocale } from '../i18n';
 
 interface StatusIconProps {
   icon: LucideIcon;
@@ -8,7 +9,8 @@ interface StatusIconProps {
 }
 
 export function StatusIcon({icon: Icon, active, title, showStatus = true}: StatusIconProps) {
-  const displayTitle = showStatus ? `${title}: ${active ? 'On' : 'Off'}` : title;
+  const t = useLocale();
+  const displayTitle = showStatus ? `${title}: ${active ? t.status.on : t.status.off}` : title;
   return (
     <div
       className={`p-1 rounded-md transition-colors ${

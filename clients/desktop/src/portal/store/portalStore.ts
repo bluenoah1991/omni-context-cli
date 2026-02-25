@@ -34,6 +34,7 @@ interface PortalState {
   officePort: number;
   lanAccess: boolean;
   fixedPort: number | null;
+  language: string;
 
   setOmxConfig: (config: OmxConfig) => void;
   setDesktopConfig: (config: DesktopConfig) => void;
@@ -52,6 +53,7 @@ interface PortalState {
   setOfficeStatus: (status: {installed: boolean; running: boolean; port: number;}) => void;
   setLanAccess: (enabled: boolean) => void;
   setFixedPort: (port: number | null) => void;
+  setLanguage: (lang: string) => void;
 }
 
 function computeDerivedState(omxConfig: OmxConfig, selectedWorkspace: string) {
@@ -95,6 +97,7 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   officePort: 52810,
   lanAccess: false,
   fixedPort: null,
+  language: 'en-US',
 
   setOmxConfig: config => {
     const {selectedWorkspace} = get();
@@ -127,4 +130,5 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
     }),
   setLanAccess: enabled => set({lanAccess: enabled}),
   setFixedPort: port => set({fixedPort: port}),
+  setLanguage: lang => set({language: lang}),
 }));

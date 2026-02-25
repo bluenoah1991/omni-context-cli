@@ -13,4 +13,5 @@ export interface Config {
   serverCompaction: boolean;
   cacheTtl?: '5m' | '1h';
   webTheme?: 'dark' | 'light' | 'auto';
+  language?: string;
 }

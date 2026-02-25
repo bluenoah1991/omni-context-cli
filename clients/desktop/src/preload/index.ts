@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     workspace: string,
     approvalMode: string,
     workflow?: string,
-    options?: {lanAccess?: boolean; fixedPort?: number | null;},
+    options?: {lanAccess?: boolean; fixedPort?: number | null; language?: string;},
   ) => ipcRenderer.invoke('start-serve', workspace, approvalMode, workflow, options),
   stopServe: () => ipcRenderer.invoke('stop-serve'),
   getServeStatus: () =>

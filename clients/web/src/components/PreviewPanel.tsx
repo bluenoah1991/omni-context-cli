@@ -2,6 +2,7 @@ import { ChevronLeft, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Prism } from 'react-syntax-highlighter';
 import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useLocale } from '../i18n';
 import { useChatStore } from '../store/chatStore';
 import type { PreviewTab } from '../types/uiMessage';
 import { DiffContent } from './DiffView';
@@ -130,6 +131,7 @@ const FileContent = memo(function FileContent({tab}: {tab: PreviewTab;}) {
 });
 
 export const PreviewPanel = memo(function PreviewPanel() {
+  const t = useLocale();
   const {
     previewPanelOpen,
     previewPanelWidth,
@@ -188,11 +190,11 @@ export const PreviewPanel = memo(function PreviewPanel() {
           <button
             onClick={closePreviewPanel}
             className='p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-md border border-vscode-border hover:border-vscode-border-active'
-            title='Close panel'
+            title={t.files.closePanel}
           >
             <ChevronLeft size={16} />
           </button>
-          <span className='font-medium text-vscode-text'>Preview</span>
+          <span className='font-medium text-vscode-text'>{t.files.preview}</span>
         </div>
 
         <div className='flex border-b border-vscode-element overflow-x-auto'>

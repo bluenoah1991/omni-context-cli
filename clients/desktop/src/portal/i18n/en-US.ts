@@ -1,0 +1,201 @@
+export const enUS = {
+  nav: {
+    workspaces: 'Workspaces',
+    models: 'Models',
+    permissions: 'Permissions',
+    office: 'Office Integration',
+    browser: 'Browser Integration',
+    obsidian: 'Obsidian Integration',
+    figma: 'Figma Integration',
+    mobile: 'Mobile Access',
+    prompts: 'System Prompts',
+    settings: 'Settings',
+  },
+  loading: 'Loading...',
+  sidebar: {
+    models: 'models',
+    noApproval: 'No Approval',
+    writeApproval: 'Write Approval',
+    fullApproval: 'Full Approval',
+    pasteUrl: 'Paste this URL into the Office add-in or browser extension to connect.',
+    stopServing: 'Stop Serving',
+    noWorkspace: 'No workspace',
+    modelsReady: 'models ready',
+    noModels: 'No models',
+    serveOnly: 'Serve only (for Office / Browser)',
+    startServing: 'Start Serving',
+    launch: 'Launch',
+    clickToCopy: 'Click to copy',
+  },
+  workspaces: {
+    title: 'Workspaces',
+    description: 'Open a folder or select a recent project',
+    start: 'Start',
+    openFolder: 'Open Folder',
+    browseFileSystem: 'Browse your file system',
+    recent: 'Recent',
+    removeFromList: 'Remove from list',
+  },
+  models: {
+    title: 'Model Providers',
+    description: 'Configure LLM API providers',
+    required: 'Required',
+    addNewProvider: 'Add New Provider',
+    selectProvider: 'Select Provider...',
+    enterApiKey: 'Enter API Key',
+    adding: 'Adding...',
+    addProvider: 'Add Provider',
+    configured: 'Configured',
+    noProviders: 'No providers configured yet',
+    removeProvider: 'Remove provider',
+    modelCount: (count: number) => `${count} model${count !== 1 ? 's' : ''}`,
+  },
+  permissions: {
+    title: 'Permissions',
+    description: 'Control tool execution safety',
+    approvalMode: 'Approval Mode',
+    approvalDescription: 'Choose when the assistant requires your explicit approval to run tools.',
+    noApproval: 'No Approval (Auto-execute all)',
+    writeApproval: 'Write Approval (Protect files)',
+    fullApproval: 'Full Approval (Ask for everything)',
+    writeRecommended:
+      'is recommended. It allows read-only operations (searching, reading files) to run automatically but asks for confirmation before modifying any files or running shell commands.',
+    fullDescription: 'provides maximum safety but may interrupt the workflow frequently.',
+  },
+  mobile: {
+    title: 'Mobile Access',
+    description: 'Use OmniContext on your phone as a native-like app',
+    step1Title: 'Enable LAN access',
+    step1Text:
+      'Go to the Settings tab and turn on LAN Access. You may also want to enable Fixed Port so the address stays the same across restarts.',
+    step2Title: 'Start the server',
+    step2Text:
+      'Check Serve only on the left panel and click Start Serving. The server URL will appear at the bottom of the sidebar.',
+    step3Title: 'Open on your phone',
+    step3Text:
+      "Make sure your phone is on the same Wi-Fi network. Open the browser and go to http://<your-computer-ip>:<port>. Replace the IP and port with the values shown in the server URL (use your computer's local IP instead of localhost).",
+    step4Title: 'Install as an app',
+    step4Intro: 'The web UI supports PWA (Progressive Web App). Once the page loads:',
+    step4Ios: 'iOS Safari -- Tap the share button, then Add to Home Screen',
+    step4Android:
+      'Android Chrome -- Tap the menu (three dots), then Add to Home screen or Install app',
+    step4Outro: 'This gives you a full-screen, app-like experience with no browser chrome.',
+    tip:
+      "To find your computer's local IP, open a terminal and run ipconfig on Windows or ifconfig on macOS/Linux. Look for an address like 192.168.x.x.",
+    networkNote:
+      'Your phone and computer must be on the same network. The server needs to be running for the app to work.',
+  },
+  settings: {
+    title: 'Settings',
+    description: 'Configure server behavior for serve mode',
+    lanAccess: 'LAN Access',
+    lanAccessDescription: 'Allow devices on your local network to connect to the server',
+    fixedPort: 'Fixed Port',
+    fixedPortDescription: 'Use a specific port instead of a random one each time',
+    language: 'Language',
+    languageDescription: 'Interface language for the portal and web UI',
+    lanAccessHelp:
+      'binds the server to all network interfaces (0.0.0.0) so other devices on the same network can reach it. When off, only this computer can connect.',
+    fixedPortHelp:
+      "keeps the server on the same port across restarts, so you don't have to update the address in your browser extension or Office add-in every time.",
+  },
+  prompts: {
+    title: 'Custom Prompts',
+    description: 'Customize system prompts for different workflow modes',
+    workflowMode: 'Workflow Mode',
+    workflowDescription: 'Select the mode to customize.',
+    specialist: 'Specialist Mode',
+    artist: 'Artist Mode',
+    explorer: 'Explorer Mode',
+    assistant: 'Assistant Mode',
+    systemPrompt: 'System Prompt',
+    customized: 'Customized',
+    placeholder: (mode: string) => `Enter custom system prompt for ${mode} mode...`,
+    saving: 'Saving...',
+    savePrompt: 'Save Prompt',
+    resetToDefault: 'Reset to Default',
+    specialistHelp:
+      'is optimized for coding tasks with specialized tools like explore, slice, and ripple.',
+    artistHelp: 'focuses on image generation and responds primarily through visuals.',
+    explorerHelp: 'prioritizes web search to find current information before answering.',
+    assistantHelp:
+      'is a general-purpose conversational mode without any specialized tools or workflows.',
+  },
+  office: {
+    title: 'Office Integration',
+    description: 'Connect Word, Excel, and PowerPoint to OmniContext',
+    running: 'Running',
+    installed: 'Installed (not running)',
+    notInstalled: 'Not installed',
+    httpsPort: 'HTTPS port',
+    installing: 'Installing...',
+    installAddin: 'Install Office Add-in',
+    removing: 'Removing...',
+    uninstall: 'Uninstall',
+    howItWorks:
+      'Installing registers the OmniContext add-in with Microsoft Office on this computer. A local HTTPS server provides the add-in interface.',
+    afterInstalling:
+      "After installing, open any Office app (Word, Excel, or PowerPoint). You'll find the OmniContext button on the Home tab.",
+    desktopRequired:
+      'The Desktop app must be running for the add-in to work. It starts automatically when you launch OmniContext Desktop.',
+  },
+  figma: {
+    title: 'Figma Plugin',
+    description: 'Connect Figma to OmniContext',
+    step1Title: 'Download the plugin',
+    step1Text:
+      'Go to the releases page and download the latest OmniContext Figma plugin package (.zip).',
+    step2Title: 'Unzip the package',
+    step2Text:
+      "Extract the downloaded .zip file to a folder on your computer. You'll need the dist folder inside.",
+    step3Title: 'Load in Figma',
+    step3Text:
+      'Open the Figma desktop app, go to the menu Plugins > Development > Import plugin from manifest... and select the manifest.json file inside the dist folder.',
+    step4Title: 'Connect',
+    step4Text:
+      'Run the plugin from Plugins > Development > OmniContext and enter the server address. Use Serve only mode to start a server from the Workspaces tab.',
+    note: 'Note',
+    noteText:
+      'The Figma plugin only works in the Figma desktop app. The web version of Figma does not support loading local development plugins.',
+    openReleases: 'Open Releases Page',
+  },
+  browserTab: {
+    title: 'Browser Extension',
+    description: 'Connect Google Chrome to OmniContext',
+    step1Title: 'Download the extension',
+    step1Text:
+      'Go to the releases page and download the latest OmniContext Connect extension package (.zip).',
+    step2Title: 'Unzip the package',
+    step2Text:
+      "Extract the downloaded .zip file to a folder on your computer. You'll need the dist folder inside.",
+    step3Title: 'Load in Chrome',
+    step3Text:
+      'Open chrome://extensions in your browser, enable Developer mode, click Load unpacked, and select the dist folder.',
+    step4Title: 'Connect',
+    step4Text:
+      "Open the extension's side panel in Chrome and enter the server address. Use Serve only mode to start a server from the Workspaces tab.",
+    openReleases: 'Open Releases Page',
+  },
+  obsidian: {
+    title: 'Obsidian Plugin',
+    description: 'Connect Obsidian to OmniContext',
+    step1Title: 'Download the plugin',
+    step1Text:
+      'Go to the releases page and download the latest OmniContext Obsidian plugin package (.zip).',
+    step2Title: 'Unzip the package',
+    step2Text:
+      "Extract the downloaded .zip file. Inside you'll find a folder called omni-context containing main.js, manifest.json, and styles.css.",
+    step3Title: 'Copy to your vault',
+    step3Text:
+      "Move the omni-context folder into your vault's plugin directory: <vault>/.obsidian/plugins/omni-context/. Create the plugins folder if it doesn't exist.",
+    step4Title: 'Enable the plugin',
+    step4Text:
+      "Open Obsidian, go to Settings > Community plugins, and enable OmniContext. You'll see a chat icon in the left ribbon bar.",
+    note: 'Note',
+    noteText:
+      "The plugin is desktop-only and requires the OmniContext CLI to be installed. It launches a local server automatically when you open the panel. Obsidian plugins are vault-scoped, so you'll need to install it separately for each vault or use a symlink to share a single copy.",
+    openReleases: 'Open Releases Page',
+  },
+};
+
+export type Locale = typeof enUS;

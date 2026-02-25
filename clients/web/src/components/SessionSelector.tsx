@@ -1,5 +1,6 @@
 import { ChevronDown, MessageSquare, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useLocale } from '../i18n';
 import { useChatStore } from '../store/chatStore';
 
 interface SessionSelectorProps {
@@ -9,6 +10,7 @@ interface SessionSelectorProps {
 export default function SessionSelector({disabled = false}: SessionSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const t = useLocale();
   const {sessions, currentSession, loadSession, newSession} = useChatStore();
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
         >
           <MessageSquare size={16} className='text-vscode-accent shrink-0' />
           <span className='truncate text-sm font-medium text-vscode-text group-hover:text-vscode-text-header transition-colors'>
-            {currentSession ? currentSession.title : 'New Chat'}
+            {currentSession ? currentSession.title : t.session.newChat}
           </span>
           <ChevronDown
             size={14}
@@ -52,7 +54,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
             {sessions.length === 0
               ? (
                 <div className='px-4 py-3 text-sm text-vscode-text-muted text-center'>
-                  No previous sessions
+                  {t.session.noSessions}
                 </div>
               )
               : (
@@ -86,7 +88,7 @@ export default function SessionSelector({disabled = false}: SessionSelectorProps
         className={`p-2.5 bg-vscode-element hover:brightness-110 text-vscode-text-header rounded-md transition-all shrink-0 border border-vscode-border hover:border-vscode-border-active ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         }`}
-        title='New Chat'
+        title={t.session.newChat}
       >
         <Plus size={16} />
       </button>

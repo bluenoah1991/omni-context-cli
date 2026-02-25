@@ -30,4 +30,5 @@ export interface DesktopConfig {
   approvalMode?: ApprovalMode;
   lanAccess?: boolean;
   fixedPort?: number | null;
+  language?: string;
 }

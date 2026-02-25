@@ -207,6 +207,10 @@ export function setWebTheme(value: 'dark' | 'light' | 'auto'): void {
   saveAppConfig('webTheme', value);
 }
 
+export function setLanguage(value: string): void {
+  saveAppConfig('language', value);
+}
+
 export function initializeCurrentModel(): void {
   const appConfig = loadAppConfig();
 

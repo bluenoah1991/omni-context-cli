@@ -8,6 +8,7 @@ import {
   setContextEditing,
   setDefaultModel,
   setIDEContext,
+  setLanguage,
   setMemoryEnabled,
   setNotificationEnabled,
   setServerCompaction,
@@ -103,6 +104,7 @@ export function handleGetConfig(res: http.ServerResponse): boolean {
     cacheTtl: config.cacheTtl ?? '5m',
     serverCompaction: config.serverCompaction ?? false,
     webTheme: config.webTheme,
+    language: config.language,
   });
   return true;
 }
@@ -128,6 +130,7 @@ export async function handleSetConfig(
   if ('cacheTtl' in body) setCacheTtl(body.cacheTtl);
   if ('serverCompaction' in body) setServerCompaction(body.serverCompaction);
   if ('webTheme' in body) setWebTheme(body.webTheme);
+  if ('language' in body) setLanguage(body.language);
   sendJsonResponse(res, {ok: true});
   return true;
 }

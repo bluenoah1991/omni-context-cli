@@ -7,11 +7,13 @@ import MessageList from './components/MessageList';
 import { PreviewPanel } from './components/PreviewPanel';
 import SessionSelector from './components/SessionSelector';
 import Settings from './components/Settings';
+import { useLocale } from './i18n';
 import { useChatStore } from './store/chatStore';
 
 const isEmbed = document.querySelector('meta[name="embed"]')?.getAttribute('content') === 'true';
 
 export default function App() {
+  const t = useLocale();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
     config,
@@ -84,7 +86,7 @@ export default function App() {
               {!isEmbed && (
                 <IconButton
                   icon={FolderTree}
-                  title='Toggle file tree'
+                  title={t.app.toggleFileTree}
                   onClick={toggleFileTree}
                   className='hidden sm:flex'
                 />
@@ -94,7 +96,7 @@ export default function App() {
             <div className='flex items-center gap-4'>
               <IconButton
                 icon={SettingsIcon}
-                title='Settings'
+                title={t.app.settings}
                 onClick={() => setIsSettingsOpen(true)}
                 disabled={isLoading}
               />

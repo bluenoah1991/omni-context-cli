@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale } from '../i18n';
 import { useChatStore } from '../store/chatStore';
 import type { RewindPoint } from '../types/rewind';
 import { formatApprovalPrompt } from '../utils/toolApproval';
@@ -78,6 +79,7 @@ function formatFileLabel(file: {path: string; lineStart?: number; lineEnd?: numb
 }
 
 export default function InputBox({disabled = false}: InputBoxProps) {
+  const t = useLocale();
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -359,7 +361,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   };
 
   const agentModel = config?.agentModelId ? models.find(m => m.id === config.agentModelId) : null;
-  const currentModelName = currentModel?.nickname || currentModel?.name || 'Not Set';
+  const currentModelName = currentModel?.nickname || currentModel?.name || t.input.notSet;
   const showAgentModel = agentModel && agentModel.id !== currentModel?.id;
   const agentModelName = agentModel?.nickname || agentModel?.name;
   const contextLimit = (currentModel?.contextSize || 200) * 1024;
@@ -390,7 +392,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                   ? (
                     <img
                       src={attachment.dataUrl}
-                      alt='Attached'
+                      alt={t.input.attached}
                       className='w-10 h-10 object-cover'
                     />
                   )
@@ -424,7 +426,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
         >
           {isDragging && (
             <div className='absolute inset-0 flex items-center justify-center bg-vscode-sidebar/90 rounded-xl z-20 pointer-events-none'>
-              <span className='text-sm text-vscode-accent'>Drop images or PDFs here</span>
+              <span className='text-sm text-vscode-accent'>{t.input.dropHint}</span>
             </div>
           )}
           {showRewindPicker && (
@@ -437,9 +439,9 @@ export default function InputBox({disabled = false}: InputBoxProps) {
           {pendingApproval && (
             <OptionPicker
               title={formatApprovalPrompt(pendingApproval)}
-              options={[{key: 'approve', label: 'Approve and continue'}, {
+              options={[{key: 'approve', label: t.input.approve}, {
                 key: 'reject',
-                label: 'Deny and abort',
+                label: t.input.deny,
               }]}
               onSelect={key => handleToolApproval(key === 'approve')}
               onCancel={() => handleToolApproval(false)}
@@ -459,10 +461,10 @@ export default function InputBox({disabled = false}: InputBoxProps) {
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             placeholder={disabled
-              ? 'Configure a model in settings'
+              ? t.input.configureModel
               : isLoading
-              ? 'Waiting for response...'
-              : 'Type your message...'}
+              ? t.input.waiting
+              : t.input.placeholder}
             disabled={isLoading || disabled}
             rows={1}
             className='w-full px-4 py-3 bg-transparent text-sm text-vscode-text placeholder-vscode-text-muted resize-none focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed'
@@ -495,28 +497,33 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     ? Globe
                     : Sparkles}
                   active={config?.workflowPreset !== 'normal'}
-                  title={`${
+                  title={t.status.mode(
                     (config?.workflowPreset ?? 'specialist').charAt(0).toUpperCase()
-                    + (config?.workflowPreset ?? 'specialist').slice(1)
-                  } Mode${config?.workflowPreset !== 'normal' ? ': On' : ''}`}
+                      + (config?.workflowPreset ?? 'specialist').slice(1),
+                    config?.workflowPreset !== 'normal',
+                  )}
                   showStatus={false}
                 />
                 <StatusIcon
                   icon={Brain}
                   active={config?.enableThinking}
-                  title='Extended Thinking'
+                  title={t.status.extendedThinking}
                 />
-                <StatusIcon icon={MessageSquare} active={config?.memoryEnabled} title='Memory' />
+                <StatusIcon
+                  icon={MessageSquare}
+                  active={config?.memoryEnabled}
+                  title={t.status.memory}
+                />
                 <StatusIcon
                   icon={Scissors}
                   active={config?.contextEditing}
-                  title='Context Editing'
+                  title={t.status.contextEditing}
                 />
               </div>
 
               <div className='hidden min-[360px]:block w-px h-3 bg-vscode-border shrink-0' />
 
-              <div className='flex items-center gap-2 shrink-0' title='Token Usage'>
+              <div className='flex items-center gap-2 shrink-0' title={t.status.tokenUsage}>
                 <span className={Number(contextPercent) > 80 ? 'text-vscode-warning' : ''}>
                   {contextPercent}%
                 </span>
@@ -555,7 +562,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     ? 'text-vscode-border-active cursor-not-allowed'
                     : 'text-vscode-text-muted hover:text-vscode-text hover:bg-white/5 light:hover:bg-black/5'
                 }`}
-                title='Attach image or PDF'
+                title={t.input.attachFile}
                 tabIndex={-1}
               >
                 <Paperclip size={14} />
@@ -566,7 +573,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                     type='button'
                     onClick={stopGeneration}
                     className='p-1.5 bg-vscode-error hover:brightness-90 text-white rounded-md transition-all shadow-sm'
-                    title='Stop generation'
+                    title={t.input.stopGeneration}
                   >
                     <Square size={14} fill='currentColor' />
                   </button>
@@ -581,7 +588,7 @@ export default function InputBox({disabled = false}: InputBoxProps) {
                         ? 'text-vscode-border-active cursor-not-allowed'
                         : 'bg-vscode-accent text-white hover:brightness-110 shadow-sm'
                     }`}
-                    title='Send message'
+                    title={t.input.sendMessage}
                   >
                     <Send size={14} />
                   </button>

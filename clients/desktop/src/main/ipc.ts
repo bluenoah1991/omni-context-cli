@@ -34,7 +34,7 @@ export function registerIpcHandlers(): void {
       workspace: string,
       approvalMode: string,
       workflow?: string,
-      options?: {lanAccess?: boolean; fixedPort?: number | null;},
+      options?: {lanAccess?: boolean; fixedPort?: number | null; language?: string;},
     ) => {
       try {
         const port = await startServer(workspace, approvalMode as ApprovalMode, workflow, options);

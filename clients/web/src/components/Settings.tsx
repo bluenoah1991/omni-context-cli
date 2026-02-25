@@ -1,5 +1,6 @@
 import { Check, Cpu, Palette, Sliders, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { SUPPORTED_LANGUAGES, useLocale } from '../i18n';
 import { useChatStore } from '../store/chatStore';
 import SegmentedControl from './SegmentedControl';
 import { Select } from './Select';
@@ -42,7 +43,9 @@ export default function Settings({onClose}: SettingsProps) {
   const [serverCompaction, setServerCompaction] = useState(config?.serverCompaction ?? false);
   const [cacheTtl, setCacheTtl] = useState<'5m' | '1h'>(config?.cacheTtl ?? '5m');
   const [webTheme, setWebTheme] = useState<'dark' | 'light' | 'auto'>(config?.webTheme || 'dark');
+  const [language, setLanguage] = useState(config?.language || 'en-US');
   const [saving, setSaving] = useState(false);
+  const t = useLocale();
 
   useEffect(() => {
     if (config) {
@@ -58,6 +61,7 @@ export default function Settings({onClose}: SettingsProps) {
       setIdeContext(config.ideContext ?? true);
       setCacheTtl(config.cacheTtl ?? '5m');
       setWebTheme(config.webTheme || 'dark');
+      setLanguage(config.language || 'en-US');
     }
   }, [config, currentModel]);
 
@@ -76,6 +80,7 @@ export default function Settings({onClose}: SettingsProps) {
         ideContext,
         cacheTtl,
         webTheme,
+        language,
       });
       const newModel = models.find(model => model.id === currentModelId);
       if (newModel) {
@@ -89,17 +94,17 @@ export default function Settings({onClose}: SettingsProps) {
     }
   };
 
-  const tabs = [{id: 'models' as Tab, label: 'Models', icon: Cpu}, {
+  const tabs = [{id: 'models' as Tab, label: t.settings.tabs.models, icon: Cpu}, {
     id: 'preferences' as Tab,
-    label: 'Preferences',
+    label: t.settings.tabs.preferences,
     icon: Sliders,
-  }, {id: 'appearance' as Tab, label: 'Appearance', icon: Palette}];
+  }, {id: 'appearance' as Tab, label: t.settings.tabs.appearance, icon: Palette}];
 
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm'>
       <div className='bg-vscode-sidebar border border-vscode-border rounded-xl w-full max-w-lg shadow-2xl transform transition-all scale-100 opacity-100 overflow-hidden m-4'>
         <div className='flex items-center justify-between px-6 py-4 border-b border-vscode-border bg-vscode-element/50'>
-          <h2 className='text-lg font-semibold text-vscode-text-header'>Settings</h2>
+          <h2 className='text-lg font-semibold text-vscode-text-header'>{t.settings.title}</h2>
           <button
             onClick={onClose}
             className='text-vscode-text-muted hover:text-vscode-text p-1 rounded-md hover:bg-vscode-border transition-colors'
@@ -129,39 +134,39 @@ export default function Settings({onClose}: SettingsProps) {
           {activeTab === 'models' && (
             <>
               <Select
-                label='Current Model'
-                description='The model for this session'
+                label={t.settings.currentModel}
+                description={t.settings.currentModelDescription}
                 value={currentModelId}
                 onChange={setCurrentModelId}
                 options={models.map(model => ({
                   value: model.id,
                   label: model.nickname || model.name,
                 }))}
-                placeholder='Select a model'
+                placeholder={t.settings.selectModel}
               />
 
               <Select
-                label='Default Model'
-                description='The model for new sessions'
+                label={t.settings.defaultModel}
+                description={t.settings.defaultModelDescription}
                 value={defaultModelId}
                 onChange={setDefaultModelId}
                 options={models.map(model => ({
                   value: model.id,
                   label: model.nickname || model.name,
                 }))}
-                placeholder='Select a model'
+                placeholder={t.settings.selectModel}
               />
 
               <Select
-                label='Agent Model'
-                description='Model for agent tasks (defaults to current model)'
+                label={t.settings.agentModel}
+                description={t.settings.agentModelDescription}
                 value={agentModelId}
                 onChange={setAgentModelId}
                 options={models.map(model => ({
                   value: model.id,
                   label: model.nickname || model.name,
                 }))}
-                placeholder='Use main model'
+                placeholder={t.settings.useMainModel}
               />
             </>
           )}
@@ -169,65 +174,65 @@ export default function Settings({onClose}: SettingsProps) {
           {activeTab === 'preferences' && (
             <>
               <Select
-                label='Workflow Preset'
-                description='Changes the system prompt and available tools for different tasks'
+                label={t.settings.workflowPreset}
+                description={t.settings.workflowPresetDescription}
                 value={workflowPreset}
                 onChange={v => setWorkflowPreset(v as typeof workflowPreset)}
                 options={[
-                  {value: 'normal', label: 'Normal'},
-                  {value: 'specialist', label: 'Specialist'},
-                  {value: 'artist', label: 'Artist'},
-                  {value: 'explorer', label: 'Explorer'},
-                  {value: 'assistant', label: 'Assistant'},
+                  {value: 'normal', label: t.settings.normal},
+                  {value: 'specialist', label: t.settings.specialist},
+                  {value: 'artist', label: t.settings.artist},
+                  {value: 'explorer', label: t.settings.explorer},
+                  {value: 'assistant', label: t.settings.assistant},
                 ]}
                 placeholder=''
               />
 
               <ToggleOption
-                label='Completion Notification'
-                description='Notify when response takes over a minute'
+                label={t.settings.notification}
+                description={t.settings.notificationDescription}
                 enabled={notificationEnabled}
                 onChange={setNotificationEnabled}
               />
 
               <ToggleOption
-                label='Context Editing'
-                description='Allow context modification during conversation'
+                label={t.settings.contextEditing}
+                description={t.settings.contextEditingDescription}
                 enabled={contextEditing}
                 onChange={setContextEditing}
               />
 
               <ToggleOption
-                label='Server Compaction'
-                description='Let Anthropic auto-summarize when context gets long'
+                label={t.settings.serverCompaction}
+                description={t.settings.serverCompactionDescription}
                 enabled={serverCompaction}
                 onChange={setServerCompaction}
               />
 
               <ToggleOption
-                label='Cross-session Memory'
-                description='Persist key information across sessions'
+                label={t.settings.memory}
+                description={t.settings.memoryDescription}
                 enabled={memoryEnabled}
                 onChange={setMemoryEnabled}
               />
 
               <ToggleOption
-                label='Extended Thinking'
-                description='Enable chain-of-thought reasoning'
+                label={t.settings.thinking}
+                description={t.settings.thinkingDescription}
                 enabled={enableThinking}
                 onChange={setEnableThinking}
               />
 
               <ToggleOption
-                label='IDE Context'
-                description='Include context from connected IDE'
+                label={t.settings.ideContext}
+                description={t.settings.ideContextDescription}
                 enabled={ideContext}
                 onChange={setIdeContext}
               />
 
               <SegmentedControl
-                label='Cache Duration'
-                description='Cache duration for Anthropic API prompt caching'
+                label={t.settings.cacheDuration}
+                description={t.settings.cacheDurationDescription}
                 options={['5m', '1h'] as const}
                 value={cacheTtl}
                 onChange={setCacheTtl}
@@ -237,38 +242,46 @@ export default function Settings({onClose}: SettingsProps) {
 
           {activeTab === 'appearance' && (
             <>
+              <Select
+                label={t.settings.language}
+                description={t.settings.languageDescription}
+                value={language}
+                onChange={setLanguage}
+                options={SUPPORTED_LANGUAGES}
+              />
+
               <SegmentedControl
-                label='Color Theme'
-                description='Select interface appearance'
+                label={t.settings.colorTheme}
+                description={t.settings.colorThemeDescription}
                 options={['dark', 'light', 'auto'] as const}
                 value={webTheme}
                 onChange={setWebTheme}
               />
 
               <ToggleOption
-                label='Expand Thinking by Default'
-                description='Show thinking process content expanded'
+                label={t.settings.expandThinking}
+                description={t.settings.expandThinkingDescription}
                 enabled={thinkingExpanded}
                 onChange={setThinkingExpanded}
               />
 
               <ToggleOption
-                label='Expand Tool Calls by Default'
-                description='Show tool call content expanded'
+                label={t.settings.expandTools}
+                description={t.settings.expandToolsDescription}
                 enabled={toolExpanded}
                 onChange={setToolExpanded}
               />
 
               <ToggleOption
-                label='Auto Show Diffs'
-                description='Show file diffs in preview panel and refresh each turn'
+                label={t.settings.autoDiffs}
+                description={t.settings.autoDiffsDescription}
                 enabled={autoDiffPanel}
                 onChange={setAutoDiffPanel}
               />
 
               <ToggleOption
-                label='Inline Diffs'
-                description='Show diffs directly in the chat instead of the side panel'
+                label={t.settings.inlineDiffs}
+                description={t.settings.inlineDiffsDescription}
                 enabled={inlineDiff}
                 onChange={setInlineDiff}
               />
@@ -281,17 +294,17 @@ export default function Settings({onClose}: SettingsProps) {
             onClick={onClose}
             className='px-4 py-2 text-sm font-medium text-vscode-text hover:bg-vscode-border rounded-lg transition-colors'
           >
-            Cancel
+            {t.settings.cancel}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className='px-6 py-2 text-sm font-medium bg-vscode-accent text-white rounded-lg hover:brightness-110 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-vscode-accent/20 flex items-center gap-2'
           >
-            {saving ? ('Saving...') : (
+            {saving ? (t.settings.saving) : (
               <>
                 <Check size={16} />
-                <span>Save</span>
+                <span>{t.settings.save}</span>
               </>
             )}
           </button>

@@ -34,6 +34,7 @@ export interface AppConfig {
   contextEditing: boolean;
   contextEditingRounds: number;
   webTheme?: 'dark' | 'light' | 'auto';
+  language?: string;
   clientId?: string;
   proxy?: string;
 }

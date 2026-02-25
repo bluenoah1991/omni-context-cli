@@ -21,9 +21,10 @@ import {
   Square,
   X,
 } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { ProviderItem } from './components/ProviderItem';
 import { Select } from './components/Select';
+import { getLocale, SUPPORTED_LANGUAGES } from './i18n';
 import { addProviderModels, removeProviderModels } from './providers';
 import { type CustomPrompts, type PromptType, usePortalStore } from './store/portalStore';
 import type { ApprovalMode, Tab } from './types/config';
@@ -94,9 +95,13 @@ export default function App() {
     setOfficeStatus,
     lanAccess,
     fixedPort,
+    language,
     setLanAccess,
     setFixedPort,
+    setLanguage,
   } = usePortalStore();
+
+  const t = useMemo(() => getLocale(language), [language]);
 
   const [appVersion, setAppVersion] = useState('');
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
@@ -142,6 +147,7 @@ export default function App() {
       setApprovalMode(desktop.approvalMode ?? 'write');
       setLanAccess(desktop.lanAccess ?? false);
       setFixedPort(desktop.fixedPort ?? null);
+      setLanguage(desktop.language ?? 'en-US');
 
       let workspace = desktop.defaultWorkspace;
       if (
@@ -344,7 +350,7 @@ export default function App() {
           selectedWorkspace,
           approvalMode,
           'assistant',
-          {lanAccess, fixedPort},
+          {lanAccess, fixedPort, language},
         );
         if (result.success && result.port) {
           setServePort(result.port);
@@ -375,7 +381,7 @@ export default function App() {
   if (loading) {
     return (
       <div className='h-screen w-screen bg-vscode-bg flex items-center justify-center text-vscode-text'>
-        <Loader2 className='animate-spin mr-2' /> Loading...
+        <Loader2 className='animate-spin mr-2' /> {t.loading}
       </div>
     );
   }
@@ -416,14 +422,14 @@ export default function App() {
           <NavItem
             id='workspaces'
             icon={LayoutGrid}
-            label='Workspaces'
+            label={t.nav.workspaces}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='models'
             icon={Box}
-            label='Models'
+            label={t.nav.models}
             alert={omxConfig.models.length === 0}
             activeTab={activeTab}
             onClick={setActiveTab}
@@ -431,56 +437,56 @@ export default function App() {
           <NavItem
             id='permissions'
             icon={Shield}
-            label='Permissions'
+            label={t.nav.permissions}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='office'
             icon={FileSpreadsheet}
-            label='Office Integration'
+            label={t.nav.office}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='browser'
             icon={Chrome}
-            label='Browser Integration'
+            label={t.nav.browser}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='obsidian'
             icon={Gem}
-            label='Obsidian Integration'
+            label={t.nav.obsidian}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='figma'
             icon={Figma}
-            label='Figma Integration'
+            label={t.nav.figma}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='mobile'
             icon={Smartphone}
-            label='Mobile Access'
+            label={t.nav.mobile}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='prompts'
             icon={FileText}
-            label='System Prompts'
+            label={t.nav.prompts}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
           <NavItem
             id='settings'
             icon={Settings}
-            label='Settings'
+            label={t.nav.settings}
             activeTab={activeTab}
             onClick={setActiveTab}
           />
@@ -503,7 +509,9 @@ export default function App() {
                     </div>
                     <div className='flex items-center gap-3'>
                       <Box size={16} className='text-vscode-accent shrink-0' />
-                      <span className='text-vscode-text-header'>{serveSnapshot.models} models</span>
+                      <span className='text-vscode-text-header'>
+                        {serveSnapshot.models} {t.sidebar.models}
+                      </span>
                     </div>
                     <div className='flex items-center gap-3'>
                       <Shield
@@ -516,10 +524,10 @@ export default function App() {
                       />
                       <span className='text-vscode-text-header'>
                         {serveSnapshot.approval === 'none'
-                          ? 'No Approval'
+                          ? t.sidebar.noApproval
                           : serveSnapshot.approval === 'write'
-                          ? 'Write Approval'
-                          : 'Full Approval'}
+                          ? t.sidebar.writeApproval
+                          : t.sidebar.fullApproval}
                       </span>
                     </div>
                   </div>
@@ -532,7 +540,7 @@ export default function App() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  title='Click to copy'
+                  title={t.sidebar.clickToCopy}
                 >
                   <div className='w-2.5 h-2.5 rounded-full bg-green-500 shrink-0' />
                   <span className='text-sm text-vscode-text-header font-mono flex-1 truncate'>
@@ -547,16 +555,14 @@ export default function App() {
                     }`}
                   />
                 </div>
-                <p className='text-xs text-vscode-text-muted'>
-                  Paste this URL into the Office add-in or browser extension to connect.
-                </p>
+                <p className='text-xs text-vscode-text-muted'>{t.sidebar.pasteUrl}</p>
 
                 <button
                   onClick={handleStopServe}
                   className='w-full px-5 py-3 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-vscode-text-muted hover:text-vscode-text transition-colors flex items-center justify-center gap-2 text-base font-medium'
                 >
                   <Square size={18} />
-                  Stop Serving
+                  {t.sidebar.stopServing}
                 </button>
               </div>
             )
@@ -573,7 +579,9 @@ export default function App() {
                       }`}
                       title={selectedWorkspace}
                     >
-                      {selectedWorkspace ? selectedWorkspace.split(/[/\\]/).pop() : 'No workspace'}
+                      {selectedWorkspace
+                        ? selectedWorkspace.split(/[/\\]/).pop()
+                        : t.sidebar.noWorkspace}
                     </span>
                   </div>
                   <div className='flex items-center gap-3 text-sm'>
@@ -586,8 +594,8 @@ export default function App() {
                         : 'text-vscode-text-muted'}
                     >
                       {omxConfig.models.length > 0
-                        ? `${omxConfig.models.length} models ready`
-                        : 'No models'}
+                        ? `${omxConfig.models.length} ${t.sidebar.modelsReady}`
+                        : t.sidebar.noModels}
                     </span>
                   </div>
                   <div className='flex items-center gap-3 text-sm'>
@@ -599,10 +607,10 @@ export default function App() {
                     />
                     <span className='text-vscode-text-header'>
                       {approvalMode === 'none'
-                        ? 'No Approval'
+                        ? t.sidebar.noApproval
                         : approvalMode === 'write'
-                        ? 'Write Approval'
-                        : 'Full Approval'}
+                        ? t.sidebar.writeApproval
+                        : t.sidebar.fullApproval}
                     </span>
                   </div>
                 </div>
@@ -614,7 +622,7 @@ export default function App() {
                     onChange={e => setServeOnly(e.target.checked)}
                     className='accent-vscode-accent'
                   />
-                  <span className='text-vscode-text-muted'>Serve only (for Office / Browser)</span>
+                  <span className='text-vscode-text-muted'>{t.sidebar.serveOnly}</span>
                 </label>
 
                 <button
@@ -623,7 +631,7 @@ export default function App() {
                   className='w-full px-5 py-3 bg-vscode-accent hover:bg-vscode-accent/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-colors flex items-center justify-center gap-2 text-base font-medium'
                 >
                   <Rocket size={18} />
-                  {serveOnly ? 'Start Serving' : 'Launch'}
+                  {serveOnly ? t.sidebar.startServing : t.sidebar.launch}
                 </button>
               </div>
             )}
@@ -635,16 +643,16 @@ export default function App() {
           {activeTab === 'workspaces' && (
             <div className='max-w-3xl mx-auto w-full space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Workspaces</h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Open a folder or select a recent project
-                </p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.workspaces.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.workspaces.description}</p>
               </header>
 
               <div className='space-y-6'>
                 <div>
                   <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
-                    Start
+                    {t.workspaces.start}
                   </h3>
                   <button
                     onClick={handleBrowse}
@@ -655,10 +663,10 @@ export default function App() {
                     </div>
                     <div>
                       <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
-                        Open Folder
+                        {t.workspaces.openFolder}
                       </div>
                       <div className='text-vscode-text-muted text-xs mt-0.5'>
-                        Browse your file system
+                        {t.workspaces.browseFileSystem}
                       </div>
                     </div>
                   </button>
@@ -667,7 +675,7 @@ export default function App() {
                 {desktopConfig.workspaces.length > 0 && (
                   <div>
                     <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
-                      Recent
+                      {t.workspaces.recent}
                     </h3>
                     <div className='space-y-4'>
                       {desktopConfig.workspaces.map(ws => (
@@ -718,7 +726,7 @@ export default function App() {
                                   handleRemoveWorkspace(ws.path);
                                 }}
                                 className='p-2 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors opacity-0 group-hover:opacity-100'
-                                title='Remove from list'
+                                title={t.workspaces.removeFromList}
                               >
                                 <X size={16} />
                               </button>
@@ -737,20 +745,20 @@ export default function App() {
               <header className='flex items-center justify-between'>
                 <div>
                   <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
-                    Model Providers
+                    {t.models.title}
                   </h2>
-                  <p className='text-vscode-text-muted text-sm'>Configure LLM API providers</p>
+                  <p className='text-vscode-text-muted text-sm'>{t.models.description}</p>
                 </div>
                 {omxConfig.models.length === 0 && (
                   <div className='px-3 py-1 bg-vscode-error/20 text-vscode-error text-xs rounded-full border border-vscode-error/20'>
-                    Required
+                    {t.models.required}
                   </div>
                 )}
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <h3 className='text-sm font-medium text-vscode-text-header mb-4'>
-                  Add New Provider
+                  {t.models.addNewProvider}
                 </h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
                   <Select
@@ -758,13 +766,13 @@ export default function App() {
                     value={selectedProvider}
                     onChange={setSelectedProvider}
                     options={availableProviders}
-                    placeholder='Select Provider...'
+                    placeholder={t.models.selectProvider}
                   />
                   <input
                     type='password'
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
-                    placeholder='Enter API Key'
+                    placeholder={t.models.enterApiKey}
                     autoComplete='off'
                     className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
                   />
@@ -775,7 +783,7 @@ export default function App() {
                   className='px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 w-full md:w-auto'
                 >
                   {isAddingProvider && <Loader2 size={16} className='animate-spin' />}
-                  {isAddingProvider ? 'Adding...' : 'Add Provider'}
+                  {isAddingProvider ? t.models.adding : t.models.addProvider}
                 </button>
                 {providerError && (
                   <div className='mt-3 text-xs text-vscode-error flex items-center gap-2'>
@@ -787,19 +795,23 @@ export default function App() {
 
               <div className='space-y-4'>
                 <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider'>
-                  Configured
+                  {t.models.configured}
                 </h3>
                 <div className='space-y-4'>
                   {configuredProviders.length > 0
                     ? (configuredProviders.map(p => (
-                      <ProviderItem key={p.id} provider={p} onRemove={handleRemoveProvider} />
+                      <ProviderItem
+                        key={p.id}
+                        provider={p}
+                        onRemove={handleRemoveProvider}
+                        formatModelCount={t.models.modelCount}
+                        removeTitle={t.models.removeProvider}
+                      />
                     )))
                     : (
                       <div className='text-center py-8 border-2 border-dashed border-vscode-border/50 rounded-lg'>
                         <Box size={24} className='mx-auto text-vscode-text-muted/30 mb-2' />
-                        <p className='text-sm text-vscode-text-muted'>
-                          No providers configured yet
-                        </p>
+                        <p className='text-sm text-vscode-text-muted'>{t.models.noProviders}</p>
                       </div>
                     )}
                 </div>
@@ -810,32 +822,34 @@ export default function App() {
           {activeTab === 'permissions' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Permissions</h2>
-                <p className='text-vscode-text-muted text-sm'>Control tool execution safety</p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.permissions.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.permissions.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <Select
-                  label='Approval Mode'
-                  description='Choose when the assistant requires your explicit approval to run tools.'
+                  label={t.permissions.approvalMode}
+                  description={t.permissions.approvalDescription}
                   value={approvalMode}
                   onChange={handleApprovalModeChange}
-                  options={[{value: 'none', label: 'No Approval (Auto-execute all)'}, {
+                  options={[{value: 'none', label: t.permissions.noApproval}, {
                     value: 'write',
-                    label: 'Write Approval (Protect files)',
-                  }, {value: 'all', label: 'Full Approval (Ask for everything)'}]}
+                    label: t.permissions.writeApproval,
+                  }, {value: 'all', label: t.permissions.fullApproval}]}
                 />
 
                 <div className='mt-4 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
                   <p className='mb-2'>
-                    <strong className='text-vscode-text-header'>Write Approval</strong>{' '}
-                    is recommended. It allows read-only operations (searching, reading files) to run
-                    automatically but asks for confirmation before modifying any files or running
-                    shell commands.
+                    <strong className='text-vscode-text-header'>{t.sidebar.writeApproval}</strong>
+                    {' '}
+                    {t.permissions.writeRecommended}
                   </p>
                   <p>
-                    <strong className='text-vscode-text-header'>Full Approval</strong>{' '}
-                    provides maximum safety but may interrupt the workflow frequently.
+                    <strong className='text-vscode-text-header'>{t.sidebar.fullApproval}</strong>
+                    {' '}
+                    {t.permissions.fullDescription}
                   </p>
                 </div>
               </div>
@@ -845,124 +859,52 @@ export default function App() {
           {activeTab === 'mobile' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Mobile Access</h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Use OmniContext on your phone as a native-like app
-                </p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.mobile.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.mobile.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    1
+                {[
+                  t.mobile.step1Title,
+                  t.mobile.step2Title,
+                  t.mobile.step3Title,
+                  t.mobile.step4Title,
+                ].map((title, i) => (
+                  <div key={i} className='flex items-start gap-4'>
+                    <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
+                      <p className='text-xs text-vscode-text-muted'>
+                        {[
+                          t.mobile.step1Text,
+                          t.mobile.step2Text,
+                          t.mobile.step3Text,
+                          t.mobile.step4Intro,
+                        ][i]}
+                      </p>
+                      {i === 3 && (
+                        <>
+                          <ul className='text-xs text-vscode-text-muted mt-2 space-y-1.5 list-disc list-inside'>
+                            <li>{t.mobile.step4Ios}</li>
+                            <li>{t.mobile.step4Android}</li>
+                          </ul>
+                          <p className='text-xs text-vscode-text-muted mt-2'>
+                            {t.mobile.step4Outro}
+                          </p>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Enable LAN access
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Go to the{' '}
-                      <button
-                        onClick={() => setActiveTab('settings')}
-                        className='text-vscode-accent hover:underline'
-                      >
-                        Settings
-                      </button>{' '}
-                      tab and turn on{' '}
-                      <strong className='text-vscode-text-header'>LAN Access</strong>. You may also
-                      want to enable <strong className='text-vscode-text-header'>Fixed Port</strong>
-                      {' '}
-                      so the address stays the same across restarts.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    2
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Start the server
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Check <strong className='text-vscode-text-header'>Serve only</strong>{' '}
-                      on the left panel and click{' '}
-                      <strong className='text-vscode-text-header'>Start Serving</strong>. The server
-                      URL will appear at the bottom of the sidebar.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    3
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Open on your phone
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Make sure your phone is on the same Wi-Fi network. Open the browser and go to
-                      {' '}
-                      <strong className='text-vscode-text-header'>
-                        http://&lt;your-computer-ip&gt;:&lt;port&gt;
-                      </strong>
-                      . Replace the IP and port with the values shown in the server URL (use your
-                      computer's local IP instead of localhost).
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    4
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Install as an app
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      The web UI supports PWA (Progressive Web App). Once the page loads:
-                    </p>
-                    <ul className='text-xs text-vscode-text-muted mt-2 space-y-1.5 list-disc list-inside'>
-                      <li>
-                        <strong className='text-vscode-text-header'>iOS Safari</strong>{' '}
-                        -- Tap the share button, then{' '}
-                        <strong className='text-vscode-text-header'>Add to Home Screen</strong>
-                      </li>
-                      <li>
-                        <strong className='text-vscode-text-header'>Android Chrome</strong>{' '}
-                        -- Tap the menu (three dots), then{' '}
-                        <strong className='text-vscode-text-header'>Add to Home screen</strong> or
-                        {' '}
-                        <strong className='text-vscode-text-header'>Install app</strong>
-                      </li>
-                    </ul>
-                    <p className='text-xs text-vscode-text-muted mt-2'>
-                      This gives you a full-screen, app-like experience with no browser chrome.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
-                <p>
-                  <strong className='text-vscode-text-header'>Tip:</strong>{' '}
-                  To find your computer's local IP, open a terminal and run{' '}
-                  <code className='px-1.5 py-0.5 bg-vscode-bg rounded text-vscode-text-header'>
-                    ipconfig
-                  </code>{' '}
-                  on Windows or{' '}
-                  <code className='px-1.5 py-0.5 bg-vscode-bg rounded text-vscode-text-header'>
-                    ifconfig
-                  </code>{' '}
-                  on macOS/Linux. Look for an address like 192.168.x.x.
-                </p>
-                <p>
-                  Your phone and computer must be on the same network. The server needs to be
-                  running for the app to work.
-                </p>
+                <p>{t.mobile.tip}</p>
+                <p>{t.mobile.networkNote}</p>
               </div>
             </div>
           )}
@@ -970,19 +912,21 @@ export default function App() {
           {activeTab === 'settings' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Settings</h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Configure server behavior for serve mode
-                </p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.settings.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.settings.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-6'>
                 <div>
                   <div className='flex items-center justify-between'>
                     <div>
-                      <h3 className='text-sm font-medium text-vscode-text-header'>LAN Access</h3>
+                      <h3 className='text-sm font-medium text-vscode-text-header'>
+                        {t.settings.lanAccess}
+                      </h3>
                       <p className='text-xs text-vscode-text-muted mt-1'>
-                        Allow devices on your local network to connect to the server
+                        {t.settings.lanAccessDescription}
                       </p>
                     </div>
                     <button
@@ -1011,9 +955,11 @@ export default function App() {
                 <div>
                   <div className='flex items-center justify-between'>
                     <div>
-                      <h3 className='text-sm font-medium text-vscode-text-header'>Fixed Port</h3>
+                      <h3 className='text-sm font-medium text-vscode-text-header'>
+                        {t.settings.fixedPort}
+                      </h3>
                       <p className='text-xs text-vscode-text-muted mt-1'>
-                        Use a specific port instead of a random one each time
+                        {t.settings.fixedPortDescription}
                       </p>
                     </div>
                     <button
@@ -1055,18 +1001,38 @@ export default function App() {
                     </div>
                   )}
                 </div>
+
+                <div className='border-t border-vscode-border' />
+
+                <div>
+                  <h3 className='text-sm font-medium text-vscode-text-header'>
+                    {t.settings.language}
+                  </h3>
+                  <p className='text-xs text-vscode-text-muted mt-1 mb-3'>
+                    {t.settings.languageDescription}
+                  </p>
+                  <Select
+                    label=''
+                    value={language}
+                    onChange={async v => {
+                      setLanguage(v);
+                      const newConfig = {...desktopConfig, language: v};
+                      setDesktopConfig(newConfig);
+                      await window.electronAPI.saveDesktopConfig(newConfig);
+                    }}
+                    options={SUPPORTED_LANGUAGES}
+                  />
+                </div>
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
                 <p>
-                  <strong className='text-vscode-text-header'>LAN Access</strong>{' '}
-                  binds the server to all network interfaces (0.0.0.0) so other devices on the same
-                  network can reach it. When off, only this computer can connect.
+                  <strong className='text-vscode-text-header'>{t.settings.lanAccess}</strong>{' '}
+                  {t.settings.lanAccessHelp}
                 </p>
                 <p>
-                  <strong className='text-vscode-text-header'>Fixed Port</strong>{' '}
-                  keeps the server on the same port across restarts, so you don't have to update the
-                  address in your browser extension or Office add-in every time.
+                  <strong className='text-vscode-text-header'>{t.settings.fixedPort}</strong>{' '}
+                  {t.settings.fixedPortHelp}
                 </p>
               </div>
             </div>
@@ -1075,39 +1041,39 @@ export default function App() {
           {activeTab === 'prompts' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Custom Prompts</h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Customize system prompts for different workflow modes
-                </p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.prompts.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.prompts.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
                 <Select
-                  label='Workflow Mode'
-                  description='Select the mode to customize.'
+                  label={t.prompts.workflowMode}
+                  description={t.prompts.workflowDescription}
                   value={selectedPromptType}
                   onChange={v => handlePromptTypeChange(v as PromptType)}
                   options={[
-                    {value: 'specialist', label: 'Specialist Mode'},
-                    {value: 'artist', label: 'Artist Mode'},
-                    {value: 'explorer', label: 'Explorer Mode'},
-                    {value: 'assistant', label: 'Assistant Mode'},
+                    {value: 'specialist', label: t.prompts.specialist},
+                    {value: 'artist', label: t.prompts.artist},
+                    {value: 'explorer', label: t.prompts.explorer},
+                    {value: 'assistant', label: t.prompts.assistant},
                   ]}
                 />
 
                 <div className='mt-4'>
                   <div className='flex items-center justify-between mb-2'>
                     <label className='text-sm font-medium text-vscode-text-header'>
-                      System Prompt
+                      {t.prompts.systemPrompt}
                     </label>
                     {customPrompts[selectedPromptType] !== null && (
-                      <span className='text-xs text-vscode-accent'>Customized</span>
+                      <span className='text-xs text-vscode-accent'>{t.prompts.customized}</span>
                     )}
                   </div>
                   <textarea
                     value={promptEditorValue}
                     onChange={e => setPromptEditorValue(e.target.value)}
-                    placeholder={`Enter custom system prompt for ${selectedPromptType} mode...`}
+                    placeholder={t.prompts.placeholder(selectedPromptType)}
                     className='w-full h-64 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono resize-none focus:outline-none focus:border-vscode-accent select-text'
                   />
                 </div>
@@ -1121,7 +1087,7 @@ export default function App() {
                     {isSavingPrompt
                       ? <Loader2 size={16} className='animate-spin' />
                       : <Save size={16} />}
-                    {isSavingPrompt ? 'Saving...' : 'Save Prompt'}
+                    {isSavingPrompt ? t.prompts.saving : t.prompts.savePrompt}
                   </button>
                   <button
                     onClick={handleResetPrompt}
@@ -1129,28 +1095,26 @@ export default function App() {
                     className='px-4 py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
                   >
                     <RotateCcw size={16} />
-                    Reset to Default
+                    {t.prompts.resetToDefault}
                   </button>
                 </div>
 
                 <div className='mt-4 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
                   <p className='mb-2'>
-                    <strong className='text-vscode-text-header'>Specialist Mode</strong>{' '}
-                    is optimized for coding tasks with specialized tools like explore, slice, and
-                    ripple.
+                    <strong className='text-vscode-text-header'>{t.prompts.specialist}</strong>{' '}
+                    {t.prompts.specialistHelp}
                   </p>
                   <p className='mb-2'>
-                    <strong className='text-vscode-text-header'>Artist Mode</strong>{' '}
-                    focuses on image generation and responds primarily through visuals.
+                    <strong className='text-vscode-text-header'>{t.prompts.artist}</strong>{' '}
+                    {t.prompts.artistHelp}
                   </p>
                   <p className='mb-2'>
-                    <strong className='text-vscode-text-header'>Explorer Mode</strong>{' '}
-                    prioritizes web search to find current information before answering.
+                    <strong className='text-vscode-text-header'>{t.prompts.explorer}</strong>{' '}
+                    {t.prompts.explorerHelp}
                   </p>
                   <p>
-                    <strong className='text-vscode-text-header'>Assistant Mode</strong>{' '}
-                    is a general-purpose conversational mode without any specialized tools or
-                    workflows.
+                    <strong className='text-vscode-text-header'>{t.prompts.assistant}</strong>{' '}
+                    {t.prompts.assistantHelp}
                   </p>
                 </div>
               </div>
@@ -1161,11 +1125,9 @@ export default function App() {
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
                 <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
-                  Office Integration
+                  {t.office.title}
                 </h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Connect Word, Excel, and PowerPoint to OmniContext
-                </p>
+                <p className='text-vscode-text-muted text-sm'>{t.office.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
@@ -1182,14 +1144,16 @@ export default function App() {
                     />
                     <span className='text-sm font-medium text-vscode-text-header'>
                       {officeInstalled && officeRunning
-                        ? 'Running'
+                        ? t.office.running
                         : officeInstalled
-                        ? 'Installed (not running)'
-                        : 'Not installed'}
+                        ? t.office.installed
+                        : t.office.notInstalled}
                     </span>
                   </div>
                   {officeInstalled && officeRunning && (
-                    <span className='text-xs text-vscode-text-muted'>HTTPS port {officePort}</span>
+                    <span className='text-xs text-vscode-text-muted'>
+                      {t.office.httpsPort} {officePort}
+                    </span>
                   )}
                 </div>
 
@@ -1202,7 +1166,7 @@ export default function App() {
                         className='flex-1 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2'
                       >
                         {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
-                        {isOfficeLoading ? 'Installing...' : 'Install Office Add-in'}
+                        {isOfficeLoading ? t.office.installing : t.office.installAddin}
                       </button>
                     )
                     : (
@@ -1212,27 +1176,16 @@ export default function App() {
                         className='flex-1 py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
                       >
                         {isOfficeLoading && <Loader2 size={16} className='animate-spin' />}
-                        {isOfficeLoading ? 'Removing...' : 'Uninstall'}
+                        {isOfficeLoading ? t.office.removing : t.office.uninstall}
                       </button>
                     )}
                 </div>
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
-                <p>
-                  <strong className='text-vscode-text-header'>How it works:</strong>{' '}
-                  Installing registers the OmniContext add-in with Microsoft Office on this
-                  computer. A local HTTPS server provides the add-in interface.
-                </p>
-                <p>
-                  After installing, open any Office app (Word, Excel, or PowerPoint). You'll find
-                  the <strong className='text-vscode-text-header'>OmniContext</strong>{' '}
-                  button on the Home tab.
-                </p>
-                <p>
-                  The Desktop app must be running for the add-in to work. It starts automatically
-                  when you launch OmniContext Desktop.
-                </p>
+                <p>{t.office.howItWorks}</p>
+                <p>{t.office.afterInstalling}</p>
+                <p>{t.office.desktopRequired}</p>
               </div>
             </div>
           )}
@@ -1240,99 +1193,48 @@ export default function App() {
           {activeTab === 'figma' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>Figma Plugin</h2>
-                <p className='text-vscode-text-muted text-sm'>Connect Figma to OmniContext</p>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.figma.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.figma.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    1
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Download the plugin
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted mb-2'>
-                      Go to the releases page and download the latest{' '}
-                      <strong className='text-vscode-text-header'>OmniContext Figma</strong>{' '}
-                      plugin package (.zip).
-                    </p>
-                    <a
-                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
-                      target='_blank'
-                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
-                    >
-                      Open Releases Page
-                    </a>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    2
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Unzip the package
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Extract the downloaded .zip file to a folder on your computer. You'll need the
-                      {' '}
-                      <strong className='text-vscode-text-header'>dist</strong> folder inside.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    3
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Load in Figma
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Open the{' '}
-                      <strong className='text-vscode-text-header'>Figma desktop app</strong>, go to
-                      the menu{' '}
-                      <strong className='text-vscode-text-header'>
-                        Plugins &gt; Development &gt; Import plugin from manifest...
-                      </strong>{' '}
-                      and select the{' '}
-                      <strong className='text-vscode-text-header'>manifest.json</strong>{' '}
-                      file inside the <strong className='text-vscode-text-header'>dist</strong>{' '}
-                      folder.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    4
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>Connect</h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Run the plugin from{' '}
-                      <strong className='text-vscode-text-header'>
-                        Plugins &gt; Development &gt; OmniContext
-                      </strong>{' '}
-                      and enter the server address. Use{' '}
-                      <strong className='text-vscode-text-header'>Serve only</strong>{' '}
-                      mode to start a server from the Workspaces tab.
-                    </p>
-                  </div>
-                </div>
+                {[t.figma.step1Title, t.figma.step2Title, t.figma.step3Title, t.figma.step4Title]
+                  .map((title, i) => (
+                    <div key={i} className='flex items-start gap-4'>
+                      <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                        {i + 1}
+                      </div>
+                      <div>
+                        <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                          {title}
+                        </h3>
+                        <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
+                          {[
+                            t.figma.step1Text,
+                            t.figma.step2Text,
+                            t.figma.step3Text,
+                            t.figma.step4Text,
+                          ][i]}
+                        </p>
+                        {i === 0 && (
+                          <a
+                            href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                            target='_blank'
+                            className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                          >
+                            {t.figma.openReleases}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
               </div>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
-                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>Note</h3>
-                <p className='text-xs text-vscode-text-muted'>
-                  The Figma plugin only works in the{' '}
-                  <strong className='text-vscode-text-header'>Figma desktop app</strong>. The web
-                  version of Figma does not support loading local development plugins.
-                </p>
+                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>{t.figma.note}</h3>
+                <p className='text-xs text-vscode-text-muted'>{t.figma.noteText}</p>
               </div>
             </div>
           )}
@@ -1341,87 +1243,44 @@ export default function App() {
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
                 <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
-                  Browser Extension
+                  {t.browserTab.title}
                 </h2>
-                <p className='text-vscode-text-muted text-sm'>
-                  Connect Google Chrome to OmniContext
-                </p>
+                <p className='text-vscode-text-muted text-sm'>{t.browserTab.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    1
+                {[
+                  t.browserTab.step1Title,
+                  t.browserTab.step2Title,
+                  t.browserTab.step3Title,
+                  t.browserTab.step4Title,
+                ].map((title, i) => (
+                  <div key={i} className='flex items-start gap-4'>
+                    <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
+                      <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
+                        {[
+                          t.browserTab.step1Text,
+                          t.browserTab.step2Text,
+                          t.browserTab.step3Text,
+                          t.browserTab.step4Text,
+                        ][i]}
+                      </p>
+                      {i === 0 && (
+                        <a
+                          href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                          target='_blank'
+                          className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                        >
+                          {t.browserTab.openReleases}
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Download the extension
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted mb-2'>
-                      Go to the releases page and download the latest{' '}
-                      <strong className='text-vscode-text-header'>OmniContext Connect</strong>{' '}
-                      extension package (.zip).
-                    </p>
-                    <a
-                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
-                      target='_blank'
-                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
-                    >
-                      Open Releases Page
-                    </a>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    2
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Unzip the package
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Extract the downloaded .zip file to a folder on your computer. You'll need the
-                      {' '}
-                      <strong className='text-vscode-text-header'>dist</strong> folder inside.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    3
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Load in Chrome
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Open <strong className='text-vscode-text-header'>chrome://extensions</strong>
-                      {' '}
-                      in your browser, enable{' '}
-                      <strong className='text-vscode-text-header'>Developer mode</strong>, click
-                      {' '}
-                      <strong className='text-vscode-text-header'>Load unpacked</strong>, and select
-                      the <strong className='text-vscode-text-header'>dist</strong> folder.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    4
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>Connect</h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Open the extension's side panel in Chrome and enter the server address. Use
-                      {' '}
-                      <strong className='text-vscode-text-header'>Serve only</strong>{' '}
-                      mode to start a server from the Workspaces tab.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}
@@ -1430,103 +1289,51 @@ export default function App() {
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
                 <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
-                  Obsidian Plugin
+                  {t.obsidian.title}
                 </h2>
-                <p className='text-vscode-text-muted text-sm'>Connect Obsidian to OmniContext</p>
+                <p className='text-vscode-text-muted text-sm'>{t.obsidian.description}</p>
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    1
+                {[
+                  t.obsidian.step1Title,
+                  t.obsidian.step2Title,
+                  t.obsidian.step3Title,
+                  t.obsidian.step4Title,
+                ].map((title, i) => (
+                  <div key={i} className='flex items-start gap-4'>
+                    <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className='text-sm font-medium text-vscode-text-header mb-1'>{title}</h3>
+                      <p className={`text-xs text-vscode-text-muted${i === 0 ? ' mb-2' : ''}`}>
+                        {[
+                          t.obsidian.step1Text,
+                          t.obsidian.step2Text,
+                          t.obsidian.step3Text,
+                          t.obsidian.step4Text,
+                        ][i]}
+                      </p>
+                      {i === 0 && (
+                        <a
+                          href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
+                          target='_blank'
+                          className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                        >
+                          {t.obsidian.openReleases}
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Download the plugin
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted mb-2'>
-                      Go to the releases page and download the latest{' '}
-                      <strong className='text-vscode-text-header'>OmniContext Obsidian</strong>{' '}
-                      plugin package (.zip).
-                    </p>
-                    <a
-                      href='https://github.com/bluenoah1991/omni-context-cli-landing/releases'
-                      target='_blank'
-                      className='inline-flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
-                    >
-                      Open Releases Page
-                    </a>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    2
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Unzip the package
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Extract the downloaded .zip file. Inside you'll find a folder called{' '}
-                      <strong className='text-vscode-text-header'>omni-context</strong> containing
-                      {' '}
-                      <strong className='text-vscode-text-header'>main.js</strong>,{' '}
-                      <strong className='text-vscode-text-header'>manifest.json</strong>, and{' '}
-                      <strong className='text-vscode-text-header'>styles.css</strong>.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    3
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Copy to your vault
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Move the <strong className='text-vscode-text-header'>omni-context</strong>
-                      {' '}
-                      folder into your vault's plugin directory:{' '}
-                      <strong className='text-vscode-text-header'>
-                        &lt;vault&gt;/.obsidian/plugins/omni-context/
-                      </strong>. Create the{' '}
-                      <strong className='text-vscode-text-header'>plugins</strong>{' '}
-                      folder if it doesn't exist.
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-start gap-4'>
-                  <div className='w-6 h-6 rounded-full bg-vscode-accent/10 text-vscode-accent flex items-center justify-center shrink-0 text-sm font-bold'>
-                    4
-                  </div>
-                  <div>
-                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
-                      Enable the plugin
-                    </h3>
-                    <p className='text-xs text-vscode-text-muted'>
-                      Open Obsidian, go to{' '}
-                      <strong className='text-vscode-text-header'>
-                        Settings &gt; Community plugins
-                      </strong>, and enable{' '}
-                      <strong className='text-vscode-text-header'>OmniContext</strong>. You'll see a
-                      chat icon in the left ribbon bar.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
-                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>Note</h3>
-                <p className='text-xs text-vscode-text-muted'>
-                  The plugin is desktop-only and requires the OmniContext CLI to be installed. It
-                  launches a local server automatically when you open the panel. Obsidian plugins
-                  are vault-scoped, so you'll need to install it separately for each vault or use a
-                  symlink to share a single copy.
-                </p>
+                <h3 className='text-sm font-medium text-vscode-text-header mb-2'>
+                  {t.obsidian.note}
+                </h3>
+                <p className='text-xs text-vscode-text-muted'>{t.obsidian.noteText}</p>
               </div>
             </div>
           )}

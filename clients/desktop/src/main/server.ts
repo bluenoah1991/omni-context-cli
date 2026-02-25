@@ -40,7 +40,7 @@ export async function startServer(
   cwd: string,
   approvalMode: ApprovalMode,
   workflow?: string,
-  options?: {lanAccess?: boolean; fixedPort?: number | null;},
+  options?: {lanAccess?: boolean; fixedPort?: number | null; language?: string;},
 ): Promise<number> {
   await resolveShellEnv();
   const port = options?.fixedPort ?? await findFreePort();
@@ -59,6 +59,7 @@ export async function startServer(
   if (approvalMode === 'write') args.push('--approve-write');
   if (approvalMode === 'all') args.push('--approve-all');
   if (workflow) args.push(`--workflow=${workflow}`);
+  if (options?.language) args.push(`--lang=${options.language}`);
 
   if (getOfficeStatus().installed) {
     const certsDir = join(homedir(), '.office-addin-dev-certs');

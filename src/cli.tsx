@@ -74,8 +74,10 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
   .option('--tls-cert <path>', 'Path to TLS certificate file').option(
     '--tls-key <path>',
     'Path to TLS private key file',
-  ).option('--scope <scope>', 'Where to save config changes: global (default), project, or memory')
-  .option('--export-project <path>', 'Export project data to a gzip archive').option(
+  ).option('--lang <code>', 'Set UI language (e.g. en-US, zh-CN)').option(
+    '--scope <scope>',
+    'Where to save config changes: global (default), project, or memory',
+  ).option('--export-project <path>', 'Export project data to a gzip archive').option(
     '--import-project <path>',
     'Import project data from a gzip archive',
   ).parse(process.argv, {from: 'node'});
@@ -235,6 +237,10 @@ if (opts.scope) {
 
 if (opts.workflow) {
   setConfigOverride('workflowPreset', opts.workflow as WorkflowPreset);
+}
+
+if (opts.lang) {
+  setConfigOverride('language', opts.lang);
 }
 
 if (opts.approveAll) {

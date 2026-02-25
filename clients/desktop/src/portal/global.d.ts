@@ -15,7 +15,7 @@ declare global {
         workspace: string,
         approvalMode: string,
         workflow?: string,
-        options?: {lanAccess?: boolean; fixedPort?: number | null;},
+        options?: {lanAccess?: boolean; fixedPort?: number | null; language?: string;},
       ) => Promise<{success: boolean; port?: number; tls?: boolean; error?: string;}>;
       stopServe: () => Promise<void>;
       getServeStatus: () => Promise<{running: boolean; port: number | null; tls: boolean;}>;

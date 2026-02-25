@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, Folder, FolderOpen, RefreshCw } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useLocale } from '../i18n';
 import { fetchFiles, type FileEntry } from '../services/fileService';
 import { useChatStore } from '../store/chatStore';
 import { getFileIcon } from '../utils/fileIcons';
@@ -20,6 +21,7 @@ const FileTreeNode = memo(
       onFileClick: (path: string) => void;
     },
   ) {
+    const t = useLocale();
     const isDir = entry.type === 'directory';
     const dirState = isDir ? dirs.get(entry.path) : undefined;
     const expanded = dirState?.expanded ?? false;
@@ -50,7 +52,7 @@ const FileTreeNode = memo(
               className='text-sm text-vscode-text-muted py-1'
               style={{paddingLeft: `${(depth + 1) * 12 + 20}px`}}
             >
-              Loading...
+              {t.files.loading}
             </div>
           )
           : (dirState.entries.map(child => (
@@ -69,6 +71,7 @@ const FileTreeNode = memo(
 );
 
 export const FileTree = memo(function FileTree() {
+  const t = useLocale();
   const {fileTreeOpen, fileTreeWidth, setFileTreeWidth, openFilePreview, config} = useChatStore();
 
   const [dirs, setDirs] = useState<Map<string, DirState>>(new Map());
@@ -158,19 +161,19 @@ export const FileTree = memo(function FileTree() {
       <div className='flex-1 flex flex-col bg-vscode-bg min-w-0 border-r border-vscode-element'>
         <div className='safe-area-top flex items-center justify-between px-4 pb-2 border-b border-vscode-element'>
           <span className='font-medium text-vscode-text uppercase truncate'>
-            {config?.projectName || 'Files'}
+            {config?.projectName || t.files.fallbackTitle}
           </span>
           <button
             onClick={loadRoot}
             className='p-2.5 rounded-md transition-all duration-200 shrink-0 border border-transparent text-vscode-text-muted hover:text-vscode-text hover:bg-vscode-element'
-            title='Refresh'
+            title={t.files.refresh}
           >
             <RefreshCw size={16} />
           </button>
         </div>
         <div className='flex-1 overflow-y-auto overflow-x-hidden py-1'>
           {rootLoading
-            ? <div className='text-sm text-vscode-text-muted px-4 py-2'>Loading...</div>
+            ? <div className='text-sm text-vscode-text-muted px-4 py-2'>{t.files.loading}</div>
             : (rootEntries.map(entry => (
               <FileTreeNode
                 key={entry.path}
