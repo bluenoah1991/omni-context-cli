@@ -22,8 +22,6 @@ export const enUS = {
     responseLanguageAuto: 'Auto',
     responseLanguageEn: 'English',
     responseLanguageZh: 'Chinese (Simplified)',
-    notification: 'Completion Notification',
-    notificationDescription: 'Notify when response takes over a minute',
     contextEditing: 'Context Editing',
     contextEditingDescription: 'Allow context modification during conversation',
     serverCompaction: 'Server Compaction',

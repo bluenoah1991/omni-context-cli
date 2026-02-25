@@ -24,8 +24,6 @@ export const zhCN: Locale = {
     responseLanguageAuto: '自动',
     responseLanguageEn: 'English',
     responseLanguageZh: '简体中文',
-    notification: '完成通知',
-    notificationDescription: '响应超过一分钟时发送通知',
     contextEditing: '上下文编辑',
     contextEditingDescription: '允许在对话过程中修改上下文',
     serverCompaction: '服务端压缩',

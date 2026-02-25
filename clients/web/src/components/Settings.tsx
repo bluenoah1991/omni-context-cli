@@ -35,9 +35,6 @@ export default function Settings({onClose}: SettingsProps) {
   const [enableThinking, setEnableThinking] = useState(config?.enableThinking ?? true);
   const [workflowPreset, setWorkflowPreset] = useState(config?.workflowPreset ?? 'specialist');
   const [memoryEnabled, setMemoryEnabled] = useState(config?.memoryEnabled ?? false);
-  const [notificationEnabled, setNotificationEnabled] = useState(
-    config?.notificationEnabled ?? false,
-  );
   const [contextEditing, setContextEditing] = useState(config?.contextEditing ?? true);
   const [ideContext, setIdeContext] = useState(config?.ideContext ?? true);
   const [serverCompaction, setServerCompaction] = useState(config?.serverCompaction ?? false);
@@ -58,7 +55,6 @@ export default function Settings({onClose}: SettingsProps) {
       setEnableThinking(config.enableThinking);
       setWorkflowPreset(config.workflowPreset ?? 'specialist');
       setMemoryEnabled(config.memoryEnabled);
-      setNotificationEnabled(config.notificationEnabled);
       setContextEditing(config.contextEditing);
       setServerCompaction(config.serverCompaction ?? false);
       setResponseLanguage(config.responseLanguage ?? 'auto');
@@ -78,7 +74,6 @@ export default function Settings({onClose}: SettingsProps) {
         enableThinking,
         workflowPreset,
         memoryEnabled,
-        notificationEnabled,
         contextEditing,
         serverCompaction,
         responseLanguage,
@@ -203,13 +198,6 @@ export default function Settings({onClose}: SettingsProps) {
                   label: t.settings.responseLanguageEn,
                 }, {value: 'zh', label: t.settings.responseLanguageZh}]}
                 placeholder=''
-              />
-
-              <ToggleOption
-                label={t.settings.notification}
-                description={t.settings.notificationDescription}
-                enabled={notificationEnabled}
-                onChange={setNotificationEnabled}
               />
 
               <ToggleOption

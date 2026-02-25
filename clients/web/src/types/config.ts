@@ -8,7 +8,6 @@ export interface Config {
   workflowPreset: WorkflowPreset;
   ideContext: boolean;
   memoryEnabled: boolean;
-  notificationEnabled: boolean;
   contextEditing: boolean;
   serverCompaction: boolean;
   responseLanguage?: 'auto' | 'en' | 'zh';
