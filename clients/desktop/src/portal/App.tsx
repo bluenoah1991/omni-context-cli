@@ -670,8 +670,8 @@ export default function App() {
                     onClick={handleBrowse}
                     className='w-full p-4 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border hover:border-vscode-accent rounded-lg text-left transition-all group flex items-center gap-4'
                   >
-                    <div className='p-2 rounded-lg bg-vscode-accent/10 text-vscode-accent group-hover:bg-vscode-accent group-hover:text-white transition-colors'>
-                      <FolderOpen size={20} />
+                    <div className='p-2 rounded bg-vscode-accent/10 text-vscode-accent group-hover:bg-vscode-accent group-hover:text-white transition-colors'>
+                      <FolderOpen size={16} />
                     </div>
                     <div>
                       <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
