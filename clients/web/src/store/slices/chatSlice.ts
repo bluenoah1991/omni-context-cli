@@ -123,8 +123,15 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     content: string,
     attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>,
   ) => {
-    const {isLoading, currentModel, currentSession, inputHistory, autoDiffPanel, clearDiffTabs} =
-      get();
+    const {
+      isLoading,
+      currentModel,
+      currentSession,
+      inputHistory,
+      autoDiffPanel,
+      clearDiffTabs,
+      pinnedIDEContexts,
+    } = get();
     if (isLoading || !currentModel || !currentSession) return;
 
     const trimmed = content.trim();
@@ -147,7 +154,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     set({isLoading: true, error: null});
 
     try {
-      await sendChat({content, attachments}, {
+      await sendChat({content, attachments, pinnedIDEContexts}, {
         onMessage: message => {
           set(state => ({currentSession: appendMessage(state.currentSession!, message)}));
           autoOpenDiff(message, get());

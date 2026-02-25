@@ -250,15 +250,15 @@ class IDEIntegrationManager {
       const p = params as SelectionChangedParams;
       if (p.selection.isEmpty) {
         useIDEStore.getState().setSelection({
-          text: '',
-          filePath: p.filePath,
+          content: '',
+          path: p.filePath,
           lineStart: 0,
           lineEnd: 0,
         });
       } else {
         useIDEStore.getState().setSelection({
-          text: p.text,
-          filePath: p.filePath,
+          content: p.text,
+          path: p.filePath,
           lineStart: p.selection.start.line + 1,
           lineEnd: p.selection.end.line + 1,
         });

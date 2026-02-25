@@ -79,6 +79,7 @@ export async function sendChat(
   request: {
     content: string;
     attachments?: Array<{base64: string; mediaType: string; fileName?: string;}>;
+    pinnedIDEContexts?: IDEContext[];
   },
   callbacks: ChatCallbacks,
 ): Promise<void> {

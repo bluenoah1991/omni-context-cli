@@ -1,6 +1,6 @@
-export interface IDESelection {
-  text: string;
-  filePath: string;
-  lineStart: number;
-  lineEnd: number;
+export interface IDEContextItem {
+  path: string;
+  content?: string;
+  lineStart?: number;
+  lineEnd?: number;
 }

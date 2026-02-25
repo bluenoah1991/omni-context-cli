@@ -19,7 +19,7 @@ import { parseSlashCommand } from '../../services/slashManager';
 import { formatToolCall } from '../../services/toolExecutor';
 import { useChatStore } from '../../store/chatStore';
 import { useIDEStore } from '../../store/ideStore';
-import { wrapDualMessage, wrapIDEContext } from '../../utils/messagePreprocessor';
+import { wrapDualMessage, wrapIDEContexts } from '../../utils/messagePreprocessor';
 
 import { ToolCall } from '../../types/streamCallbacks';
 import { CompactingIndicator } from './CompactingIndicator';
@@ -171,7 +171,7 @@ export function ChatView(): React.ReactElement {
 
     const currentSelection = useIDEStore.getState().selection;
     if (ideContextEnabled && currentSelection) {
-      text = wrapIDEContext(text, currentSelection);
+      text = wrapIDEContexts(text, [currentSelection]);
     }
 
     const currentMediaContexts = useChatStore.getState().mediaContexts;

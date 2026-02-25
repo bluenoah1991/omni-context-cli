@@ -100,6 +100,9 @@ export default function InputBox({disabled = false}: InputBoxProps) {
     models,
     currentSession,
     ideContext,
+    pinnedIDEContexts,
+    pinIDEContext,
+    unpinIDEContext,
     inputHistory,
     slashCommands,
     pendingApproval,
@@ -368,20 +371,40 @@ export default function InputBox({disabled = false}: InputBoxProps) {
   const totalTokens = (currentSession?.inputTokens || 0) + (currentSession?.outputTokens || 0);
   const contextPercent = contextLimit > 0 ? ((totalTokens / contextLimit) * 100).toFixed(1) : '0';
 
-  const hasContext = ideContext || attachments.length > 0;
+  const activeIDE = ideContext && !pinnedIDEContexts.some(p => p.path === ideContext.path)
+    ? ideContext
+    : null;
+  const hasContext = pinnedIDEContexts.length > 0 || activeIDE || attachments.length > 0;
 
   return (
     <div className='bg-vscode-bg pb-6 pt-4'>
       <div className='max-w-4xl mx-auto space-y-3'>
         {hasContext && (
           <div className='flex flex-wrap gap-2 animate-fade-in'>
-            {ideContext && (
-              <div className='flex items-center gap-1.5 px-2.5 py-1.5 bg-vscode-element border border-vscode-accent rounded-md text-xs text-vscode-text'>
+            {pinnedIDEContexts.map(ctx => (
+              <div
+                key={ctx.path}
+                className='flex items-center gap-1.5 px-2.5 py-1.5 bg-vscode-element border border-vscode-accent rounded-md text-xs text-vscode-text'
+              >
                 <FileCode size={12} className='text-vscode-accent' />
-                <span className='max-w-50 truncate' title={ideContext.path}>
-                  {formatFileLabel(ideContext)}
-                </span>
+                <span className='max-w-50 truncate' title={ctx.path}>{formatFileLabel(ctx)}</span>
+                <button
+                  onClick={() => unpinIDEContext(ctx.path)}
+                  className='ml-0.5 p-0.5 rounded hover:bg-white/10 light:hover:bg-black/10 transition-colors'
+                >
+                  <X size={10} className='text-vscode-text-muted' />
+                </button>
               </div>
+            ))}
+            {activeIDE && (
+              <button
+                onClick={() => pinIDEContext(activeIDE)}
+                className='flex items-center gap-1.5 px-2.5 py-1.5 border border-vscode-border rounded-md text-xs text-vscode-text-muted hover:text-vscode-text hover:border-vscode-accent transition-colors'
+                title={activeIDE.path}
+              >
+                <FileCode size={12} className='opacity-50' />
+                <span className='max-w-50 truncate'>{formatFileLabel(activeIDE)}</span>
+              </button>
             )}
             {attachments.map(attachment => (
               <div

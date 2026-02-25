@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { useIDEStore } from '../../../store/ideStore';
-import { wrapDualMessage, wrapIDEContext } from '../../../utils/messagePreprocessor';
+import type { IDEContextItem } from '../../../types/ide';
+import { wrapDualMessage, wrapIDEContexts } from '../../../utils/messagePreprocessor';
 import { runConversation } from '../../chatOrchestrator';
 import { generateSummary, injectSummary, shouldAutoCompact } from '../../compactionManager';
 import { loadAppConfig } from '../../configManager';
@@ -43,6 +44,9 @@ export async function handleChat(
   const attachments = body.attachments as
     | Array<{base64: string; mediaType: string; fileName?: string;}>
     | undefined;
+  const pinnedIDEContexts = Array.isArray(body.pinnedIDEContexts)
+    ? body.pinnedIDEContexts as IDEContextItem[]
+    : undefined;
 
   if (!content) {
     sendErrorResponse(res, 'Missing content', 400);
@@ -113,8 +117,12 @@ export async function handleChat(
 
   const config = loadAppConfig();
   const currentSelection = useIDEStore.getState().selection;
-  if (config.ideContext && currentSelection) {
-    text = wrapIDEContext(text, currentSelection);
+  const ideContexts = [
+    ...(pinnedIDEContexts ?? []),
+    ...(config.ideContext && currentSelection ? [currentSelection] : []),
+  ];
+  if (ideContexts.length > 0) {
+    text = wrapIDEContexts(text, ideContexts);
   }
 
   const userMedia = attachments?.map(item => ({
@@ -313,12 +321,7 @@ export function handleGetIDEContext(res: http.ServerResponse): boolean {
     sendNoContentResponse(res);
     return true;
   }
-  sendJsonResponse(res, {
-    path: selection.filePath,
-    content: selection.text,
-    lineStart: selection.lineStart,
-    lineEnd: selection.lineEnd,
-  });
+  sendJsonResponse(res, selection);
   return true;
 }
 

@@ -1,4 +1,4 @@
-import { IDESelection } from '../types/ide';
+import type { IDEContextItem } from '../types/ide';
 
 export function wrapDualMessage(uiMessage: string, promptMessage: string): string {
   return `<dual_message>\n<ui>${uiMessage}</ui>\n<prompt>\n${promptMessage}\n</prompt>\n</dual_message>`;
@@ -24,16 +24,24 @@ export function unwrapPromptMessage(text: string): string {
   return text;
 }
 
-export function wrapIDEContext(text: string, selection: IDESelection | null): string {
-  if (!selection) return text;
-
-  if (selection.text) {
-    const lineRange = selection.lineStart === selection.lineEnd
-      ? `${selection.lineStart}`
-      : `${selection.lineStart}-${selection.lineEnd}`;
-    return `${text}\n\n<ide_context file="${selection.filePath}" lines="${lineRange}">\n${selection.text}\n</ide_context>`;
+export function wrapIDEContexts(text: string, contexts: IDEContextItem[]): string {
+  const seen = new Set<string>();
+  for (const ctx of contexts) {
+    if (seen.has(ctx.path)) continue;
+    seen.add(ctx.path);
+    if (ctx.content) {
+      const lineRange = ctx.lineStart != null
+        ? (!ctx.lineEnd || ctx.lineStart === ctx.lineEnd
+          ? `${ctx.lineStart}`
+          : `${ctx.lineStart}-${ctx.lineEnd}`)
+        : undefined;
+      const attrs = lineRange ? ` lines="${lineRange}"` : '';
+      text = `${text}\n\n<ide_context file="${ctx.path}"${attrs}>\n${ctx.content}\n</ide_context>`;
+    } else {
+      text = `${text}\n\n<ide_context file="${ctx.path}" />`;
+    }
   }
-  return `${text}\n\n<ide_context file="${selection.filePath}" />`;
+  return text;
 }
 
 export function removeIDEContext(text: string): string {

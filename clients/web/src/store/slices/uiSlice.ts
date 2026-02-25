@@ -13,6 +13,7 @@ export interface UISlice {
   autoDiffPanel: boolean;
   inlineDiff: boolean;
   ideContext: IDEContext | null;
+  pinnedIDEContexts: IDEContext[];
   pollInterval: ReturnType<typeof setInterval> | null;
   previewPanelOpen: boolean;
   previewPanelWidth: number;
@@ -27,6 +28,8 @@ export interface UISlice {
   setInlineDiff: (enabled: boolean) => void;
   startPolling: () => void;
   stopPolling: () => void;
+  pinIDEContext: (ctx: IDEContext) => void;
+  unpinIDEContext: (path: string) => void;
   openDiffPanel: (diff: FileDiff) => void;
   openFilePreview: (filePath: string) => void;
   pinPreviewTab: (index: number) => void;
@@ -51,6 +54,7 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   autoDiffPanel: localStorage.getItem('autoDiffPanel') === 'true',
   inlineDiff: localStorage.getItem('inlineDiff') !== 'false',
   ideContext: null,
+  pinnedIDEContexts: [],
   pollInterval: null,
   previewPanelOpen: false,
   previewPanelWidth: 0,
@@ -103,6 +107,16 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
       clearInterval(pollInterval);
       set({pollInterval: null});
     }
+  },
+
+  pinIDEContext: ctx => {
+    const {pinnedIDEContexts} = get();
+    if (pinnedIDEContexts.some(p => p.path === ctx.path)) return;
+    set({pinnedIDEContexts: [...pinnedIDEContexts, ctx]});
+  },
+
+  unpinIDEContext: path => {
+    set({pinnedIDEContexts: get().pinnedIDEContexts.filter(p => p.path !== path)});
   },
 
   openDiffPanel: diff => {

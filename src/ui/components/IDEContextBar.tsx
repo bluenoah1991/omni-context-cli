@@ -1,11 +1,11 @@
 import { Text } from 'ink';
 import path from 'node:path';
 import React from 'react';
-import { IDESelection } from '../../types/ide';
+import type { IDEContextItem } from '../../types/ide';
 import { colors } from '../theme/colors';
 
 interface IDEContextBarProps {
-  selection: IDESelection | null;
+  selection: IDEContextItem | null;
 }
 
 export function IDEContextBar({selection}: IDEContextBarProps): React.ReactElement | null {
@@ -13,7 +13,7 @@ export function IDEContextBar({selection}: IDEContextBarProps): React.ReactEleme
     return null;
   }
 
-  const fileName = path.basename(selection.filePath);
+  const fileName = path.basename(selection.path);
   let label: string;
   if (selection.lineStart === 0) {
     label = fileName;

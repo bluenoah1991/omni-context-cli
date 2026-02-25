@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { IDESelection } from '../types/ide';
+import type { IDEContextItem } from '../types/ide';
 
 interface IDEState {
-  selection: IDESelection | null;
+  selection: IDEContextItem | null;
   connected: boolean;
   ideName: string | null;
-  setSelection: (selection: IDESelection | null) => void;
+  setSelection: (selection: IDEContextItem | null) => void;
   setConnected: (connected: boolean, ideName?: string) => void;
 }
 
