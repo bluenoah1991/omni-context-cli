@@ -1,6 +1,7 @@
 import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
+import net from 'node:net';
 import { generateSessionId } from '../webSessionManager.js';
 import { handleAPI } from './apiHandlers.js';
 import { sendErrorResponse, sendRedirectResponse } from './httpUtils.js';
@@ -42,7 +43,19 @@ export async function startServer(
   host = 'localhost',
   tls?: https.ServerOptions,
 ): Promise<void> {
-  const server = tls ? https.createServer(tls, handleRequest) : http.createServer(handleRequest);
+  const httpServer = http.createServer(handleRequest);
+  const httpsServer = tls ? https.createServer(tls, handleRequest) : undefined;
+  const server = httpsServer
+    ? net.createServer(socket => {
+      socket.once('data', buf => {
+        socket.pause();
+        (buf[0] === 0x16 ? httpsServer : httpServer).emit('connection', socket);
+        socket.unshift(buf);
+        socket.resume();
+      });
+      socket.on('error', () => {});
+    })
+    : httpServer;
 
   server.listen(port, host);
   await Promise.race([

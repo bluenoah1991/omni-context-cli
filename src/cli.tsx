@@ -267,15 +267,17 @@ if (opts.acp) {
     tls = {key: readFileSync(keyPath), cert: readFileSync(certPath)};
   }
 
-  const protocol = tls ? 'https' : 'http';
-
   try {
     await startServer(port, host, tls);
   } catch (err) {
     console.error(`Failed to start server on ${host}:${port}`);
     process.exit(1);
   }
-  console.log(`Server running at ${protocol}://${host}:${port}`);
+  if (tls) {
+    console.log(`Server running at https://${host}:${port} (http also accepted)`);
+  } else {
+    console.log(`Server running at http://${host}:${port}`);
+  }
 
   if (opts.web) {
     const {exec} = await import('node:child_process');
@@ -285,7 +287,7 @@ if (opts.acp) {
       ? 'open'
       : 'xdg-open';
     const browserHost = host === '0.0.0.0' ? 'localhost' : host;
-    exec(`${cmd} ${protocol}://${browserHost}:${port}`);
+    exec(`${cmd} ${tls ? 'https' : 'http'}://${browserHost}:${port}`);
   }
 
   if (opts.parentPid) {
