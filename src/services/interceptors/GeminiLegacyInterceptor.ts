@@ -2,7 +2,7 @@ import { ModelConfig } from '../../types/config';
 import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
 function isLegacyModel(name: string): boolean {
-  return /gemini[- ](?:2\.\d|1\.\d)[- ]/.test(name);
+  return /gemini[- ](?:2\.\d|1\.\d)[- ]/.test(name) || /image/i.test(name);
 }
 
 export class GeminiLegacyInterceptor implements RequestInterceptor {
