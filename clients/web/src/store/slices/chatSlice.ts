@@ -151,7 +151,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
       addInputHistory(trimmed);
     }
 
-    set({isLoading: true, error: null});
+    set({isLoading: true, error: null, pinnedIDEContexts: []});
 
     try {
       await sendChat({content, attachments, pinnedIDEContexts}, {

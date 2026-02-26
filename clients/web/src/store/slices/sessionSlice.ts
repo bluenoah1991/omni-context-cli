@@ -48,7 +48,7 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
   },
 
   loadSession: async (entry: SessionSummary) => {
-    set({currentSession: null});
+    set({currentSession: null, pinnedIDEContexts: []});
     const {data, error} = await loadSession(entry.id);
     if (error) set({error});
     else if (data) {
@@ -59,7 +59,7 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
   newSession: async () => {
     const {data, error} = await newSession();
     if (error) set({error});
-    else set({currentSession: data});
+    else set({currentSession: data, pinnedIDEContexts: []});
   },
 
   rewind: async (index: number) => {
