@@ -31,7 +31,7 @@ function App() {
   };
 
   if (state === 'connected' && serverUrl) {
-    return <iframe src={serverUrl} className='server-frame' />;
+    return <iframe src={`${serverUrl}?embed=true`} className='server-frame' />;
   }
 
   return (

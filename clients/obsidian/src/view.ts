@@ -42,7 +42,7 @@ export class OmniContextView extends ItemView {
       if (this.closed) return;
 
       wrapper.empty();
-      wrapper.createEl('iframe', {attr: {src: serverUrl}});
+      wrapper.createEl('iframe', {attr: {src: `${serverUrl}?embed=true`}});
     } catch (err) {
       if (this.closed) return;
       wrapper.empty();

@@ -71,7 +71,7 @@ function App() {
   if (state === 'connected' && serverUrl) {
     return (
       <div style={{width: '100%', height: '100%', position: 'relative'}}>
-        <iframe src={serverUrl} className='server-frame' />
+        <iframe src={`${serverUrl}?embed=true`} className='server-frame' />
         <div
           className='resize-handle'
           onPointerDown={onPointerDown}

@@ -10,7 +10,8 @@ import Settings from './components/Settings';
 import { useLocale } from './i18n';
 import { useChatStore } from './store/chatStore';
 
-const isEmbed = document.querySelector('meta[name="embed"]')?.getAttribute('content') === 'true';
+const isEmbed = document.querySelector('meta[name="embed"]')?.getAttribute('content') === 'true'
+  || new URLSearchParams(window.location.search).has('embed');
 
 export default function App() {
   const t = useLocale();
