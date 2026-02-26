@@ -1,6 +1,6 @@
 {
   "name": "omni-context-figma",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Connect Figma to OmniContext CLI",
   "scripts": {
     "build": "webpack --mode production",
