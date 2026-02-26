@@ -11,7 +11,7 @@
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
     "start": "node dist/cli.js",
-    "clean": "rimraf dist clients/desktop/out clients/desktop/dist clients/desktop/webview clients/vscode/dist clients/vscode/webview clients/web/dist clients/browser/dist clients/office/dist clients/figma/dist clients/obsidian/dist",
+    "clean": "rimraf dist clients/desktop/out clients/desktop/dist clients/desktop/webview clients/vscode/dist clients/vscode/webview clients/vscode/extension.vsix clients/web/dist clients/browser/dist clients/office/dist clients/figma/dist clients/obsidian/dist",
     "bump": "node scripts/bump-version.mjs",
     "release": "node scripts/release-build.mjs",
     "format": "dprint fmt",

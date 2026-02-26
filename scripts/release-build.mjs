@@ -114,24 +114,30 @@ function createZip(outputPath, sourceDir) {
 console.log('=== Step 1: Clean ===');
 run('npm run clean');
 
-console.log('\n=== Step 2: Build ===');
-
+console.log('\n=== Step 2: Build CLI ===');
 run('npm run build');
 
+console.log('\n=== Step 3: Build Web (3 targets) ===');
 const webDir = resolve(root, 'clients/web');
 run('npm run build', webDir);
 run('npm run build:vscode', webDir);
 run('npm run build:desktop', webDir);
 
-run('npm run build:desktop', resolve(root, 'clients/office'));
+console.log('\n=== Step 4: VS Code Extension ===');
+const vscodeDir = resolve(root, 'clients/vscode');
+run('npm run dist', vscodeDir);
 
-run('npm run build', resolve(root, 'clients/vscode'));
-run('npm run build', resolve(root, 'clients/desktop'));
-run('npm run build', resolve(root, 'clients/browser'));
-run('npm run build', resolve(root, 'clients/figma'));
+console.log('\n=== Step 5: Build Office (2 targets) ===');
+const officeDir = resolve(root, 'clients/office');
+run('npm run build', officeDir);
+run('npm run build:desktop', officeDir);
+
+console.log('\n=== Step 6: Build Obsidian, Figma, Browser ===');
 run('npm run build', resolve(root, 'clients/obsidian'));
+run('npm run build', resolve(root, 'clients/figma'));
+run('npm run build', resolve(root, 'clients/browser'));
 
-console.log('\n=== Step 3: Package ===');
+console.log('\n=== Step 7: Package ===');
 
 const releaseDir = resolve(root, 'release');
 rmSync(releaseDir, { recursive: true, force: true });
@@ -149,4 +155,12 @@ for (const { name, pkg, dist } of zipTargets) {
   createZip(zipPath, resolve(root, dist));
 }
 
-console.log('\nDone. Zip files are in release/');
+console.log('\n=== Step 8: Package Desktop ===');
+const desktopDir = resolve(root, 'clients/desktop');
+const packageCmd = process.platform === 'win32' ? 'npm run package:win' : 'npm run package:mac';
+run(packageCmd, desktopDir);
+
+console.log('\n=== Step 9: Install VS Code Extension ===');
+run('code --install-extension dist/clients/extension.vsix');
+
+console.log('\nDone.');
