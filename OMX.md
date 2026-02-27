@@ -76,6 +76,15 @@ npm start -- --scope project
 # Set UI language
 npm start -- --lang zh-CN
 
+# Set password for web UI authentication
+npm start -- --set-password
+
+# Remove password and disable web UI authentication
+npm start -- --clear-password
+
+# Install as a systemd user service (Linux only)
+npm start -- --install-daemon
+
 # Format code
 npm run format
 ```
@@ -105,6 +114,7 @@ Service Layer
     |-- gitService - Git operations (commit message generation)
     |-- costAnalysis - Token usage and cost tracking
     |-- projectExporter - Project data export/import
+    |-- daemonInstaller - Systemd daemon installation (Linux)
     +-- acpAgent - ACP (Agent Client Protocol) agent over stdio
     |
 Provider Adapters
@@ -199,6 +209,7 @@ omx/
 |   |   |-- diagnostic.ts          # Diagnostic mode management
 |   |   |-- costAnalysis.ts        # Token usage and cost tracking
 |   |   |-- projectExporter.ts    # Project data export/import
+|   |   |-- daemonInstaller.ts     # Systemd daemon installation (Linux)
 |   |   |-- acpAgent.ts            # ACP agent over stdio
 |   |   |-- baseStreamHandler.ts   # Base class for streaming response handlers
 |   |   |-- requestInterceptor.ts  # Applies provider-specific request modifications
@@ -207,7 +218,7 @@ omx/
 |   |   |-- modelProviders/        # Model source adapters (DeepSeek, MiniMax, etc.)
 |   |   |-- interceptors/          # Provider-specific interceptors
 |   |   |-- tools/                 # Built-in tool implementations
-|   |   +-- webServer/             # HTTP API and static server
+|   |   +-- webServer/             # HTTP API, auth, and static server
 |   |-- types/                     # TypeScript definitions (16 type files)
 |   |-- prompts/                   # System prompt templates (20 files)
 |   |-- store/                     # Zustand state management
@@ -222,7 +233,7 @@ omx/
 |   |   |-- src/portal/            # Configuration portal UI (React)
 |   |   |   |-- components/        # Portal UI components (Select, ProviderItem)
 |   |   |   |-- store/             # Portal state management
-|   |   |   |-- providers/         # Provider configuration panels
+|   |   |   |-- providers/         # Provider configuration registry
 |   |   |   |-- i18n/              # Portal internationalization (en-US, zh-CN)
 |   |   |   +-- types/             # Portal type definitions
 |   |   +-- cli-deps/              # CLI dependencies for bundling
@@ -233,13 +244,13 @@ omx/
 |   |   |-- src/providers/         # Content providers (diff)
 |   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components (25 components)
-|   |   |-- src/services/          # API service layer
+|   |   |-- src/components/        # UI components (27 components)
+|   |   |-- src/services/          # API service layer (auth, chat, config, session, files)
 |   |   |-- src/store/             # Zustand state management
 |   |   |   +-- slices/            # Store slices (chat, config, session, ui)
 |   |   |-- src/types/             # TypeScript type definitions
 |   |   |-- src/i18n/              # Internationalization (en-US, zh-CN)
-|   |   +-- src/utils/             # Client utilities
+|   |   +-- src/utils/             # Client utilities (auth, icons, preprocessing)
 |   |-- browser/                   # Browser extension (Chrome)
 |   |   |-- src/background/        # Service worker and tool handlers
 |   |   |   +-- tools/             # Individual tool implementations
@@ -397,6 +408,7 @@ The web server provides:
 
 Web server components in `src/services/webServer/`:
 - `index.ts` - Server setup and routing
+- `auth.ts` - Bearer token authentication and rate limiting
 - `staticServer.ts` - Static file serving
 - `httpUtils.ts` - HTTP utilities
 - `apiHandlers.ts` - API route handlers
@@ -453,9 +465,11 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Drag and drop file attachment
 - Document (PDF) and image support
 - File tree browser with file preview panel
+- Diff view for file changes
 - Mermaid diagram rendering
 - LaTeX/KaTeX math rendering
 - Collapsible content blocks
+- Bearer token authentication with login page
 - Mobile-optimized with PWA support
 - Touch-friendly UI with safe area handling
 - Internationalization support (English, Chinese)
@@ -570,11 +584,13 @@ npm run build
 | `src/services/costAnalysis.ts` | Token usage and cost tracking |
 | `src/services/diagnostic.ts` | Diagnostic mode management |
 | `src/services/acpAgent.ts` | ACP agent over stdio |
+| `src/services/daemonInstaller.ts` | Systemd daemon installation (Linux) |
 | `src/services/projectExporter.ts` | Project data export/import |
 | `src/services/modelProvider.ts` | Model provider registry |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
 | `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, Gemini, MiniMax, Xai, Zenmux, Zhipu) |
-| `src/services/webServer/` | HTTP API and static server components |
+| `src/services/webServer/` | HTTP API, auth, and static server components |
+| `src/services/webServer/auth.ts` | Bearer token authentication and rate limiting |
 | `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
 | `clients/desktop/src/main/window.ts` | Window creation and management |
@@ -586,7 +602,7 @@ npm run build
 | `clients/desktop/src/main/shellEnv.ts` | Shell environment resolution (macOS) |
 | `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
 | `clients/desktop/src/portal/store/portalStore.ts` | Portal state management |
-| `clients/desktop/src/portal/providers/` | Provider configuration panels (DeepSeek, MiniMax, OpenRouter, Zenmux, Zhipu) |
+| `clients/desktop/src/portal/providers/` | Provider configuration registry |
 | `clients/desktop/src/portal/i18n/` | Portal internationalization (en-US, zh-CN) |
 | `clients/vscode/src/extension.ts` | VS Code extension entry point |
 | `clients/vscode/src/webviewProvider.ts` | Webview panel management |
@@ -601,12 +617,17 @@ npm run build
 | `clients/web/src/store/chatStore.ts` | Web client state management |
 | `clients/web/src/store/slices/` | Store slices (chat, config, session, ui) |
 | `clients/web/src/i18n/` | Web client internationalization (en-US, zh-CN) |
+| `clients/web/src/services/apiFetch.ts` | Auth fetch wrapper with Bearer token injection |
+| `clients/web/src/services/authService.ts` | Authentication API service |
 | `clients/web/src/services/chatService.ts` | Chat message handling |
 | `clients/web/src/services/sessionService.ts` | Session management |
 | `clients/web/src/services/configService.ts` | Configuration API |
 | `clients/web/src/services/fileService.ts` | File browsing API service |
+| `clients/web/src/components/AuthGate.tsx` | Auth state gate wrapper |
+| `clients/web/src/components/LoginPage.tsx` | Login page with lockout |
 | `clients/web/src/components/FileTree.tsx` | File tree browser component |
 | `clients/web/src/components/PreviewPanel.tsx` | File preview panel |
+| `clients/web/src/components/DiffView.tsx` | Diff view for file changes |
 | `clients/browser/src/background/index.ts` | Browser extension service worker |
 | `clients/browser/src/background/toolManager.ts` | Browser tool registration and dispatch |
 | `clients/browser/src/sidepanel/App.tsx` | Side panel UI |
