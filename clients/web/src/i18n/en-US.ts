@@ -82,6 +82,13 @@ export const enUS = {
     diff: 'diff',
   },
   app: {toggleFileTree: 'Toggle file tree', settings: 'Settings'},
+  login: {
+    placeholder: 'Password',
+    signIn: 'Sign in',
+    wrongPassword: 'Wrong password',
+    connectionFailed: 'Connection failed',
+    tooManyAttempts: (s: number) => `Too many attempts. Try again in ${s}s.`,
+  },
 };
 
 export type Locale = typeof enUS;

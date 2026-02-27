@@ -5,6 +5,7 @@ import type { Session } from '../types/session';
 import type { SlashCommand } from '../types/slash';
 import type { UIMessage } from '../types/uiMessage';
 import { apiUrl } from '../utils/webSession';
+import { apiFetch } from './apiFetch';
 
 export interface ToolApprovalRequest {
   id?: string;
@@ -29,7 +30,7 @@ let cachedSlashCommands: SlashCommand[] | null = null;
 
 export async function fetchIDEContext(): Promise<ApiResult<IDEContext | null>> {
   try {
-    const res = await fetch(apiUrl('ide/context'));
+    const res = await apiFetch(apiUrl('ide/context'));
     if (res.status === 204) return {data: null, error: null};
     return {data: await res.json(), error: null};
   } catch {
@@ -39,7 +40,7 @@ export async function fetchIDEContext(): Promise<ApiResult<IDEContext | null>> {
 
 export async function fetchInputHistory(): Promise<ApiResult<string[]>> {
   try {
-    const res = await fetch(apiUrl('chat/inputHistory'));
+    const res = await apiFetch(apiUrl('chat/inputHistory'));
     if (!res.ok) return {data: [], error: null};
     return {data: await res.json(), error: null};
   } catch {
@@ -49,7 +50,7 @@ export async function fetchInputHistory(): Promise<ApiResult<string[]>> {
 
 export async function addInputHistory(input: string): Promise<ApiResult<void>> {
   try {
-    await fetch(apiUrl('chat/inputHistory'), {
+    await apiFetch(apiUrl('chat/inputHistory'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({input}),
@@ -66,7 +67,7 @@ export async function fetchSlashCommands(): Promise<ApiResult<SlashCommand[]>> {
   }
 
   try {
-    const res = await fetch(apiUrl('chat/slashCommands'));
+    const res = await apiFetch(apiUrl('chat/slashCommands'));
     if (!res.ok) return {data: [], error: null};
     cachedSlashCommands = await res.json();
     return {data: cachedSlashCommands || [], error: null};
@@ -83,7 +84,7 @@ export async function sendChat(
   },
   callbacks: ChatCallbacks,
 ): Promise<void> {
-  const res = await fetch(apiUrl('chat'), {
+  const res = await apiFetch(apiUrl('chat'), {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(request),
@@ -125,7 +126,7 @@ export async function sendChat(
 
 export async function fetchRewindPoints(): Promise<ApiResult<RewindPoint[]>> {
   try {
-    const res = await fetch(apiUrl('chat/rewindPoints'));
+    const res = await apiFetch(apiUrl('chat/rewindPoints'));
     if (!res.ok) return {data: [], error: null};
     return {data: await res.json(), error: null};
   } catch {
@@ -135,7 +136,7 @@ export async function fetchRewindPoints(): Promise<ApiResult<RewindPoint[]>> {
 
 export async function rewindSession(index: number): Promise<ApiResult<Session>> {
   try {
-    const res = await fetch(apiUrl('chat/rewind'), {
+    const res = await apiFetch(apiUrl('chat/rewind'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({index}),
@@ -148,7 +149,7 @@ export async function rewindSession(index: number): Promise<ApiResult<Session>> 
 
 export async function stopGeneration(): Promise<ApiResult<void>> {
   try {
-    await fetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
+    await apiFetch(apiUrl('chat/stopGeneration'), {method: 'POST'});
     return {data: undefined, error: null};
   } catch {
     return {data: null, error: 'Failed to stop generation'};
@@ -157,7 +158,7 @@ export async function stopGeneration(): Promise<ApiResult<void>> {
 
 export async function sendToolApproval(approved: boolean): Promise<ApiResult<void>> {
   try {
-    await fetch(apiUrl('chat/toolApproval'), {
+    await apiFetch(apiUrl('chat/toolApproval'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({approved}),

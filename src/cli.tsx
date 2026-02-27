@@ -8,6 +8,8 @@ import type https from 'node:https';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { createInterface } from 'node:readline';
+import { Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher } from 'undici';
@@ -23,6 +25,7 @@ import {
   setCurrentModel,
 } from './services/configManager.js';
 import { enableCostAnalysis } from './services/costAnalysis.js';
+import { installDaemon } from './services/daemonInstaller.js';
 import { enableDiagnostic } from './services/diagnostic.js';
 import { initializeInputHistory } from './services/inputHistoryManager.js';
 import { initializeInterceptors } from './services/interceptors/index.js';
@@ -38,6 +41,7 @@ import { exportProject, importProject } from './services/projectExporter.js';
 import { loadLatestSession } from './services/sessionManager.js';
 import { enableToolApproval } from './services/toolApproval.js';
 import { initializeTools } from './services/tools/index.js';
+import { clearPassword, isAuthEnabled, setPassword } from './services/webServer/auth.js';
 import { startServer } from './services/webServer/index.js';
 import { useChatStore } from './store/chatStore.js';
 import type { WorkflowPreset } from './types/config.js';
@@ -80,7 +84,13 @@ const program = new Command().name('omx').description('Omni Context CLI').versio
   ).option('--export-project <path>', 'Export project data to a gzip archive').option(
     '--import-project <path>',
     'Import project data from a gzip archive',
-  ).parse(process.argv, {from: 'node'});
+  ).option('--set-password [password]', 'Set password for web UI authentication').option(
+    '--clear-password',
+    'Remove password and disable web UI authentication',
+  ).option('--install-daemon', 'Install as a systemd user service (Linux only)').parse(
+    process.argv,
+    {from: 'node'},
+  );
 
 const opts = program.opts();
 
@@ -170,6 +180,49 @@ if (opts.importProject) {
     console.log(`Imported ${count} files`);
   } catch (e) {
     console.error(`Import failed: ${e instanceof Error ? e.message : e}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (opts.setPassword) {
+  let password = typeof opts.setPassword === 'string' ? opts.setPassword : '';
+  if (!password) {
+    const muted = new Writable({
+      write(_, __, cb) {
+        cb();
+      },
+    });
+    const rl = createInterface({input: process.stdin, output: muted, terminal: true});
+    process.stdout.write('Enter password: ');
+    password = await new Promise<string>(resolve =>
+      rl.question('', answer => {
+        rl.close();
+        process.stdout.write('\n');
+        resolve(answer);
+      })
+    );
+  }
+  if (!password) {
+    console.error('Password cannot be empty.');
+    process.exit(1);
+  }
+  setPassword(password);
+  console.log('Password set. Web UI will require authentication.');
+  process.exit(0);
+}
+
+if (opts.clearPassword) {
+  clearPassword();
+  console.log('Password cleared. Web UI authentication disabled.');
+  process.exit(0);
+}
+
+if (opts.installDaemon) {
+  try {
+    installDaemon(opts.host || '0.0.0.0', opts.port || '5281', opts.tlsCert, opts.tlsKey);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : e);
     process.exit(1);
   }
   process.exit(0);
@@ -277,6 +330,9 @@ if (opts.acp) {
     console.log(`Server running at https://${host}:${port} (http also accepted)`);
   } else {
     console.log(`Server running at http://${host}:${port}`);
+  }
+  if (isAuthEnabled()) {
+    console.log('Authentication enabled (password set in ~/.omx/password)');
   }
 
   if (opts.web) {

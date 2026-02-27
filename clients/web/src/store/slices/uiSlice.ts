@@ -6,6 +6,8 @@ import type { FileDiff, FilePreview, PreviewTab } from '../../types/uiMessage';
 import type { ChatState } from '../chatStore';
 
 export interface UISlice {
+  needsAuth: boolean | null;
+  setNeedsAuth: (needsAuth: boolean) => void;
   error: string | null;
   theme: 'light' | 'dark';
   thinkingExpanded: boolean;
@@ -47,6 +49,8 @@ function ensurePanelWidth(open: boolean, width: number, ratio = 0.3): number {
 }
 
 export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get) => ({
+  needsAuth: null,
+  setNeedsAuth: (needsAuth: boolean) => set({needsAuth}),
   error: null,
   theme: 'dark',
   thinkingExpanded: localStorage.getItem('thinkingExpanded') !== 'false',

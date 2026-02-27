@@ -1,6 +1,7 @@
 import type { ApiResult } from '../types/api';
 import type { FilePreview } from '../types/uiMessage';
 import { apiUrl } from '../utils/webSession';
+import { apiFetch } from './apiFetch';
 
 export interface FileEntry {
   name: string;
@@ -15,7 +16,7 @@ interface ListFilesResponse {
 
 export async function fetchFiles(dirPath: string): Promise<ApiResult<ListFilesResponse>> {
   try {
-    const res = await fetch(apiUrl('files') + `?path=${encodeURIComponent(dirPath)}`);
+    const res = await apiFetch(apiUrl('files') + `?path=${encodeURIComponent(dirPath)}`);
     if (!res.ok) {
       const err = await res.json();
       return {data: null, error: err.error || 'Failed to list files'};
@@ -28,7 +29,7 @@ export async function fetchFiles(dirPath: string): Promise<ApiResult<ListFilesRe
 
 export async function fetchFileContent(filePath: string): Promise<ApiResult<FilePreview>> {
   try {
-    const res = await fetch(apiUrl('files/read') + `?path=${encodeURIComponent(filePath)}`);
+    const res = await apiFetch(apiUrl('files/read') + `?path=${encodeURIComponent(filePath)}`);
     if (!res.ok) {
       const err = await res.json();
       return {data: null, error: err.error || 'Failed to read file'};

@@ -2,10 +2,11 @@ import type { ApiResult } from '../types/api';
 import type { Config } from '../types/config';
 import type { Model } from '../types/model';
 import { apiUrl } from '../utils/webSession';
+import { apiFetch } from './apiFetch';
 
 export async function fetchModel(): Promise<ApiResult<Model | null>> {
   try {
-    const res = await fetch(apiUrl('model'));
+    const res = await apiFetch(apiUrl('model'));
     if (res.status === 204) return {data: null, error: null};
     return {data: await res.json(), error: null};
   } catch {
@@ -15,7 +16,7 @@ export async function fetchModel(): Promise<ApiResult<Model | null>> {
 
 export async function setModel(modelId: string): Promise<ApiResult<void>> {
   try {
-    await fetch(apiUrl('model'), {
+    await apiFetch(apiUrl('model'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({modelId}),
@@ -28,7 +29,7 @@ export async function setModel(modelId: string): Promise<ApiResult<void>> {
 
 export async function fetchModels(): Promise<ApiResult<Model[]>> {
   try {
-    const res = await fetch(apiUrl('models'));
+    const res = await apiFetch(apiUrl('models'));
     return {data: await res.json(), error: null};
   } catch {
     return {data: null, error: 'Failed to load models'};
@@ -37,7 +38,7 @@ export async function fetchModels(): Promise<ApiResult<Model[]>> {
 
 export async function fetchConfig(): Promise<ApiResult<Config>> {
   try {
-    const res = await fetch(apiUrl('config'));
+    const res = await apiFetch(apiUrl('config'));
     return {data: await res.json(), error: null};
   } catch {
     return {data: null, error: 'Failed to load config'};
@@ -46,7 +47,7 @@ export async function fetchConfig(): Promise<ApiResult<Config>> {
 
 export async function setConfig(config: Partial<Config>): Promise<ApiResult<void>> {
   try {
-    await fetch(apiUrl('config'), {
+    await apiFetch(apiUrl('config'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(config),

@@ -1,14 +1,11 @@
 import type { ApiResult } from '../types/api';
 import type { Session, SessionSummary } from '../types/session';
 import { apiUrl } from '../utils/webSession';
+import { apiFetch } from './apiFetch';
 
 export async function fetchSession(): Promise<ApiResult<Session>> {
   try {
-    const res = await fetch(apiUrl('session'));
-    if (res.status === 401) {
-      window.location.href = '/';
-      return {data: null, error: 'Session expired'};
-    }
+    const res = await apiFetch(apiUrl('session'));
     return {data: await res.json(), error: null};
   } catch {
     return {data: null, error: 'Failed to load session'};
@@ -17,7 +14,7 @@ export async function fetchSession(): Promise<ApiResult<Session>> {
 
 export async function fetchSessions(): Promise<ApiResult<SessionSummary[]>> {
   try {
-    const res = await fetch(apiUrl('sessions'));
+    const res = await apiFetch(apiUrl('sessions'));
     return {data: await res.json(), error: null};
   } catch {
     return {data: null, error: 'Failed to load sessions'};
@@ -26,7 +23,7 @@ export async function fetchSessions(): Promise<ApiResult<SessionSummary[]>> {
 
 export async function loadSession(sessionId: string): Promise<ApiResult<Session>> {
   try {
-    const res = await fetch(apiUrl('session/load'), {
+    const res = await apiFetch(apiUrl('session/load'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({id: sessionId}),
@@ -42,7 +39,7 @@ export async function loadSession(sessionId: string): Promise<ApiResult<Session>
 
 export async function newSession(): Promise<ApiResult<Session>> {
   try {
-    const res = await fetch(apiUrl('session/new'), {method: 'POST'});
+    const res = await apiFetch(apiUrl('session/new'), {method: 'POST'});
     return {data: await res.json(), error: null};
   } catch {
     return {data: null, error: 'Failed to create session'};

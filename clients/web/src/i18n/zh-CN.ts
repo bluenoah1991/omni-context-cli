@@ -84,4 +84,11 @@ export const zhCN: Locale = {
     diff: '差异',
   },
   app: {toggleFileTree: '切换文件树', settings: '设置'},
+  login: {
+    placeholder: '密码',
+    signIn: '登录',
+    wrongPassword: '密码错误',
+    connectionFailed: '连接失败',
+    tooManyAttempts: (s: number) => `尝试次数过多，请 ${s} 秒后重试`,
+  },
 };

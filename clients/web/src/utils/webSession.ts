@@ -12,11 +12,18 @@ function getWebSessionId(): string | null {
   return getMetaContent('websession-id');
 }
 
+function getBaseUrl(): string {
+  return (getMetaContent('server-url') || '').replace(/\/$/, '');
+}
+
+export function globalApiUrl(route: string): string {
+  return `${getBaseUrl()}/api/${route}`;
+}
+
 export function apiUrl(route: string): string {
   const wsId = getWebSessionId();
   if (!wsId) {
     throw new Error('No web session');
   }
-  const baseUrl = (getMetaContent('server-url') || '').replace(/\/$/, '');
-  return `${baseUrl}/api/${wsId}/${route}`;
+  return `${getBaseUrl()}/api/${wsId}/${route}`;
 }
