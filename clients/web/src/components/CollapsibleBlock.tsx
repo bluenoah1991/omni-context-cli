@@ -24,21 +24,21 @@ const variantStyles = {
   },
   blue: {
     container:
-      'bg-vscode-element/20 border-blue-500/10 hover:border-blue-500/20 light:bg-slate-50/50 light:border-blue-300/30 light:hover:border-blue-300/50',
-    header: 'text-blue-400/60 light:text-blue-600/70',
-    content: 'text-blue-300/50 light:text-blue-600/60',
+      'bg-vscode-element/20 border-blue-500/20 hover:border-blue-500/30 light:bg-slate-50/50 light:border-blue-300/40 light:hover:border-blue-300/60',
+    header: 'text-blue-400/80 light:text-blue-600',
+    content: 'text-blue-300/70 light:text-blue-700',
   },
   red: {
     container:
-      'bg-vscode-element/20 border-red-500/15 hover:border-red-500/25 light:bg-slate-50/50 light:border-red-300/30 light:hover:border-red-300/50',
-    header: 'text-red-400/70 light:text-red-600/70',
-    content: 'text-red-300/60 light:text-red-600/60',
+      'bg-vscode-element/20 border-red-500/20 hover:border-red-500/30 light:bg-slate-50/50 light:border-red-300/40 light:hover:border-red-300/60',
+    header: 'text-red-400/80 light:text-red-600',
+    content: 'text-red-300/70 light:text-red-700',
   },
   green: {
     container:
-      'bg-vscode-element/20 border-green-500/10 hover:border-green-500/20 light:bg-slate-50/50 light:border-green-300/30 light:hover:border-green-300/50',
-    header: 'text-green-400/60 light:text-green-600/70',
-    content: 'text-green-300/50 light:text-green-600/60',
+      'bg-vscode-element/20 border-green-500/20 hover:border-green-500/30 light:bg-slate-50/50 light:border-green-300/40 light:hover:border-green-300/60',
+    header: 'text-green-400/80 light:text-green-600',
+    content: 'text-green-300/70 light:text-green-700',
   },
 };
 
