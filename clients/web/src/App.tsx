@@ -97,7 +97,7 @@ export default function App() {
               )}
               <SessionSelector disabled={isLoading} />
             </div>
-            <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-2'>
               <CacheCountdown />
               <IconButton
                 icon={BookOpen}
