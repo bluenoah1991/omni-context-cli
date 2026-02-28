@@ -17,6 +17,8 @@ function getRipgrepPath(): string {
     binDir = 'x86_64-pc-windows-msvc';
   } else if (platform === 'darwin') {
     binDir = 'aarch64-apple-darwin';
+  } else if (process.arch === 'arm64') {
+    binDir = 'aarch64-unknown-linux-gnu';
   } else {
     binDir = 'x86_64-unknown-linux-musl';
   }
