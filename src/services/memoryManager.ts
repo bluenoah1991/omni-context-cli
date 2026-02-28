@@ -72,7 +72,7 @@ function updateMemory(memory: Memory, reflectionResult: ReflectionResult): Memor
     }
   }
 
-  const ratingDelta: Record<string, number> = {helpful: 1, harmful: -3, neutral: -2};
+  const ratingDelta: Record<string, number> = {helpful: 3, neutral: -1, harmful: -6};
   const evalMap = new Map(evaluations.map(e => [e.name, e.rating]));
 
   for (const kp of memory.keyPoints) {
@@ -82,7 +82,7 @@ function updateMemory(memory: Memory, reflectionResult: ReflectionResult): Memor
     }
   }
 
-  memory.keyPoints = memory.keyPoints.filter(kp => kp.score > -5);
+  memory.keyPoints = memory.keyPoints.filter(kp => kp.score > -10);
 
   return memory;
 }
