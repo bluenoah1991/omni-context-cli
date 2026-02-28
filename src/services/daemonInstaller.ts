@@ -34,6 +34,8 @@ export function installDaemon(host: string, port: string, tlsCert?: string, tlsK
     'Restart=on-failure',
     'RestartSec=5',
     'Environment=NODE_ENV=production',
+    `Environment=PATH=${process.env.PATH || '/usr/local/bin:/usr/bin:/bin'}`,
+    `Environment=HOME=${process.env.HOME || `/home/${user}`}`,
     '',
     '[Install]',
     'WantedBy=multi-user.target',
