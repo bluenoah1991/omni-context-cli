@@ -1,5 +1,6 @@
 import { BookOpen, FolderTree, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { CacheCountdown } from './components/CacheCountdown';
 import { FileTree } from './components/FileTree';
 import { IconButton } from './components/IconButton';
 import InputBox from './components/InputBox';
@@ -97,6 +98,7 @@ export default function App() {
               <SessionSelector disabled={isLoading} />
             </div>
             <div className='flex items-center gap-4'>
+              <CacheCountdown />
               <IconButton
                 icon={BookOpen}
                 title={t.app.memory}

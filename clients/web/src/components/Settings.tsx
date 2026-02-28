@@ -27,6 +27,8 @@ export default function Settings({onClose}: SettingsProps) {
     setAutoDiffPanel,
     inlineDiff,
     setInlineDiff,
+    showCacheCountdown,
+    setShowCacheCountdown,
   } = useChatStore();
   const [activeTab, setActiveTab] = useState<Tab>('models');
   const [currentModelId, setCurrentModelId] = useState(currentModel?.id || '');
@@ -289,6 +291,13 @@ export default function Settings({onClose}: SettingsProps) {
                 description={t.settings.inlineDiffsDescription}
                 enabled={inlineDiff}
                 onChange={setInlineDiff}
+              />
+
+              <ToggleOption
+                label={t.settings.cacheCountdown}
+                description={t.settings.cacheCountdownDescription}
+                enabled={showCacheCountdown}
+                onChange={setShowCacheCountdown}
               />
             </>
           )}

@@ -177,7 +177,7 @@ export const createChatSlice: StateCreator<ChatState, [], [], ChatSlice> = (set,
     } catch (err) {
       if (err instanceof Error) set({error: err.message});
     } finally {
-      set({isLoading: false, isCompacting: false});
+      set({isLoading: false, isCompacting: false, lastResponseAt: Date.now()});
     }
   },
 

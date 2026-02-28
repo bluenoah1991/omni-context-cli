@@ -48,6 +48,8 @@ export const zhCN: Locale = {
     autoDiffsDescription: '在预览面板中显示文件差异，每轮自动刷新',
     inlineDiffs: '内联差异',
     inlineDiffsDescription: '在聊天中直接显示差异，而非侧边面板',
+    cacheCountdown: '缓存倒计时',
+    cacheCountdownDescription: '在顶栏显示提示缓存过期倒计时（仅 Anthropic）',
     cancel: '取消',
     saving: '保存中...',
     save: '保存',
@@ -83,7 +85,12 @@ export const zhCN: Locale = {
     binaryFile: '二进制文件，无法预览',
     diff: '差异',
   },
-  app: {toggleFileTree: '切换文件树', settings: '设置', memory: '记忆'},
+  app: {
+    toggleFileTree: '切换文件树',
+    settings: '设置',
+    memory: '记忆',
+    cacheExpiry: (time: string) => `提示缓存将在 ${time} 后过期`,
+  },
   memory: {
     title: '记忆',
     loading: '加载中...',

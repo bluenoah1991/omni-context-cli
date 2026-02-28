@@ -46,6 +46,8 @@ export const enUS = {
     autoDiffsDescription: 'Show file diffs in preview panel and refresh each turn',
     inlineDiffs: 'Inline Diffs',
     inlineDiffsDescription: 'Show diffs directly in the chat instead of the side panel',
+    cacheCountdown: 'Cache Countdown',
+    cacheCountdownDescription: 'Show prompt cache expiry timer in the header (Anthropic only)',
     cancel: 'Cancel',
     saving: 'Saving...',
     save: 'Save',
@@ -81,7 +83,12 @@ export const enUS = {
     binaryFile: "Binary file -- can't preview this one",
     diff: 'diff',
   },
-  app: {toggleFileTree: 'Toggle file tree', settings: 'Settings', memory: 'Memory'},
+  app: {
+    toggleFileTree: 'Toggle file tree',
+    settings: 'Settings',
+    memory: 'Memory',
+    cacheExpiry: (time: string) => `Prompt cache expires in ${time}`,
+  },
   memory: {
     title: 'Memory',
     loading: 'Loading...',

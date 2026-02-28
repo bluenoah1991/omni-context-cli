@@ -21,9 +21,12 @@ export interface UISlice {
   previewPanelWidth: number;
   previewTabs: PreviewTab[];
   activePreviewTab: number;
+  lastResponseAt: number | null;
+  showCacheCountdown: boolean;
   fileTreeOpen: boolean;
   fileTreeWidth: number;
   setTheme: (theme: 'light' | 'dark') => void;
+  setShowCacheCountdown: (show: boolean) => void;
   setThinkingExpanded: (expanded: boolean) => void;
   setToolExpanded: (expanded: boolean) => void;
   setAutoDiffPanel: (enabled: boolean) => void;
@@ -66,8 +69,15 @@ export const createUISlice: StateCreator<ChatState, [], [], UISlice> = (set, get
   activePreviewTab: 0,
   fileTreeOpen: localStorage.getItem('fileTreeOpen') === 'true',
   fileTreeWidth: parseInt(localStorage.getItem('fileTreeWidth') || '0', 10) || 0,
+  lastResponseAt: null,
+  showCacheCountdown: localStorage.getItem('showCacheCountdown') !== 'false',
 
   setTheme: theme => set({theme}),
+
+  setShowCacheCountdown: show => {
+    localStorage.setItem('showCacheCountdown', String(show));
+    set({showCacheCountdown: show});
+  },
 
   setThinkingExpanded: expanded => {
     localStorage.setItem('thinkingExpanded', String(expanded));
