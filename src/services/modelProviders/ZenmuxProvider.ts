@@ -106,6 +106,15 @@ async function fetchAnthropicModels(apiKey: string): Promise<ModelConfig[]> {
           apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
           contextSize,
         });
+        models.push({
+          id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: `${model.id}:${slug}`,
+          nickname: `Zenmux ${model.display_name || model.id} [${label} 200K]`,
+          provider: 'anthropic' as const,
+          apiKey,
+          apiUrl: 'https://zenmux.ai/api/anthropic/v1/messages',
+          contextSize: 200,
+        });
       }
     }
   }
