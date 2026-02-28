@@ -9,36 +9,36 @@ interface CollapsibleBlockProps {
   loading?: boolean;
   expandableWhileLoading?: boolean;
   defaultExpanded?: boolean;
-  variant: 'purple' | 'blue' | 'red' | 'green';
+  variant: 'muted' | 'blue' | 'red' | 'green';
   clickable?: boolean;
   renderMarkdown?: boolean;
   children?: React.ReactNode;
 }
 
 const variantStyles = {
-  purple: {
+  muted: {
     container:
-      'bg-vscode-element/30 border-purple-500/20 hover:border-purple-500/40 light:bg-purple-100/50 light:border-purple-400/30 light:hover:border-purple-400/50',
-    header: 'text-purple-400 light:text-purple-600',
-    content: 'text-purple-300/90 light:text-purple-700',
+      'bg-vscode-element/20 border-vscode-border hover:border-vscode-border-active light:bg-slate-50/50 light:border-slate-200 light:hover:border-slate-300',
+    header: 'text-vscode-text-muted light:text-slate-500',
+    content: 'text-vscode-text-muted/80 light:text-slate-500',
   },
   blue: {
     container:
-      'bg-vscode-element/30 border-blue-500/20 hover:border-blue-500/40 light:bg-blue-100/50 light:border-blue-400/30 light:hover:border-blue-400/50',
-    header: 'text-blue-400 light:text-blue-600',
-    content: 'text-blue-300/90 light:text-blue-700',
+      'bg-vscode-element/20 border-blue-500/10 hover:border-blue-500/20 light:bg-slate-50/50 light:border-blue-300/30 light:hover:border-blue-300/50',
+    header: 'text-blue-400/60 light:text-blue-600/70',
+    content: 'text-blue-300/50 light:text-blue-600/60',
   },
   red: {
     container:
-      'bg-red-900/10 border-red-500/20 hover:border-red-500/40 light:bg-red-100/50 light:border-red-400/30 light:hover:border-red-400/50',
-    header: 'text-red-400 light:text-red-600',
-    content: 'text-red-300/90 light:text-red-700',
+      'bg-vscode-element/20 border-red-500/15 hover:border-red-500/25 light:bg-slate-50/50 light:border-red-300/30 light:hover:border-red-300/50',
+    header: 'text-red-400/70 light:text-red-600/70',
+    content: 'text-red-300/60 light:text-red-600/60',
   },
   green: {
     container:
-      'bg-vscode-element/30 border-green-500/20 hover:border-green-500/40 light:bg-green-100/50 light:border-green-400/30 light:hover:border-green-400/50',
-    header: 'text-green-400 light:text-green-600',
-    content: 'text-green-300/90 light:text-green-700',
+      'bg-vscode-element/20 border-green-500/10 hover:border-green-500/20 light:bg-slate-50/50 light:border-green-300/30 light:hover:border-green-300/50',
+    header: 'text-green-400/60 light:text-green-600/70',
+    content: 'text-green-300/50 light:text-green-600/60',
   },
 };
 
@@ -65,7 +65,7 @@ export const CollapsibleBlock = memo(
     return (
       <div
         className={`rounded-md border text-sm transition-all duration-200 overflow-hidden w-full ${styles.container} ${
-          clickable ? 'ring-1 ring-blue-400/50' : ''
+          clickable ? 'ring-1 ring-blue-400/30' : ''
         }`}
       >
         <div

@@ -15,12 +15,12 @@ export const ThinkingBlock = memo(
     return (
       <CollapsibleBlock
         icon={<Brain size={14} />}
-        title='Thinking Process'
+        title='Thinking'
         content={content}
         loading={loading}
         expandableWhileLoading
         defaultExpanded={thinkingExpanded}
-        variant='purple'
+        variant='muted'
         renderMarkdown
       />
     );
