@@ -244,13 +244,13 @@ omx/
 |   |   |-- src/providers/         # Content providers (diff)
 |   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components (27 components)
-|   |   |-- src/services/          # API service layer (auth, chat, config, session, files)
+|   |   |-- src/components/        # UI components (29 components)
+|   |   |-- src/services/          # API service layer (auth, chat, config, session, files, memory)
 |   |   |-- src/store/             # Zustand state management
 |   |   |   +-- slices/            # Store slices (chat, config, session, ui)
 |   |   |-- src/types/             # TypeScript type definitions
 |   |   |-- src/i18n/              # Internationalization (en-US, zh-CN)
-|   |   +-- src/utils/             # Client utilities (auth, icons, preprocessing)
+|   |   +-- src/utils/             # Client utilities (web session, file icons, preprocessing, tool approval)
 |   |-- browser/                   # Browser extension (Chrome)
 |   |   |-- src/background/        # Service worker and tool handlers
 |   |   |   +-- tools/             # Individual tool implementations
@@ -412,7 +412,7 @@ Web server components in `src/services/webServer/`:
 - `staticServer.ts` - Static file serving
 - `httpUtils.ts` - HTTP utilities
 - `apiHandlers.ts` - API route handlers
-- `handlers/` - Route-specific handlers (chat, sessions, config, files, remote tools)
+- `handlers/` - Route-specific handlers (chat, sessions, config, files, remote tools, memory)
 
 ### Desktop Client
 
@@ -469,6 +469,8 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Mermaid diagram rendering
 - LaTeX/KaTeX math rendering
 - Collapsible content blocks
+- Memory key points viewer
+- Cache TTL countdown timer
 - Bearer token authentication with login page
 - Mobile-optimized with PWA support
 - Touch-friendly UI with safe area handling
@@ -592,6 +594,7 @@ npm run build
 | `src/services/webServer/` | HTTP API, auth, and static server components |
 | `src/services/webServer/auth.ts` | Bearer token authentication and rate limiting |
 | `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
+| `src/services/webServer/handlers/memoryHandlers.ts` | Memory key points API handlers |
 | `clients/desktop/src/main/index.ts` | Electron main process entry point |
 | `clients/desktop/src/main/window.ts` | Window creation and management |
 | `clients/desktop/src/main/server.ts` | CLI server spawning and lifecycle |
@@ -623,11 +626,14 @@ npm run build
 | `clients/web/src/services/sessionService.ts` | Session management |
 | `clients/web/src/services/configService.ts` | Configuration API |
 | `clients/web/src/services/fileService.ts` | File browsing API service |
+| `clients/web/src/services/memoryService.ts` | Memory key points API service |
 | `clients/web/src/components/AuthGate.tsx` | Auth state gate wrapper |
 | `clients/web/src/components/LoginPage.tsx` | Login page with lockout |
 | `clients/web/src/components/FileTree.tsx` | File tree browser component |
 | `clients/web/src/components/PreviewPanel.tsx` | File preview panel |
 | `clients/web/src/components/DiffView.tsx` | Diff view for file changes |
+| `clients/web/src/components/CacheCountdown.tsx` | Cache TTL countdown timer |
+| `clients/web/src/components/MemoryPanel.tsx` | Memory key points panel |
 | `clients/browser/src/background/index.ts` | Browser extension service worker |
 | `clients/browser/src/background/toolManager.ts` | Browser tool registration and dispatch |
 | `clients/browser/src/sidepanel/App.tsx` | Side panel UI |
