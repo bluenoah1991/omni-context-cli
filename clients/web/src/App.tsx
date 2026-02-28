@@ -1,8 +1,9 @@
-import { FolderTree, Settings as SettingsIcon } from 'lucide-react';
+import { BookOpen, FolderTree, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FileTree } from './components/FileTree';
 import { IconButton } from './components/IconButton';
 import InputBox from './components/InputBox';
+import MemoryPanel from './components/MemoryPanel';
 import MessageList from './components/MessageList';
 import { PreviewPanel } from './components/PreviewPanel';
 import SessionSelector from './components/SessionSelector';
@@ -16,6 +17,7 @@ const isEmbed = document.querySelector('meta[name="embed"]')?.getAttribute('cont
 export default function App() {
   const t = useLocale();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const {
     config,
     getConfig,
@@ -96,6 +98,12 @@ export default function App() {
             </div>
             <div className='flex items-center gap-4'>
               <IconButton
+                icon={BookOpen}
+                title={t.app.memory}
+                onClick={() => setIsMemoryOpen(true)}
+                disabled={isLoading}
+              />
+              <IconButton
                 icon={SettingsIcon}
                 title={t.app.settings}
                 onClick={() => setIsSettingsOpen(true)}
@@ -116,6 +124,7 @@ export default function App() {
 
       <PreviewPanel />
 
+      {isMemoryOpen && <MemoryPanel onClose={() => setIsMemoryOpen(false)} />}
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );

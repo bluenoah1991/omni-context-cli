@@ -34,7 +34,7 @@ function isValidMemory(data: unknown): data is Memory {
   );
 }
 
-function loadMemory(): Memory {
+export function loadMemory(): Memory {
   const memoryPath = getProjectFilePath('memory.json');
 
   let result: Memory = {version: '1.0', keyPoints: []};
@@ -52,7 +52,7 @@ function loadMemory(): Memory {
   return result;
 }
 
-function saveMemory(memory: Memory): void {
+export function saveMemory(memory: Memory): void {
   ensureProjectDir();
   fs.writeFileSync(getProjectFilePath('memory.json'), JSON.stringify(memory, null, 2));
 }

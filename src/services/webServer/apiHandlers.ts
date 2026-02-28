@@ -19,6 +19,7 @@ import {
   handleSetModel,
 } from './handlers/configHandlers';
 import { handleListFiles, handleReadFile } from './handlers/fileHandlers';
+import { handleGetMemory, handleUpdateMemory } from './handlers/memoryHandlers';
 import { handleRemotePoll } from './handlers/remoteHandlers';
 import {
   handleGetSession,
@@ -84,6 +85,8 @@ export async function handleAPI(
   if (route === 'ide/context' && method === 'GET') return handleGetIDEContext(res);
   if (route === 'files' && method === 'GET') return handleListFiles(req, res);
   if (route === 'files/read' && method === 'GET') return handleReadFile(req, res);
+  if (route === 'memory' && method === 'GET') return handleGetMemory(res);
+  if (route === 'memory' && method === 'POST') return handleUpdateMemory(req, res);
 
   return false;
 }
