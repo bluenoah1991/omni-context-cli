@@ -1,6 +1,6 @@
 {
   "name": "omni-context-desktop",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "OmniContext Desktop - Zero-telemetry coding assistant",
   "main": "./out/main/index.js",
   "author": "bluenoah1991",

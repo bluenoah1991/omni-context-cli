@@ -2,7 +2,7 @@
   "name": "omni-context-obsidian-plugin",
   "displayName": "OmniContext for Obsidian",
   "description": "OmniContext is a small, helpful, zero-telemetry coding assistant.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "scripts": {
     "build": "node build.mjs",
     "dev": "node build.mjs --dev"

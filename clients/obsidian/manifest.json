@@ -1,7 +1,7 @@
 {
   "id": "omni-context",
   "name": "OmniContext",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "minAppVersion": "1.0.0",
   "description": "OmniContext is a small, helpful, zero-telemetry coding assistant.",
   "author": "bluenoah1991",
