@@ -8,12 +8,15 @@ interface ToolCallAccumulator {
   id?: string;
   name: string;
   args: Record<string, unknown>;
+  thoughtSignature?: string;
 }
 
 export class GeminiStreamHandler extends BaseStreamHandler {
   private activeToolCalls: ToolCallAccumulator[] = [];
-  private currentThinkingSignature = '';
-  private accumulatedMedia: Array<{mimeType: string; data: string;}> = [];
+  private thinkingSignature = '';
+  private contentSignature = '';
+  private accumulatedMedia: Array<{mimeType: string; data: string; thoughtSignature?: string;}> =
+    [];
 
   protected getEndpoint(model: ModelConfig): string {
     const baseUrl = model.apiUrl.replace(/\/$/, '');
@@ -58,31 +61,48 @@ export class GeminiStreamHandler extends BaseStreamHandler {
   }
 
   private processPart(part: any): void {
-    if (part.thoughtSignature) {
-      this.currentThinkingSignature = part.thoughtSignature;
-    }
-
     if (part.thought && part.text) {
       this.accumulatedThinking += part.text;
+      if (part.thoughtSignature) {
+        this.thinkingSignature = part.thoughtSignature;
+      }
       if (this.accumulatedThinking.trim()) {
         this.callbacks.onThinking?.(part.text);
       }
       return;
     }
 
+    if (
+      part.thoughtSignature && part.text === undefined && !part.inlineData && !part.functionCall
+    ) {
+      this.thinkingSignature = part.thoughtSignature;
+    }
+
     if (part.text !== undefined && !part.thought) {
       this.accumulatedContent += part.text;
+      if (part.thoughtSignature) {
+        this.contentSignature = part.thoughtSignature;
+      }
       if (this.accumulatedContent.trim()) {
         this.callbacks.onContent?.(part.text);
       }
     }
 
     if (part.functionCall) {
-      this.handleFunctionCall(part.functionCall);
+      this.activeToolCalls.push({
+        id: part.functionCall.id,
+        name: part.functionCall.name || '',
+        args: part.functionCall.args || {},
+        thoughtSignature: part.thoughtSignature,
+      });
     }
 
     if (part.inlineData?.mimeType) {
-      this.accumulatedMedia.push(part.inlineData);
+      this.accumulatedMedia.push({
+        mimeType: part.inlineData.mimeType,
+        data: part.inlineData.data,
+        ...(part.thoughtSignature && {thoughtSignature: part.thoughtSignature}),
+      });
       setMedia({data: part.inlineData.data, mimeType: part.inlineData.mimeType});
       this.callbacks.onMedia?.({
         url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
@@ -91,48 +111,37 @@ export class GeminiStreamHandler extends BaseStreamHandler {
     }
   }
 
-  private handleFunctionCall(functionCall: any): void {
-    this.activeToolCalls.push({
-      id: functionCall.id,
-      name: functionCall.name || '',
-      args: functionCall.args || {},
-    });
-  }
-
   protected finish(): StreamResult<GeminiMessage> {
-    for (const toolCall of this.activeToolCalls) {
-      if (toolCall.name) {
-        this.completedToolCalls.push({id: toolCall.id, name: toolCall.name, input: toolCall.args});
-      }
-    }
-
     const parts: GeminiPart[] = [];
 
     if (this.accumulatedThinking) {
       parts.push({
         text: this.accumulatedThinking,
         thought: true,
-        ...(this.currentThinkingSignature && {thoughtSignature: this.currentThinkingSignature}),
+        ...(this.thinkingSignature && {thoughtSignature: this.thinkingSignature}),
       });
     }
 
     if (this.accumulatedContent) {
-      parts.push({text: this.accumulatedContent});
+      parts.push({
+        text: this.accumulatedContent,
+        ...(this.contentSignature && {thoughtSignature: this.contentSignature}),
+      });
     }
 
     for (const media of this.accumulatedMedia) {
-      parts.push({inlineData: media});
+      const {thoughtSignature, ...inlineData} = media;
+      parts.push({inlineData, ...(thoughtSignature && {thoughtSignature})});
     }
 
-    for (const toolCall of this.completedToolCalls) {
-      parts.push({
-        functionCall: {
-          id: toolCall.id,
-          name: toolCall.name,
-          args: toolCall.input as Record<string, unknown>,
-        },
-        ...(this.currentThinkingSignature && {thoughtSignature: this.currentThinkingSignature}),
-      });
+    for (const toolCall of this.activeToolCalls) {
+      if (toolCall.name) {
+        this.completedToolCalls.push({id: toolCall.id, name: toolCall.name, input: toolCall.args});
+        parts.push({
+          functionCall: {id: toolCall.id, name: toolCall.name, args: toolCall.args},
+          ...(toolCall.thoughtSignature && {thoughtSignature: toolCall.thoughtSignature}),
+        });
+      }
     }
 
     return {
