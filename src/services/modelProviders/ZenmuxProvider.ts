@@ -20,10 +20,18 @@ interface GeminiModelResponse {
   models: GeminiModel[];
 }
 
-const ANTHROPIC_PREFIXES = ['anthropic', 'moonshotai', 'deepseek', 'stepfun'];
+const ANTHROPIC_PREFIXES = [
+  'anthropic',
+  'moonshotai',
+  'deepseek',
+  'stepfun',
+  'qwen',
+  'volcengine',
+  'minimax',
+];
 const RESPONSES_PREFIXES = ['openai', 'x-ai'];
 const GEMINI_PREFIXES = ['google'];
-const OPENAI_PREFIXES = ['z-ai', 'minimax'];
+const OPENAI_PREFIXES = ['z-ai'];
 
 function matchesPrefix(id: string, prefixes: string[]): boolean {
   const lower = id.toLowerCase();
