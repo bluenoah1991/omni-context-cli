@@ -439,6 +439,39 @@ export function getRewindPoints(session: Session): RewindPoint[] {
     const openaiMessage = message as OpenAIMessage;
     if (openaiMessage.tool_call_id) return;
 
+    const responsesMessage = message as ResponsesMessage;
+    if (responsesMessage.type === 'responses') {
+      const hasFunctionCallOutput = responsesMessage.items?.some(item =>
+        item.type === 'function_call_output'
+      );
+      if (hasFunctionCallOutput) return;
+
+      let text = '';
+      for (const item of responsesMessage.items ?? []) {
+        if (item.type === 'message') {
+          const msgItem = item as ResponsesMessageItem;
+          if (typeof msgItem.content === 'string') {
+            text = msgItem.content;
+          } else if (Array.isArray(msgItem.content)) {
+            const inputText = msgItem.content.find(c => c.type === 'input_text');
+            if (inputText && inputText.type === 'input_text') {
+              text = inputText.text;
+            }
+          }
+          if (text) break;
+        }
+      }
+
+      if (text) {
+        if (isFirstUserMessage) {
+          isFirstUserMessage = false;
+          return;
+        }
+        points.push({index, label: normalizeMessageContent(text)});
+      }
+      return;
+    }
+
     let text = '';
     if ('content' in message) {
       if (typeof message.content === 'string') {
