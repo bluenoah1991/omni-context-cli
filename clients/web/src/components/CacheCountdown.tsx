@@ -27,13 +27,13 @@ export function CacheCountdown() {
   }, [isAnthropic, showCacheCountdown, lastResponseAt, ttlSeconds, isLoading]);
 
   useEffect(() => {
-    if (remaining === null || remaining <= 0) return;
+    if (remaining === null || remaining <= 0 || isLoading) return;
     const timer = setTimeout(() => {
       const elapsed = Math.floor((Date.now() - lastResponseAt!) / 1000);
       setRemaining(Math.max(ttlSeconds - elapsed, 0));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [remaining, lastResponseAt, ttlSeconds]);
+  }, [remaining, lastResponseAt, ttlSeconds, isLoading]);
 
   if (remaining === null) return null;
 
