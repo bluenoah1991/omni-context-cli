@@ -19,22 +19,39 @@ export function extractThinking(message: any): string {
   return '';
 }
 
-export function extractTextContent(message: ChatMessage): string {
-  const content = (message as any).content;
-  const parts = (message as any).parts;
+export function extractTextContent(message: any): string {
+  if (!message) return '';
 
-  if (typeof content === 'string') {
-    return content;
+  if (message.type === 'responses' && Array.isArray(message.items)) {
+    if (message.items.some((item: any) => item.type === 'function_call_output')) return '';
+    for (const item of message.items) {
+      if (item.type === 'message') {
+        if (typeof item.content === 'string') return item.content;
+        if (Array.isArray(item.content)) {
+          const inputText = item.content.find((c: any) => c.type === 'input_text');
+          if (inputText) return inputText.text;
+          const outputText = item.content.find((c: any) => c.type === 'output_text');
+          if (outputText) return outputText.text;
+        }
+      }
+    }
+    return message.content || '';
   }
 
-  if (Array.isArray(content)) {
-    return content.filter((block: any) => block.type === 'text').map((block: any) => block.text)
-      .join('\n');
+  if (typeof message.content === 'string') {
+    return message.content;
   }
 
-  if (Array.isArray(parts)) {
-    return parts.filter((part: any) => part.text && !part.thought).map((part: any) => part.text)
-      .join('\n');
+  if (Array.isArray(message.content)) {
+    return message.content.filter((block: any) => block.type === 'text').map((block: any) =>
+      block.text
+    ).join('\n');
+  }
+
+  if (Array.isArray(message.parts)) {
+    return message.parts.filter((part: any) => part.text && !part.thought).map((part: any) =>
+      part.text
+    ).join('\n');
   }
 
   return '';
