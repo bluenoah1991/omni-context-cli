@@ -2,6 +2,7 @@ import { AlertCircle, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
+import { MessageActionBar } from './MessageActionBar';
 import { MessageItem } from './MessageItem';
 
 const SCROLL_THRESHOLD = 150;
@@ -59,6 +60,34 @@ export default function MessageList() {
     }
   }, [currentSession?.id, messages]);
 
+  const showActionBar = !isLoading && messages.length > 0
+    && messages[messages.length - 1].role !== 'user';
+
+  let lastAssistantContent = '';
+  if (showActionBar) {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') break;
+      if (messages[i].role === 'assistant' && messages[i].content.trim()) {
+        lastAssistantContent = messages[i].content;
+        break;
+      }
+    }
+  }
+
+  const handleRetry = async () => {
+    const {getRewindPoints, rewind, sendMessage} = useChatStore.getState();
+    const points = await getRewindPoints();
+    if (points.length === 0) return;
+    await rewind(points[0].index);
+    await sendMessage(points[0].label);
+  };
+
+  const handleRewind = async () => {
+    const {getRewindPoints, rewind} = useChatStore.getState();
+    const points = await getRewindPoints();
+    if (points.length > 0) await rewind(points[0].index);
+  };
+
   if (messages.length === 0) {
     return (
       <div className='flex-1 flex flex-col items-center justify-center text-vscode-text-muted p-8'>
@@ -85,6 +114,13 @@ export default function MessageList() {
             isLoading={isLoading && index === messages.length - 1}
           />
         ))}
+        {showActionBar && (
+          <MessageActionBar
+            content={lastAssistantContent}
+            onRetry={handleRetry}
+            onRewind={handleRewind}
+          />
+        )}
         {isLoading && <LoadingIndicator compacting={isCompacting} />}
         {error && (
           <div className='flex items-center gap-3 px-4 py-2.5 bg-vscode-error/10 border border-vscode-error/50 rounded-md text-vscode-text'>

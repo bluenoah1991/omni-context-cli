@@ -100,6 +100,14 @@ export const enUS = {
     saving: 'Saving...',
     save: 'Save',
   },
+  actions: {
+    retry: 'Retry',
+    rewind: 'Undo',
+    copy: 'Copy',
+    copied: 'Copied',
+    readAloud: 'Read aloud',
+    stopReading: 'Stop reading',
+  },
   login: {
     placeholder: 'Password',
     signIn: 'Sign in',

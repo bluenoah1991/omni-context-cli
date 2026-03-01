@@ -33,7 +33,14 @@ export function preprocessMessages(messages: UIMessage[]): UIMessage[] {
         continue;
       }
     }
-    result.push(message);
+    if (message.role === 'user') {
+      result.push({
+        ...message,
+        content: removeFileContext(removeIDEContext(unwrapUIMessage(message.content))),
+      });
+    } else {
+      result.push(message);
+    }
   }
   return result;
 }

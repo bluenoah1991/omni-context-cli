@@ -102,6 +102,14 @@ export const zhCN: Locale = {
     saving: '保存中...',
     save: '保存',
   },
+  actions: {
+    retry: '重试',
+    rewind: '撤销',
+    copy: '复制',
+    copied: '已复制',
+    readAloud: '朗读',
+    stopReading: '停止朗读',
+  },
   login: {
     placeholder: '密码',
     signIn: '登录',
