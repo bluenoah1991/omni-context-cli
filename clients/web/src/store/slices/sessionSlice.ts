@@ -35,7 +35,10 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
     const {data, error} = await fetchSession();
     if (error) set({error});
     else if (data) {
-      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+      set({
+        error: null,
+        currentSession: {...data, messages: preprocessMessages(data.messages || [])},
+      });
     }
   },
 
@@ -52,21 +55,27 @@ export const createSessionSlice: StateCreator<ChatState, [], [], SessionSlice> =
     const {data, error} = await loadSession(entry.id);
     if (error) set({error});
     else if (data) {
-      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+      set({
+        error: null,
+        currentSession: {...data, messages: preprocessMessages(data.messages || [])},
+      });
     }
   },
 
   newSession: async () => {
     const {data, error} = await newSession();
     if (error) set({error});
-    else set({currentSession: data, pinnedIDEContexts: []});
+    else set({error: null, currentSession: data, pinnedIDEContexts: []});
   },
 
   rewind: async (index: number) => {
     const {data, error} = await rewindSession(index);
     if (error) set({error});
     else if (data) {
-      set({currentSession: {...data, messages: preprocessMessages(data.messages || [])}});
+      set({
+        error: null,
+        currentSession: {...data, messages: preprocessMessages(data.messages || [])},
+      });
     }
   },
 });
