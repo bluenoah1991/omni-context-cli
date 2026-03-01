@@ -1,6 +1,13 @@
 import { ModelConfig } from '../../types/config';
 import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
-import codexInstructions from './codex-instructions.txt';
+
+function reasoningEffort(name: string): string | undefined {
+  const lower = name.toLowerCase();
+  if (lower.includes('chat')) return 'medium';
+  const match = lower.match(/(\d+\.\d+)/);
+  if (match && parseFloat(match[1]) >= 5.2) return 'xhigh';
+  return undefined;
+}
 
 export class CodexInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
@@ -12,26 +19,9 @@ export class CodexInterceptor implements RequestInterceptor {
     headers: Record<string, string>,
     model: ModelConfig,
   ): InterceptorResult {
-    const isThirdParty = model.apiUrl.includes('openrouter.ai')
-      || model.apiUrl.includes('zenmux.ai');
-    const newBody: Record<string, unknown> = isThirdParty
-      ? {...body}
-      : {...body, instructions: codexInstructions};
-
-    if (body.reasoning) {
-      if (model.name.toLowerCase().includes('chat')) {
-        newBody.reasoning = {effort: 'medium', summary: 'auto'};
-      } else {
-        const versionMatch = model.name.match(/(\d+\.\d+)/);
-        if (versionMatch) {
-          const version = parseFloat(versionMatch[1]);
-          if (version >= 5.2) {
-            newBody.reasoning = {effort: 'xhigh', summary: 'auto'};
-          }
-        }
-      }
-    }
-
+    const newBody = {...body};
+    const effort = body.reasoning ? reasoningEffort(model.name) : undefined;
+    if (effort) newBody.reasoning = {effort, summary: 'auto'};
     return {body: newBody, headers};
   }
 }
