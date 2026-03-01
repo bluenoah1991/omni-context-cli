@@ -44,7 +44,7 @@ export function CacheCountdown() {
 
   return (
     <div
-      className={`flex items-center gap-1.5 text-sm tabular-nums ${
+      className={`hidden sm:flex items-center gap-1.5 text-sm tabular-nums ${
         isLow ? 'text-amber-400' : 'text-vscode-text-muted'
       }`}
       title={t.app.cacheExpiry(display)}
