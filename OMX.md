@@ -244,7 +244,7 @@ omx/
 |   |   |-- src/providers/         # Content providers (diff)
 |   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components (29 components)
+|   |   |-- src/components/        # UI components (30 components)
 |   |   |-- src/services/          # API service layer (auth, chat, config, session, files, memory)
 |   |   |-- src/store/             # Zustand state management
 |   |   |   +-- slices/            # Store slices (chat, config, session, ui)
@@ -474,6 +474,7 @@ The web client (`clients/web/`) is a React SPA that connects to the OMX server:
 - Bearer token authentication with login page
 - Mobile-optimized with PWA support
 - Touch-friendly UI with safe area handling
+- Text-to-speech for message content
 - Internationalization support (English, Chinese)
 
 Build the web client:
