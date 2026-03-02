@@ -29,6 +29,7 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { MediaContextBar } from './MediaContextBar';
 import { Menu, View } from './Menu';
 import { MessageList } from './MessageList';
+import { Onboarding } from './Onboarding';
 import { StatusBar } from './StatusBar';
 
 const NOTIFICATION_THRESHOLD_MS = 60000;
@@ -71,6 +72,7 @@ export function ChatView(): React.ReactElement {
       clearMediaContexts: state.clearMediaContexts,
     })),
   );
+  const [showOnboarding, setShowOnboarding] = useState(() => getCurrentModel() === undefined);
   const [showMenu, setShowMenu] = useState(false);
   const [menuInitialView, setMenuInitialView] = useState<View | undefined>();
   const [model, setModel] = useState(() => getCurrentModel());
@@ -106,6 +108,11 @@ export function ChatView(): React.ReactElement {
 
   const handleOpenMenu = useCallback(() => {
     setShowMenu(true);
+  }, []);
+
+  const handleOnboardingComplete = useCallback(() => {
+    setShowOnboarding(false);
+    setModel(getCurrentModel());
   }, []);
 
   const handleCloseMenu = useCallback(() => {
@@ -354,6 +361,14 @@ export function ChatView(): React.ReactElement {
       setPendingApproval(null);
     }
   }, [pendingApproval]);
+
+  if (showOnboarding) {
+    return (
+      <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>
+        <Onboarding onComplete={handleOnboardingComplete} />
+      </Box>
+    );
+  }
 
   return (
     <Box flexDirection='column' paddingLeft={1} paddingRight={2} paddingY={1}>

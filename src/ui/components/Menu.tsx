@@ -5,6 +5,7 @@ import {
   getAgentModel,
   getCurrentModel,
   loadAppConfig,
+  normalizeApiUrl,
   removeModel,
   setAgentModel,
   setCacheTtl,
@@ -54,29 +55,6 @@ export type View =
   | 'pref-response-language'
   | 'browse-sessions'
   | 'rewind-session';
-
-function normalizeApiUrl(url: string, provider: Provider): string {
-  let apiUrl = url.trim();
-  if (!apiUrl) return '';
-
-  apiUrl = apiUrl.replace(/\/+$/, '');
-
-  if (provider === 'anthropic') {
-    if (!apiUrl.endsWith('/v1/messages')) {
-      apiUrl = `${apiUrl}/v1/messages`;
-    }
-  } else if (provider === 'openai') {
-    if (!apiUrl.endsWith('/chat/completions')) {
-      apiUrl = `${apiUrl}/chat/completions`;
-    }
-  } else if (provider === 'responses') {
-    if (!apiUrl.endsWith('/responses')) {
-      apiUrl = `${apiUrl}/responses`;
-    }
-  }
-
-  return apiUrl;
-}
 
 interface MenuProps {
   onClose: () => void;

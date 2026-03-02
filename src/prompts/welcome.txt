@@ -1,0 +1,27 @@
+Welcome to OmniContext CLI (omx) -- a zero-telemetry coding assistant.
+
+By continuing, you agree to the following:
+
+1. API Keys & Third-Party Services
+   OmniContext CLI connects to LLM providers (Anthropic, OpenAI,
+   Google, etc.) using API keys you supply. You are responsible for
+   compliance with each provider's terms of service. API keys are
+   stored locally on your machine and are never transmitted to any
+   party other than the provider you configure.
+
+2. Local Data Storage
+   Session history, configuration, and memory are stored under ~/.omx.
+   No data is collected, uploaded, or shared. You have full control
+   over your data.
+
+3. Tool Execution
+   OmniContext CLI can read, write, and execute commands on your system
+   on behalf of the model. Review tool actions carefully, especially
+   Bash commands. Use --approve-write or --approve-all for an extra
+   confirmation step.
+
+4. No Warranty
+   This software is provided as-is, without warranty of any kind.
+   Use at your own risk.
+
+Press Enter to accept and continue, or ESC to exit.

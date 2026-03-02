@@ -1,7 +1,13 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { AppConfig, DEFAULT_APP_CONFIG, ModelConfig, WorkflowPreset } from '../types/config';
+import {
+  AppConfig,
+  DEFAULT_APP_CONFIG,
+  ModelConfig,
+  Provider,
+  WorkflowPreset,
+} from '../types/config';
 import { ensureDir, getOmxDir, getOmxFilePath, getProjectFilePath } from '../utils/omxPaths';
 
 function generateClientId(): string {
@@ -126,6 +132,29 @@ export function getAgentModel(config: AppConfig): ModelConfig | undefined {
 
 export function setAgentModel(modelId: string): void {
   saveAppConfig('agentModelId', modelId);
+}
+
+export function normalizeApiUrl(url: string, provider: Provider): string {
+  let apiUrl = url.trim();
+  if (!apiUrl) return '';
+
+  apiUrl = apiUrl.replace(/\/+$/, '');
+
+  if (provider === 'anthropic') {
+    if (!apiUrl.endsWith('/v1/messages')) {
+      apiUrl = `${apiUrl}/v1/messages`;
+    }
+  } else if (provider === 'openai') {
+    if (!apiUrl.endsWith('/chat/completions')) {
+      apiUrl = `${apiUrl}/chat/completions`;
+    }
+  } else if (provider === 'responses') {
+    if (!apiUrl.endsWith('/responses')) {
+      apiUrl = `${apiUrl}/responses`;
+    }
+  }
+
+  return apiUrl;
 }
 
 export function addModel(model: Omit<ModelConfig, 'id'>): void {
