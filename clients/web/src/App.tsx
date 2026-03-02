@@ -9,6 +9,7 @@ import MessageList from './components/MessageList';
 import { PreviewPanel } from './components/PreviewPanel';
 import SessionSelector from './components/SessionSelector';
 import Settings from './components/Settings';
+import { ToastContainer } from './components/Toast';
 import { useLocale } from './i18n';
 import { useChatStore } from './store/chatStore';
 
@@ -128,6 +129,7 @@ export default function App() {
 
       {isMemoryOpen && <MemoryPanel onClose={() => setIsMemoryOpen(false)} />}
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
+      <ToastContainer />
     </div>
   );
 }

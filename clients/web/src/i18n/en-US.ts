@@ -107,6 +107,8 @@ export const enUS = {
     copied: 'Copied',
     readAloud: 'Read aloud',
     stopReading: 'Stop reading',
+    noRewindPoints: 'Nothing to undo — this is the first message in the conversation.',
+    copyFailed: 'Failed to copy to clipboard.',
   },
   login: {
     placeholder: 'Password',

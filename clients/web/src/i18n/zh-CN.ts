@@ -109,6 +109,8 @@ export const zhCN: Locale = {
     copied: '已复制',
     readAloud: '朗读',
     stopReading: '停止朗读',
+    noRewindPoints: '无法操作 — 这是会话中的第一条消息。',
+    copyFailed: '复制到剪贴板失败。',
   },
   login: {
     placeholder: '密码',

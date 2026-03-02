@@ -1,6 +1,7 @@
 import { Check, Copy, RefreshCw, Square, Undo2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocale } from '../i18n';
+import { showToast } from './Toast';
 
 interface MessageActionBarProps {
   content: string;
@@ -25,6 +26,7 @@ export function MessageActionBar({content, onRetry, onRewind}: MessageActionBarP
     try {
       await navigator.clipboard.writeText(content);
     } catch {
+      showToast(t.actions.copyFailed);
       return;
     }
     setCopied(true);

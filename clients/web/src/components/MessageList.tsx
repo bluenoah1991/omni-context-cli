@@ -1,9 +1,11 @@
 import { AlertCircle, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
+import { useLocale } from '../i18n';
 import { useChatStore } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
 import { MessageActionBar } from './MessageActionBar';
 import { MessageItem } from './MessageItem';
+import { showToast } from './Toast';
 
 const SCROLL_THRESHOLD = 150;
 
@@ -16,6 +18,7 @@ const defaultSubtitle =
   'Ready to help with your coding tasks. Pick a model in settings to get started.';
 
 export default function MessageList() {
+  const t = useLocale();
   const {currentSession, isLoading, isCompacting, error, config} = useChatStore();
   const messages = currentSession?.messages ?? [];
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +80,10 @@ export default function MessageList() {
   const handleRetry = async () => {
     const {getRewindPoints, rewind, sendMessage} = useChatStore.getState();
     const points = await getRewindPoints();
-    if (points.length === 0) return;
+    if (points.length === 0) {
+      showToast(t.actions.noRewindPoints);
+      return;
+    }
     await rewind(points[0].index);
     await sendMessage(points[0].label);
   };
@@ -85,7 +91,11 @@ export default function MessageList() {
   const handleRewind = async () => {
     const {getRewindPoints, rewind} = useChatStore.getState();
     const points = await getRewindPoints();
-    if (points.length > 0) await rewind(points[0].index);
+    if (points.length === 0) {
+      showToast(t.actions.noRewindPoints);
+      return;
+    }
+    await rewind(points[0].index);
   };
 
   if (messages.length === 0) {
