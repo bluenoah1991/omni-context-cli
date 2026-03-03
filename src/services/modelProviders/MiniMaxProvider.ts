@@ -13,6 +13,14 @@ export const MiniMaxProvider: ModelProvider = {
       apiKey,
       apiUrl: 'https://api.minimaxi.com/anthropic/v1/messages',
       contextSize: 200,
+    }, {
+      id: `anthropic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: 'MiniMax-M2.5-highspeed',
+      nickname: 'MiniMax MiniMax-M2.5-Highspeed',
+      provider: 'anthropic' as const,
+      apiKey,
+      apiUrl: 'https://api.minimaxi.com/anthropic/v1/messages',
+      contextSize: 200,
     }];
   },
 };
