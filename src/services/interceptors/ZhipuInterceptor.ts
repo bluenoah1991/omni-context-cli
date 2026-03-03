@@ -14,7 +14,10 @@ export class ZhipuInterceptor implements RequestInterceptor {
   ): InterceptorResult {
     const config = loadAppConfig();
     return {
-      body: {...body, thinking: {type: config.enableThinking ? 'enabled' : 'disabled'}},
+      body: {
+        ...body,
+        thinking: {type: config.enableThinking ? 'enabled' : 'disabled', clear_thinking: false},
+      },
       headers,
     };
   }
