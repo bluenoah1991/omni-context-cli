@@ -25,6 +25,7 @@ import {
   Smartphone,
   Square,
   Trash2,
+  Wand2,
   X,
 } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
@@ -115,10 +116,12 @@ export default function App() {
     fixedPort,
     language,
     mcpConfig,
+    skills,
     setLanAccess,
     setFixedPort,
     setLanguage,
     setMcpConfig,
+    setSkills,
   } = usePortalStore();
 
   const t = useMemo(() => getLocale(language), [language]);
@@ -663,6 +666,16 @@ export default function App() {
             onClick={tab => {
               setActiveTab(tab);
               if (!registryLoaded && !registryLoading) loadRegistry();
+            }}
+          />
+          <NavItem
+            id='skills'
+            icon={Wand2}
+            label={t.nav.skills}
+            activeTab={activeTab}
+            onClick={async tab => {
+              setActiveTab(tab);
+              setSkills(await window.electronAPI.getSkills());
             }}
           />
           <NavItem
@@ -1460,6 +1473,151 @@ export default function App() {
               </div>
             );
           })()}
+
+          {activeTab === 'skills' && (
+            <div className='max-w-3xl mx-auto space-y-6'>
+              <header>
+                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                  {t.skills.title}
+                </h2>
+                <p className='text-vscode-text-muted text-sm'>{t.skills.description}</p>
+              </header>
+
+              <div className='space-y-4'>
+                <h3 className='text-sm font-medium text-vscode-text-header'>
+                  {t.skills.installed} ({skills.length})
+                </h3>
+
+                {skills.length === 0
+                  ? (
+                    <div className='p-6 text-center text-vscode-text-muted bg-vscode-element/30 rounded-lg border border-vscode-border/50'>
+                      {t.skills.noSkills}
+                    </div>
+                  )
+                  : (
+                    <div className='space-y-2'>
+                      {skills.map(skill => (
+                        <div
+                          key={skill.location}
+                          className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50'
+                        >
+                          <div className='flex items-start justify-between gap-4'>
+                            <div className='min-w-0'>
+                              <h4 className='text-sm font-medium text-vscode-text-header'>
+                                {skill.name}
+                              </h4>
+                              <p className='text-sm text-vscode-text-muted mt-1'>
+                                {skill.description}
+                              </p>
+                              <p
+                                className='text-xs text-vscode-text-muted/60 mt-2 truncate'
+                                title={skill.location}
+                              >
+                                {skill.location}
+                              </p>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                if (!confirm(t.skills.confirmRemove)) return;
+                                try {
+                                  await window.electronAPI.removeSkill(skill.location);
+                                } catch {}
+                                setSkills(await window.electronAPI.getSkills());
+                              }}
+                              className='shrink-0 p-1.5 text-vscode-text-muted hover:text-vscode-error transition-colors'
+                              title={t.skills.remove}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+
+              <div className='space-y-4'>
+                <h3 className='text-sm font-medium text-vscode-text-header'>
+                  {t.skills.installTitle}
+                </h3>
+
+                <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-sm text-vscode-text-muted leading-relaxed space-y-4'>
+                  <p>
+                    <Fmt text={t.skills.installIntro} />
+                  </p>
+
+                  <div>
+                    <p className='font-medium text-vscode-text-header mb-1'>
+                      1. {t.skills.installStep1Title}
+                    </p>
+                    <p>
+                      <Fmt text={t.skills.installStep1Text} />
+                    </p>
+                    <code className='block mt-1 px-3 py-1.5 bg-vscode-background rounded text-xs font-mono'>
+                      {t.skills.installStep1Command}
+                    </code>
+                    <p className='mt-1'>
+                      <Fmt text={t.skills.installStep1After} />
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='font-medium text-vscode-text-header mb-1'>
+                      2. {t.skills.installStep2Title}
+                    </p>
+                    <p>
+                      <Fmt text={t.skills.installStep2Text} />
+                    </p>
+                    <code className='block mt-1 px-3 py-1.5 bg-vscode-background rounded text-xs font-mono'>
+                      {t.skills.installStep2Command}
+                    </code>
+                    <p className='mt-1'>
+                      <Fmt text={t.skills.installStep2After} />
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='font-medium text-vscode-text-header mb-1'>
+                      3. {t.skills.installStep3Title}
+                    </p>
+                    <p>
+                      <Fmt text={t.skills.installStep3Text} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='space-y-4'>
+                <h3 className='text-sm font-medium text-vscode-text-header'>
+                  {t.skills.discoverTitle}
+                </h3>
+                <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-sm text-vscode-text-muted leading-relaxed space-y-2'>
+                  <p>{t.skills.discoverText}</p>
+                  <ul className='space-y-1'>
+                    {t.skills.discoverLinks.map(link => (
+                      <li key={link.url} className='flex items-center gap-2'>
+                        <ExternalLink size={14} className='shrink-0' />
+                        <a
+                          href={link.url}
+                          target='_blank'
+                          rel='noreferrer'
+                          className='text-vscode-accent hover:underline'
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-sm text-vscode-text-muted leading-relaxed'>
+                <p>
+                  <Fmt text={t.skills.compatNote} />
+                </p>
+              </div>
+            </div>
+          )}
 
           {activeTab === 'mobile' && (
             <div className='max-w-3xl mx-auto space-y-6'>

@@ -7,6 +7,7 @@ export const zhCN: Locale = {
     office: 'Office 集成',
     browser: '浏览器集成',
     mcp: 'MCP 服务器',
+    skills: 'Skills',
     obsidian: 'Obsidian 集成',
     figma: 'Figma 集成',
     mobile: '移动端访问',
@@ -216,6 +217,38 @@ export const zhCN: Locale = {
     noResults: '未找到服务器',
     help:
       'MCP 服务器为助手扩展外部工具和数据源。Stdio 服务器作为本地进程运行，HTTP 服务器连接远程端点。',
+  },
+  skills: {
+    title: 'Skills',
+    description: '使用可复用的知识和工作流扩展助手能力',
+    installed: '已安装',
+    noSkills: '尚未安装任何 Skill',
+    remove: '移除',
+    confirmRemove: '确定移除此 Skill？这将删除 Skill 目录。',
+    location: '位置',
+    installTitle: '安装 Skills',
+    installIntro:
+      'Skill 是包含 **SKILL.md** 文件的文件夹，其中的指令会被助手按需加载。你可以从 GitHub 安装或自行创建。',
+    installStep1Title: '从 GitHub 安装',
+    installStep1Text: '将 Skill 仓库克隆或下载到你的 Skills 目录。例如：',
+    installStep1Command: 'git clone https://github.com/anthropics/skills',
+    installStep1After:
+      '然后将克隆仓库中的各个 Skill 文件夹复制到 **~/.omx/skills/**（项目级放在 **.omx/skills/**）。',
+    installStep2Title: '使用 Vercel CLI',
+    installStep2Text: 'Vercel 的 **skills** CLI 可以直接安装 Skills：',
+    installStep2Command: 'npx skills add <owner/repo>',
+    installStep2After: '按提示选择目标平台。安装后可能需要将文件夹移动到 **~/.omx/skills/**。',
+    installStep3Title: '自行创建',
+    installStep3Text:
+      '在 **~/.omx/skills/** 中创建文件夹，放入包含 YAML frontmatter（**name** 和 **description**）及 Markdown 指令的 **SKILL.md** 文件。',
+    discoverTitle: '发现 Skills',
+    discoverText: '在线浏览社区 Skill 合集：',
+    discoverLinks: [{label: 'Anthropic 官方 Skills', url: 'https://github.com/anthropics/skills'}, {
+      label: 'skills.sh (Vercel)',
+      url: 'https://skills.sh',
+    }, {label: 'SkillsMP', url: 'https://skillsmp.com'}] as Array<{label: string; url: string;}>,
+    compatNote:
+      '放在 **~/.claude/skills/** 中的 Skills 也会被自动检测，兼容 Claude Code 及其他支持 Agent Skills 标准的工具。',
   },
   obsidian: {
     title: 'Obsidian 插件',

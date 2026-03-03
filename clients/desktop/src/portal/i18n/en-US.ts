@@ -5,6 +5,7 @@ export const enUS = {
     office: 'Office Integration',
     browser: 'Browser Integration',
     mcp: 'MCP Servers',
+    skills: 'Skills',
     obsidian: 'Obsidian Integration',
     figma: 'Figma Integration',
     mobile: 'Mobile Access',
@@ -225,6 +226,41 @@ export const enUS = {
     noResults: 'No servers found',
     help:
       'MCP servers extend the assistant with external tools and data sources. Stdio servers run as local processes, while HTTP servers connect to remote endpoints.',
+  },
+  skills: {
+    title: 'Skills',
+    description: 'Extend the assistant with reusable knowledge and workflows',
+    installed: 'Installed',
+    noSkills: 'No skills installed yet',
+    remove: 'Remove',
+    confirmRemove: 'Remove this skill? This will delete the skill directory.',
+    location: 'Location',
+    installTitle: 'Installing Skills',
+    installIntro:
+      'Skills are folders containing a **SKILL.md** file with instructions that the assistant loads on demand. You can install them from GitHub or create your own.',
+    installStep1Title: 'From GitHub',
+    installStep1Text:
+      'Clone or download a skill repository into your skills directory. For example:',
+    installStep1Command: 'git clone https://github.com/anthropics/skills',
+    installStep1After:
+      'Then copy individual skill folders from the cloned repo into **~/.omx/skills/** (or **.omx/skills/** for project-level).',
+    installStep2Title: 'Using the Vercel CLI',
+    installStep2Text: 'The **skills** CLI from Vercel can install skills directly:',
+    installStep2Command: 'npx skills add <owner/repo>',
+    installStep2After:
+      'Choose the target platform when prompted. You may need to move the installed folder to **~/.omx/skills/** afterwards.',
+    installStep3Title: 'Create your own',
+    installStep3Text:
+      'Create a folder in **~/.omx/skills/** with a **SKILL.md** file containing YAML frontmatter (**name** and **description**) followed by Markdown instructions.',
+    discoverTitle: 'Discover Skills',
+    discoverText: 'Browse community skill collections online:',
+    discoverLinks: [
+      {label: 'Anthropic Official Skills', url: 'https://github.com/anthropics/skills'},
+      {label: 'skills.sh (Vercel)', url: 'https://skills.sh'},
+      {label: 'SkillsMP', url: 'https://skillsmp.com'},
+    ] as Array<{label: string; url: string;}>,
+    compatNote:
+      'Skills placed in **~/.claude/skills/** are also detected automatically for compatibility with Claude Code and other Agent Skills-compatible tools.',
   },
   obsidian: {
     title: 'Obsidian Plugin',

@@ -1,4 +1,4 @@
-import type { ApprovalMode, DesktopConfig, MCPConfig, OmxConfig } from './types/config';
+import type { ApprovalMode, DesktopConfig, MCPConfig, OmxConfig, SkillInfo } from './types/config';
 
 declare global {
   interface Window {
@@ -28,6 +28,8 @@ declare global {
       getMcpConfig: () => Promise<MCPConfig>;
       saveMcpConfig: (config: MCPConfig) => Promise<void>;
       fetchMcpRegistry: (cursor?: string, search?: string) => Promise<any>;
+      getSkills: () => Promise<SkillInfo[]>;
+      removeSkill: (location: string) => Promise<void>;
     };
   }
 }

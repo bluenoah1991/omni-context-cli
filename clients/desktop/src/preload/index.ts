@@ -32,4 +32,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveMcpConfig: (config: unknown) => ipcRenderer.invoke('save-mcp-config', config),
   fetchMcpRegistry: (cursor?: string, search?: string) =>
     ipcRenderer.invoke('fetch-mcp-registry', cursor, search),
+  getSkills: () => ipcRenderer.invoke('get-skills'),
+  removeSkill: (location: string) => ipcRenderer.invoke('remove-skill', location),
 });

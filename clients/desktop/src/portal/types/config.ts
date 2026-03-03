@@ -15,6 +15,7 @@ export type Tab =
   | 'workspaces'
   | 'models'
   | 'mcp'
+  | 'skills'
   | 'settings'
   | 'prompts'
   | 'office'
@@ -22,6 +23,12 @@ export type Tab =
   | 'obsidian'
   | 'figma'
   | 'mobile';
+
+export interface SkillInfo {
+  name: string;
+  description: string;
+  location: string;
+}
 
 export interface MCPServerConfig {
   command?: string;

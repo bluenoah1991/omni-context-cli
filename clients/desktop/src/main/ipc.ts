@@ -6,6 +6,8 @@ import {
   loadDesktopConfig,
   loadMcpConfig,
   loadOmxConfig,
+  loadSkills,
+  removeSkill,
   saveDesktopConfig,
   saveMcpConfig,
   saveOmxConfig,
@@ -92,6 +94,9 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('get-mcp-config', () => loadMcpConfig());
   ipcMain.handle('save-mcp-config', (_, config) => saveMcpConfig(config));
+
+  ipcMain.handle('get-skills', () => loadSkills());
+  ipcMain.handle('remove-skill', (_, location: string) => removeSkill(location));
 
   ipcMain.handle(
     'fetch-mcp-registry',
