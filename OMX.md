@@ -220,15 +220,15 @@ omx/
 |   |   |-- tools/                 # Built-in tool implementations
 |   |   +-- webServer/             # HTTP API, auth, and static server
 |   |-- types/                     # TypeScript definitions (16 type files)
-|   |-- prompts/                   # System prompt templates (20 files)
+|   |-- prompts/                   # System prompt templates (21 files)
 |   |-- store/                     # Zustand state management
 |   |-- ui/
-|   |   |-- components/            # React/Ink terminal UI components (23 components)
+|   |   |-- components/            # React/Ink terminal UI components (24 components)
 |   |   +-- markdown/              # Markdown rendering and syntax highlighting
 |   +-- utils/                     # Helper utilities (7 files)
 |-- clients/
 |   |-- desktop/                   # Electron desktop client
-|   |   |-- src/main/              # Main process (window, server, config, paths, IPC, shell env, Office Add-in)
+|   |   |-- src/main/              # Main process (window, server, config, paths, IPC, shell env, Office Add-in, MCP registry)
 |   |   |-- src/preload/           # Preload scripts
 |   |   |-- src/portal/            # Configuration portal UI (React)
 |   |   |   |-- components/        # Portal UI components (Select, ProviderItem)
@@ -244,7 +244,7 @@ omx/
 |   |   |-- src/providers/         # Content providers (diff)
 |   |   +-- src/mcp/               # MCP server (transport, tools, selection, lock file)
 |   |-- web/                       # Web client (React SPA)
-|   |   |-- src/components/        # UI components (30 components)
+|   |   |-- src/components/        # UI components (31 components)
 |   |   |-- src/services/          # API service layer (auth, chat, config, session, files, memory)
 |   |   |-- src/store/             # Zustand state management
 |   |   |   +-- slices/            # Store slices (chat, config, session, ui)
@@ -419,12 +419,16 @@ Web server components in `src/services/webServer/`:
 The Electron desktop client (`clients/desktop/`) provides a standalone application:
 
 - Spawns OMX server with dynamic port allocation
-- Configuration portal for providers, permissions, and custom prompts
+- Configuration portal with tabs: workspaces, models, MCP servers, skills, settings, system prompts, office/browser/obsidian/figma integration, mobile access
 - Custom system prompts for specialist, artist, explorer, and assistant modes
+- MCP server management with MCP Registry marketplace integration
+- Skill management (listing, deletion, install guidance)
+- Workspace management with multi-workspace support
 - Auto-opens default workspace (Documents/OmniContext)
 - Shell environment resolution on macOS (inherits login shell PATH)
 - Bundles CLI dependencies for offline use
 - Built-in Office Add-in server for local Office integration
+- LAN access and fixed port options for mobile clients
 - Internationalization support (English, Chinese)
 - macOS and Windows support
 
@@ -602,9 +606,10 @@ npm run build
 | `clients/desktop/src/main/config.ts` | Desktop configuration management |
 | `clients/desktop/src/main/paths.ts` | Path utilities for desktop app |
 | `clients/desktop/src/main/ipc.ts` | IPC handlers between main and renderer |
+| `clients/desktop/src/main/mcpRegistry.ts` | MCP Registry marketplace API client |
 | `clients/desktop/src/main/officeAddin.ts` | Built-in Office Add-in server |
 | `clients/desktop/src/main/shellEnv.ts` | Shell environment resolution (macOS) |
-| `clients/desktop/src/portal/App.tsx` | Configuration portal (providers, permissions, prompts) |
+| `clients/desktop/src/portal/App.tsx` | Configuration portal (workspaces, models, MCP, skills, settings, prompts, integrations) |
 | `clients/desktop/src/portal/store/portalStore.ts` | Portal state management |
 | `clients/desktop/src/portal/providers/` | Provider configuration registry |
 | `clients/desktop/src/portal/i18n/` | Portal internationalization (en-US, zh-CN) |
@@ -643,7 +648,9 @@ npm run build
 | `clients/obsidian/src/main.ts` | Obsidian plugin entry point |
 | `clients/obsidian/src/view.ts` | Obsidian sidebar view |
 | `clients/obsidian/src/mcp/server.ts` | MCP server for Obsidian integration |
+| `clients/obsidian/src/mcp/transport.ts` | MCP transport layer |
 | `clients/obsidian/src/mcp/tools.ts` | MCP tool definitions (Obsidian API) |
+| `clients/obsidian/src/mcp/selection.ts` | Selection broadcasting to MCP clients |
 | `clients/obsidian/src/mcp/lockFile.ts` | Lock file-based CLI discovery |
 | `src/ui/markdown/index.tsx` | Markdown rendering for terminal |
 | `src/ui/markdown/highlight-code.tsx` | Syntax highlighting for code blocks |
@@ -661,6 +668,8 @@ npm run build
 | `src/ui/components/OptionPicker.tsx` | Option selection UI |
 | `src/prompts/systemPromptBuilder.ts` | Assembles full system prompt |
 | `scripts/fix-bin-permissions.js` | Postinstall script to fix ripgrep binary permissions |
+| `scripts/bump-version.mjs` | Version bumping script |
+| `scripts/release-build.mjs` | Release build automation |
 | `build.mjs` | esbuild configuration with obfuscation |
 | `package.json` | Dependencies and scripts |
 
@@ -697,7 +706,7 @@ npm run build
 
 - Base system prompt in `src/prompts/system.txt`
 - Specialized prompts for specialist, artist, explorer, and assistant modes
-- Additional prompts for skills, compaction, memory, agent instructions, project instructions, WSL hints, reflection, commit messages, summary injection
+- Additional prompts for skills, compaction, memory, agent instructions, project instructions, WSL hints, reflection, commit messages, summary injection, welcome/onboarding
 - Dynamic prompt assembly via `systemPromptBuilder.ts` and dedicated prompt builders
 - Platform-aware: includes `{{OS_TYPE}}`, `{{PLATFORM}}`, `{{ARCH}}`, `{{CWD}}`
 - Context editing via `contextEditor.ts` for configurable message modification rounds
