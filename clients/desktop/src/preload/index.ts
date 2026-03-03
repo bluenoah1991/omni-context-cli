@@ -28,4 +28,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getOfficeStatus: () => ipcRenderer.invoke('get-office-status'),
   installOfficeAddin: () => ipcRenderer.invoke('install-office-addin'),
   uninstallOfficeAddin: () => ipcRenderer.invoke('uninstall-office-addin'),
+  getMcpConfig: () => ipcRenderer.invoke('get-mcp-config'),
+  saveMcpConfig: (config: unknown) => ipcRenderer.invoke('save-mcp-config', config),
+  fetchMcpRegistry: (cursor?: string, search?: string) =>
+    ipcRenderer.invoke('fetch-mcp-registry', cursor, search),
 });

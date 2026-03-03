@@ -2,7 +2,15 @@ import { app, dialog, ipcMain } from 'electron';
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { ApprovalMode } from '../portal/types/config';
-import { loadDesktopConfig, loadOmxConfig, saveDesktopConfig, saveOmxConfig } from './config';
+import {
+  loadDesktopConfig,
+  loadMcpConfig,
+  loadOmxConfig,
+  saveDesktopConfig,
+  saveMcpConfig,
+  saveOmxConfig,
+} from './config';
+import { fetchMcpRegistry } from './mcpRegistry';
 import { getStatus, install, uninstall } from './officeAddin';
 import { getOmxDir } from './paths';
 import { checkPort, getPort, isServerRunning, isTls, startServer, stopServer } from './server';
@@ -81,4 +89,12 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('get-office-status', () => getStatus());
   ipcMain.handle('install-office-addin', () => install());
   ipcMain.handle('uninstall-office-addin', () => uninstall());
+
+  ipcMain.handle('get-mcp-config', () => loadMcpConfig());
+  ipcMain.handle('save-mcp-config', (_, config) => saveMcpConfig(config));
+
+  ipcMain.handle(
+    'fetch-mcp-registry',
+    (_, cursor?: string, search?: string) => fetchMcpRegistry(cursor, search),
+  );
 }

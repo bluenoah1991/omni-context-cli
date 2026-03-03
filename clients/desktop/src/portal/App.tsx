@@ -1,9 +1,11 @@
 import {
   AlertCircle,
   Box,
+  Cable,
   CheckCircle2,
   Chrome,
   ClipboardCopy,
+  ExternalLink,
   Figma,
   FileSpreadsheet,
   FileText,
@@ -12,13 +14,17 @@ import {
   LayoutGrid,
   Loader2,
   type LucideIcon,
+  Pencil,
+  Plus,
   Rocket,
   RotateCcw,
   Save,
+  Search,
   Settings,
   Shield,
   Smartphone,
   Square,
+  Trash2,
   X,
 } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
@@ -27,7 +33,7 @@ import { Select } from './components/Select';
 import { getLocale, SUPPORTED_LANGUAGES } from './i18n';
 import { addProviderModels, removeProviderModels } from './providers';
 import { type CustomPrompts, type PromptType, usePortalStore } from './store/portalStore';
-import type { ApprovalMode, Tab } from './types/config';
+import type { ApprovalMode, MCPConfig, MCPServerConfig, Tab } from './types/config';
 
 interface NavItemProps {
   id: Tab;
@@ -108,9 +114,11 @@ export default function App() {
     lanAccess,
     fixedPort,
     language,
+    mcpConfig,
     setLanAccess,
     setFixedPort,
     setLanguage,
+    setMcpConfig,
   } = usePortalStore();
 
   const t = useMemo(() => getLocale(language), [language]);
@@ -125,6 +133,22 @@ export default function App() {
     {workspace: string; models: number; approval: string;} | null
   >(null);
   const [copied, setCopied] = useState(false);
+  const [mcpFormOpen, setMcpFormOpen] = useState(false);
+  const [mcpEditingKey, setMcpEditingKey] = useState<string | null>(null);
+  const [mcpFormName, setMcpFormName] = useState('');
+  const [mcpFormType, setMcpFormType] = useState<'stdio' | 'http'>('stdio');
+  const [mcpFormCommand, setMcpFormCommand] = useState('');
+  const [mcpFormArgs, setMcpFormArgs] = useState('');
+  const [mcpFormUrl, setMcpFormUrl] = useState('');
+  const [mcpFormEnv, setMcpFormEnv] = useState<Array<{key: string; value: string;}>>([]);
+  const [mcpFormHeaders, setMcpFormHeaders] = useState<Array<{key: string; value: string;}>>([]);
+  const [mcpFormError, setMcpFormError] = useState('');
+  const [registryServers, setRegistryServers] = useState<any[]>([]);
+  const [registryLoading, setRegistryLoading] = useState(false);
+  const [registryError, setRegistryError] = useState('');
+  const [registryCursor, setRegistryCursor] = useState<string | null>(null);
+  const [registryLoaded, setRegistryLoaded] = useState(false);
+  const [registrySearch, setRegistrySearch] = useState('');
 
   useEffect(() => {
     init();
@@ -178,6 +202,9 @@ export default function App() {
       const prompts: CustomPrompts = {specialist, artist, explorer, assistant};
       setCustomPrompts(prompts);
       setPromptEditorValue(prompts.specialist ?? '');
+
+      const mcpCfg = await window.electronAPI.getMcpConfig();
+      setMcpConfig(mcpCfg);
 
       const officeStatus = await window.electronAPI.getOfficeStatus();
       setOfficeStatus(officeStatus);
@@ -344,6 +371,185 @@ export default function App() {
     }
   };
 
+  const resetMcpForm = () => {
+    setMcpFormOpen(false);
+    setMcpEditingKey(null);
+    setMcpFormName('');
+    setMcpFormType('stdio');
+    setMcpFormCommand('');
+    setMcpFormArgs('');
+    setMcpFormUrl('');
+    setMcpFormEnv([]);
+    setMcpFormHeaders([]);
+    setMcpFormError('');
+  };
+
+  const openMcpForm = (key?: string) => {
+    if (key && mcpConfig.mcpServers[key]) {
+      const cfg = mcpConfig.mcpServers[key];
+      setMcpEditingKey(key);
+      setMcpFormName(key);
+      setMcpFormType(cfg.url ? 'http' : 'stdio');
+      setMcpFormCommand(cfg.command ?? '');
+      setMcpFormArgs((cfg.args ?? []).join(' '));
+      setMcpFormUrl(cfg.url ?? '');
+      setMcpFormEnv(Object.entries(cfg.env ?? {}).map(([k, v]) => ({key: k, value: v})));
+      setMcpFormHeaders(Object.entries(cfg.headers ?? {}).map(([k, v]) => ({key: k, value: v})));
+    } else {
+      setMcpEditingKey(null);
+      setMcpFormName('');
+      setMcpFormType('stdio');
+      setMcpFormCommand('');
+      setMcpFormArgs('');
+      setMcpFormUrl('');
+      setMcpFormEnv([]);
+      setMcpFormHeaders([]);
+    }
+    setMcpFormOpen(true);
+  };
+
+  const handleMcpSave = async () => {
+    const name = mcpFormName.trim();
+    if (!name) return;
+
+    const serverConfig: MCPServerConfig = {};
+    if (mcpFormType === 'stdio') {
+      serverConfig.command = mcpFormCommand.trim();
+      const args = mcpFormArgs.trim();
+      if (args) serverConfig.args = args.split(/\s+/);
+    } else {
+      serverConfig.url = mcpFormUrl.trim();
+    }
+
+    if (mcpFormType === 'stdio') {
+      const env: Record<string, string> = {};
+      for (const e of mcpFormEnv) {
+        if (e.key.trim()) env[e.key.trim()] = e.value;
+      }
+      if (Object.keys(env).length > 0) serverConfig.env = env;
+    }
+
+    if (mcpFormType === 'http') {
+      const headers: Record<string, string> = {};
+      for (const h of mcpFormHeaders) {
+        if (h.key.trim()) headers[h.key.trim()] = h.value;
+      }
+      if (Object.keys(headers).length > 0) serverConfig.headers = headers;
+    }
+
+    const newServers = {...mcpConfig.mcpServers};
+    const isRename = mcpEditingKey && mcpEditingKey !== name;
+    const isNew = !mcpEditingKey;
+    if ((isRename || isNew) && newServers[name]) {
+      setMcpFormError(t.mcp.nameExists);
+      return;
+    }
+    if (isRename) delete newServers[mcpEditingKey];
+    newServers[name] = serverConfig;
+
+    const newConfig: MCPConfig = {mcpServers: newServers};
+    setMcpConfig(newConfig);
+    await window.electronAPI.saveMcpConfig(newConfig);
+    resetMcpForm();
+  };
+
+  const handleMcpRemove = async (key: string) => {
+    const newServers = {...mcpConfig.mcpServers};
+    delete newServers[key];
+    const newConfig: MCPConfig = {mcpServers: newServers};
+    setMcpConfig(newConfig);
+    await window.electronAPI.saveMcpConfig(newConfig);
+  };
+
+  const loadRegistry = async (search?: string, cursor?: string) => {
+    setRegistryLoading(true);
+    setRegistryError('');
+    try {
+      const q = search?.trim() || undefined;
+      const result = await window.electronAPI.fetchMcpRegistry(cursor, q);
+      if (result.error) throw new Error(result.error);
+      const servers = result.servers ?? [];
+      if (cursor) {
+        setRegistryServers(prev => [...prev, ...servers]);
+      } else {
+        setRegistryServers(servers);
+      }
+      setRegistryCursor(result.metadata?.nextCursor ?? null);
+      setRegistryLoaded(true);
+    } catch (e: any) {
+      setRegistryError(e.message || 'Unknown error');
+    } finally {
+      setRegistryLoading(false);
+    }
+  };
+
+  const getRegistryEntrySupport = (entry: any): 'supported' | 'sse-only' => {
+    const server = entry.server;
+    if ((server.packages ?? []).length > 0) return 'supported';
+    const remotes = server.remotes ?? [];
+    if (remotes.some((r: any) => r.type === 'streamable-http')) return 'supported';
+    if (remotes.length > 0 && remotes.every((r: any) => r.type === 'sse')) return 'sse-only';
+    return 'supported';
+  };
+
+  const handleRegistryInstall = (entry: any) => {
+    const server = entry.server;
+    const name = (server.name ?? '').split('/').pop() || server.name || '';
+
+    const pkg = (server.packages ?? [])[0];
+    if (pkg) {
+      const registryCommands: Record<string, string> = {npm: 'npx', pypi: 'uvx', oci: 'docker'};
+      const cmd = pkg.runtimeHint ?? registryCommands[pkg.registryType] ?? '';
+      const id = pkg.identifier ?? pkg.name ?? '';
+      const serializeArgs = (args: any[]) =>
+        args.flatMap((a: any) => {
+          if (!a.value) return [];
+          return a.type === 'named' && a.name ? [a.name, a.value] : [a.value];
+        });
+      const runtimeArgs = serializeArgs(pkg.runtimeArguments ?? []);
+      const packageArgs = serializeArgs(pkg.packageArguments ?? []);
+      setMcpFormName(name);
+      setMcpFormType('stdio');
+      setMcpFormCommand(cmd);
+      setMcpFormArgs([...runtimeArgs, id, ...packageArgs].join(' '));
+      setMcpFormUrl('');
+      setMcpFormEnv(
+        (pkg.environmentVariables ?? []).map((e: any) => ({key: e.name ?? '', value: ''})),
+      );
+      setMcpFormHeaders([]);
+      setMcpEditingKey(null);
+      setMcpFormOpen(true);
+      return;
+    }
+
+    const remotes = server.remotes ?? [];
+    const httpRemote = remotes.find((r: any) => r.type === 'streamable-http') ?? remotes[0];
+    if (httpRemote) {
+      setMcpFormName(name);
+      setMcpFormType('http');
+      setMcpFormCommand('');
+      setMcpFormArgs('');
+      setMcpFormUrl(httpRemote.url ?? '');
+      setMcpFormEnv([]);
+      setMcpFormHeaders(
+        (httpRemote.headers ?? []).map((h: any) => ({key: h.name ?? '', value: h.value ?? ''})),
+      );
+      setMcpEditingKey(null);
+      setMcpFormOpen(true);
+      return;
+    }
+
+    setMcpFormName(name);
+    setMcpFormType('stdio');
+    setMcpFormCommand('');
+    setMcpFormArgs('');
+    setMcpFormUrl('');
+    setMcpFormEnv([]);
+    setMcpFormHeaders([]);
+    setMcpEditingKey(null);
+    setMcpFormOpen(true);
+  };
+
   const handleLaunch = async () => {
     if (!selectedWorkspace) return;
 
@@ -399,7 +605,10 @@ export default function App() {
   }
 
   return (
-    <div className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans select-none'>
+    <div
+      className='h-screen w-screen bg-vscode-bg text-vscode-text flex overflow-hidden font-sans select-none'
+      spellCheck={false}
+    >
       <div className='w-80 bg-vscode-sidebar border-r border-vscode-border flex flex-col shrink-0'>
         <div className='p-4'>
           <h1 className='flex items-center gap-2'>
@@ -445,6 +654,16 @@ export default function App() {
             alert={omxConfig.models.length === 0}
             activeTab={activeTab}
             onClick={setActiveTab}
+          />
+          <NavItem
+            id='mcp'
+            icon={Cable}
+            label={t.nav.mcp}
+            activeTab={activeTab}
+            onClick={tab => {
+              setActiveTab(tab);
+              if (!registryLoaded && !registryLoading) loadRegistry();
+            }}
           />
           <NavItem
             id='office'
@@ -656,7 +875,7 @@ export default function App() {
 
               <div className='space-y-6'>
                 <div>
-                  <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
+                  <h3 className='text-sm font-medium text-vscode-text-header mb-3'>
                     {t.workspaces.start}
                   </h3>
                   <button
@@ -670,7 +889,7 @@ export default function App() {
                       <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
                         {t.workspaces.openFolder}
                       </div>
-                      <div className='text-vscode-text-muted text-xs mt-0.5'>
+                      <div className='text-vscode-text-muted text-sm mt-0.5'>
                         {t.workspaces.browseFileSystem}
                       </div>
                     </div>
@@ -679,7 +898,7 @@ export default function App() {
 
                 {desktopConfig.workspaces.length > 0 && (
                   <div>
-                    <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider mb-2'>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-3'>
                       {t.workspaces.recent}
                     </h3>
                     <div className='space-y-4'>
@@ -713,7 +932,7 @@ export default function App() {
                               >
                                 {ws.name}
                               </div>
-                              <div className='text-xs text-vscode-text-muted truncate opacity-70'>
+                              <div className='text-sm text-vscode-text-muted truncate opacity-70'>
                                 {ws.path}
                               </div>
                             </div>
@@ -799,7 +1018,7 @@ export default function App() {
               </div>
 
               <div className='space-y-4'>
-                <h3 className='text-xs font-semibold text-vscode-text-muted uppercase tracking-wider'>
+                <h3 className='text-sm font-medium text-vscode-text-header'>
                   {t.models.configured}
                 </h3>
                 <div className='space-y-4'>
@@ -823,6 +1042,424 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {activeTab === 'mcp' && (() => {
+            const serverEntries = Object.entries(mcpConfig.mcpServers);
+
+            return (
+              <div className='max-w-3xl mx-auto space-y-6'>
+                <header>
+                  <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
+                    {t.mcp.title}
+                  </h2>
+                  <p className='text-vscode-text-muted text-sm'>{t.mcp.description}</p>
+                </header>
+
+                <div className='space-y-4'>
+                  <div className='flex items-center justify-between'>
+                    <h3 className='text-sm font-medium text-vscode-text-header'>
+                      {t.mcp.configured}
+                    </h3>
+                    <button
+                      onClick={() => openMcpForm()}
+                      className='flex items-center gap-2 px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white rounded-lg text-sm font-medium transition-colors'
+                    >
+                      <Plus size={16} />
+                      {t.mcp.addManually}
+                    </button>
+                  </div>
+
+                  {serverEntries.length > 0
+                    ? (
+                      <div className='space-y-2'>
+                        {serverEntries.map(([key, cfg]) => (
+                          <div
+                            key={key}
+                            className='bg-vscode-element border border-vscode-border rounded-lg p-4 flex items-center gap-4 group'
+                          >
+                            <div className='flex-1 min-w-0'>
+                              <div className='text-sm font-medium text-vscode-text-header truncate'>
+                                {key}
+                              </div>
+                              <div className='text-sm text-vscode-text-muted truncate mt-0.5'>
+                                {cfg.url ? cfg.url : [cfg.command, ...(cfg.args ?? [])].join(' ')}
+                              </div>
+                            </div>
+                            <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                              <button
+                                onClick={() => openMcpForm(key)}
+                                className='p-1.5 rounded text-vscode-text-muted hover:text-vscode-accent hover:bg-vscode-accent/10 transition-colors'
+                                title={t.mcp.edit}
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleMcpRemove(key)}
+                                className='p-1.5 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors'
+                                title={t.mcp.remove}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                    : !mcpFormOpen && (
+                      <div className='text-center py-8 border-2 border-dashed border-vscode-border/50 rounded-lg'>
+                        <Cable size={24} className='mx-auto text-vscode-text-muted/30 mb-2' />
+                        <p className='text-sm text-vscode-text-muted'>{t.mcp.noServers}</p>
+                      </div>
+                    )}
+                </div>
+
+                {mcpFormOpen && (
+                  <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-4'>
+                    <h3 className='text-sm font-medium text-vscode-text-header'>
+                      {mcpEditingKey ? t.mcp.edit : t.mcp.addServer}
+                    </h3>
+
+                    <div className='grid grid-cols-2 gap-4'>
+                      <div>
+                        <label className='block text-sm font-medium text-vscode-text mb-1.5'>
+                          {t.mcp.serverName}
+                        </label>
+                        <input
+                          value={mcpFormName}
+                          onChange={e => {
+                            setMcpFormName(e.target.value);
+                            setMcpFormError('');
+                          }}
+                          placeholder={t.mcp.serverNamePlaceholder}
+                          className={`w-full px-3 py-2 bg-vscode-bg border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text ${
+                            mcpFormError ? 'border-vscode-error' : 'border-vscode-border'
+                          }`}
+                        />
+                        {mcpFormError && (
+                          <p className='text-xs text-vscode-error mt-1'>{mcpFormError}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className='block text-sm font-medium text-vscode-text mb-1.5'>
+                          {t.mcp.type}
+                        </label>
+                        <Select
+                          label=''
+                          value={mcpFormType}
+                          onChange={v => setMcpFormType(v as 'stdio' | 'http')}
+                          options={[{value: 'stdio', label: t.mcp.stdio}, {
+                            value: 'http',
+                            label: t.mcp.http,
+                          }]}
+                        />
+                      </div>
+                    </div>
+
+                    {mcpFormType === 'stdio'
+                      ? (
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div>
+                            <label className='block text-sm font-medium text-vscode-text mb-1.5'>
+                              {t.mcp.command}
+                            </label>
+                            <input
+                              value={mcpFormCommand}
+                              onChange={e => setMcpFormCommand(e.target.value)}
+                              placeholder={t.mcp.commandPlaceholder}
+                              className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                          </div>
+                          <div>
+                            <label className='block text-sm font-medium text-vscode-text mb-1.5'>
+                              {t.mcp.args}
+                            </label>
+                            <input
+                              value={mcpFormArgs}
+                              onChange={e => setMcpFormArgs(e.target.value)}
+                              placeholder={t.mcp.argsPlaceholder}
+                              className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                          </div>
+                        </div>
+                      )
+                      : (
+                        <div>
+                          <label className='block text-sm font-medium text-vscode-text mb-1.5'>
+                            {t.mcp.url}
+                          </label>
+                          <input
+                            value={mcpFormUrl}
+                            onChange={e => setMcpFormUrl(e.target.value)}
+                            placeholder={t.mcp.urlPlaceholder}
+                            className='w-full px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
+                          />
+                        </div>
+                      )}
+
+                    {mcpFormType === 'stdio' && (
+                      <div>
+                        <div className='flex items-center justify-between mb-2'>
+                          <label className='text-sm font-medium text-vscode-text'>
+                            {t.mcp.envVars}
+                          </label>
+                          <button
+                            onClick={() => setMcpFormEnv([...mcpFormEnv, {key: '', value: ''}])}
+                            className='text-sm text-vscode-accent hover:text-vscode-accent/80 transition-colors'
+                          >
+                            + {t.mcp.addEnvVar}
+                          </button>
+                        </div>
+                        {mcpFormEnv.map((env, i) => (
+                          <div key={i} className='flex items-center gap-2 mb-2'>
+                            <input
+                              value={env.key}
+                              onChange={e => {
+                                const next = [...mcpFormEnv];
+                                next[i] = {...next[i], key: e.target.value};
+                                setMcpFormEnv(next);
+                              }}
+                              placeholder={t.mcp.envKeyPlaceholder}
+                              className='flex-1 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                            <input
+                              value={env.value}
+                              onChange={e => {
+                                const next = [...mcpFormEnv];
+                                next[i] = {...next[i], value: e.target.value};
+                                setMcpFormEnv(next);
+                              }}
+                              placeholder={t.mcp.envValuePlaceholder}
+                              className='flex-1 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                            <button
+                              onClick={() =>
+                                setMcpFormEnv(mcpFormEnv.filter((_, j) => j !== i))}
+                              className='p-1.5 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors'
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {mcpFormType === 'http' && (
+                      <div>
+                        <div className='flex items-center justify-between mb-2'>
+                          <label className='text-sm font-medium text-vscode-text'>
+                            {t.mcp.headers}
+                          </label>
+                          <button
+                            onClick={() =>
+                              setMcpFormHeaders([...mcpFormHeaders, {key: '', value: ''}])}
+                            className='text-sm text-vscode-accent hover:text-vscode-accent/80 transition-colors'
+                          >
+                            + {t.mcp.addHeader}
+                          </button>
+                        </div>
+                        {mcpFormHeaders.map((header, i) => (
+                          <div key={i} className='flex items-center gap-2 mb-2'>
+                            <input
+                              value={header.key}
+                              onChange={e => {
+                                const next = [...mcpFormHeaders];
+                                next[i] = {...next[i], key: e.target.value};
+                                setMcpFormHeaders(next);
+                              }}
+                              placeholder={t.mcp.headerKeyPlaceholder}
+                              className='flex-1 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                            <input
+                              value={header.value}
+                              onChange={e => {
+                                const next = [...mcpFormHeaders];
+                                next[i] = {...next[i], value: e.target.value};
+                                setMcpFormHeaders(next);
+                              }}
+                              placeholder={t.mcp.headerValuePlaceholder}
+                              className='flex-1 px-3 py-2 bg-vscode-bg border border-vscode-border rounded-lg text-sm text-vscode-text font-mono focus:outline-none focus:border-vscode-accent select-text'
+                            />
+                            <button
+                              onClick={() =>
+                                setMcpFormHeaders(mcpFormHeaders.filter((_, j) => j !== i))}
+                              className='p-1.5 rounded text-vscode-text-muted hover:text-vscode-error hover:bg-vscode-error/10 transition-colors'
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className='flex gap-3'>
+                      <button
+                        onClick={handleMcpSave}
+                        disabled={!mcpFormName.trim()
+                          || (mcpFormType === 'stdio' && !mcpFormCommand.trim())
+                          || (mcpFormType === 'http' && !mcpFormUrl.trim())}
+                        className='px-4 py-2 bg-vscode-accent hover:bg-vscode-accent/90 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all'
+                      >
+                        {t.mcp.save}
+                      </button>
+                      <button
+                        onClick={resetMcpForm}
+                        className='px-4 py-2 bg-vscode-bg hover:bg-vscode-element border border-vscode-border rounded-lg text-sm font-medium text-vscode-text-muted hover:text-vscode-text transition-all'
+                      >
+                        {t.mcp.cancel}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className='space-y-4'>
+                  <div>
+                    <h3 className='text-sm font-medium text-vscode-text-header mb-1'>
+                      {t.mcp.marketplace}
+                    </h3>
+                    <p className='text-sm text-vscode-text-muted'>{t.mcp.marketplaceDescription}</p>
+                  </div>
+
+                  <div className='relative'>
+                    <Search
+                      size={14}
+                      className='absolute left-3 top-1/2 -translate-y-1/2 text-vscode-text-muted'
+                    />
+                    <input
+                      value={registrySearch}
+                      onChange={e => {
+                        const v = e.target.value;
+                        setRegistrySearch(v);
+                        if (!v.trim()) loadRegistry();
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          loadRegistry(registrySearch);
+                        }
+                      }}
+                      placeholder={t.mcp.search}
+                      className='w-full pl-9 pr-8 py-2 bg-vscode-element border border-vscode-border rounded-lg text-sm text-vscode-text focus:outline-none focus:border-vscode-accent select-text'
+                    />
+                    {registrySearch && (
+                      <button
+                        onClick={() => {
+                          setRegistrySearch('');
+                          loadRegistry();
+                        }}
+                        className='absolute right-3 top-1/2 -translate-y-1/2 text-vscode-text-muted hover:text-vscode-text transition-colors'
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {registryError && (
+                    <div className='text-center py-6'>
+                      <p className='text-sm text-vscode-error mb-2'>{t.mcp.loadError}</p>
+                      <button
+                        onClick={() => loadRegistry(registrySearch)}
+                        className='px-4 py-2 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border rounded-lg text-sm text-vscode-text transition-colors'
+                      >
+                        {t.mcp.retry}
+                      </button>
+                    </div>
+                  )}
+
+                  {registryServers.length > 0 && (
+                    <div className='space-y-2'>
+                      {registryServers.map((entry: any, i: number) => {
+                        const s = entry.server;
+                        const displayName = s.title || (s.name ?? '').split('/').pop() || s.name;
+                        const isInstalled = Object.keys(mcpConfig.mcpServers).some(k =>
+                          k === (s.name ?? '').split('/').pop()
+                        );
+                        const support = getRegistryEntrySupport(entry);
+                        const isSseOnly = support === 'sse-only';
+                        const isDisabled = isInstalled || isSseOnly;
+
+                        return (
+                          <div
+                            key={s.name ?? i}
+                            className='bg-vscode-element border border-vscode-border rounded-lg p-4 flex items-start gap-4'
+                          >
+                            <div className='flex-1 min-w-0'>
+                              <div className='flex items-center gap-2'>
+                                <span className='text-sm font-medium text-vscode-text-header truncate'>
+                                  {displayName}
+                                </span>
+                                {s.version && (
+                                  <span className='text-xs text-vscode-text-muted shrink-0'>
+                                    v{s.version}
+                                  </span>
+                                )}
+                              </div>
+                              <p className='text-sm text-vscode-text-muted mt-1 line-clamp-2'>
+                                {s.description}
+                              </p>
+                              {s.repository?.url && (
+                                <a
+                                  href={s.repository.url}
+                                  target='_blank'
+                                  className='inline-flex items-center gap-1 text-sm text-vscode-accent hover:text-vscode-accent/80 mt-1.5 transition-colors'
+                                >
+                                  <ExternalLink size={14} />
+                                  {(s.repository.url as string).replace('https://github.com/', '')}
+                                </a>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleRegistryInstall(entry)}
+                              disabled={isDisabled}
+                              title={isSseOnly ? t.mcp.sseNotSupported : undefined}
+                              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                isDisabled
+                                  ? 'bg-vscode-element text-vscode-text-muted cursor-default'
+                                  : 'bg-vscode-accent hover:bg-vscode-accent/90 text-white'
+                              }`}
+                            >
+                              {isInstalled
+                                ? t.mcp.installed
+                                : isSseOnly
+                                ? t.mcp.sseOnly
+                                : t.mcp.install}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {!registryError && registryLoaded && registryServers.length === 0
+                    && !registryLoading && (
+                    <div className='text-center py-6 text-sm text-vscode-text-muted'>
+                      {t.mcp.noResults}
+                    </div>
+                  )}
+
+                  {registryLoading && (
+                    <div className='flex items-center justify-center py-6 text-sm text-vscode-text-muted gap-2'>
+                      <Loader2 size={16} className='animate-spin' />
+                      {t.mcp.loading}
+                    </div>
+                  )}
+
+                  {!registryError && !registryLoading && registryCursor && (
+                    <div className='text-center'>
+                      <button
+                        onClick={() => loadRegistry(registrySearch, registryCursor)}
+                        className='px-4 py-2 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border rounded-lg text-sm text-vscode-text transition-colors'
+                      >
+                        {t.mcp.loadMore}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-sm text-vscode-text-muted leading-relaxed'>
+                  <p>{t.mcp.help}</p>
+                </div>
+              </div>
+            );
+          })()}
 
           {activeTab === 'mobile' && (
             <div className='max-w-3xl mx-auto space-y-6'>

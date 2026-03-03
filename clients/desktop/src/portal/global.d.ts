@@ -1,4 +1,4 @@
-import type { ApprovalMode, DesktopConfig, OmxConfig } from './types/config';
+import type { ApprovalMode, DesktopConfig, MCPConfig, OmxConfig } from './types/config';
 
 declare global {
   interface Window {
@@ -25,6 +25,9 @@ declare global {
       getOfficeStatus: () => Promise<{installed: boolean; running: boolean; port: number;}>;
       installOfficeAddin: () => Promise<{success: boolean; error?: string;}>;
       uninstallOfficeAddin: () => Promise<{success: boolean; error?: string;}>;
+      getMcpConfig: () => Promise<MCPConfig>;
+      saveMcpConfig: (config: MCPConfig) => Promise<void>;
+      fetchMcpRegistry: (cursor?: string, search?: string) => Promise<any>;
     };
   }
 }

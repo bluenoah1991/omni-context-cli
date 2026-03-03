@@ -15,7 +15,7 @@ export function ProviderItem(
     <div className='flex items-center justify-between p-4 bg-vscode-element rounded-lg border border-vscode-border'>
       <div className='flex flex-col'>
         <span className='font-medium text-vscode-text-header text-sm'>{provider.name}</span>
-        <span className='text-xs text-vscode-text-muted'>
+        <span className='text-sm text-vscode-text-muted'>
           {formatModelCount(provider.modelCount)}
         </span>
       </div>

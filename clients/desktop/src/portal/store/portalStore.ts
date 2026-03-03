@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getAllProviders } from '../providers';
-import type { ApprovalMode, DesktopConfig, OmxConfig, Tab } from '../types/config';
+import type { ApprovalMode, DesktopConfig, MCPConfig, OmxConfig, Tab } from '../types/config';
 import type { ProviderState } from '../types/provider';
 
 export type PromptType = 'specialist' | 'artist' | 'explorer' | 'assistant';
@@ -35,6 +35,7 @@ interface PortalState {
   lanAccess: boolean;
   fixedPort: number | null;
   language: string;
+  mcpConfig: MCPConfig;
 
   setOmxConfig: (config: OmxConfig) => void;
   setDesktopConfig: (config: DesktopConfig) => void;
@@ -54,6 +55,7 @@ interface PortalState {
   setLanAccess: (enabled: boolean) => void;
   setFixedPort: (port: number | null) => void;
   setLanguage: (lang: string) => void;
+  setMcpConfig: (config: MCPConfig) => void;
 }
 
 function computeDerivedState(omxConfig: OmxConfig, selectedWorkspace: string) {
@@ -98,6 +100,7 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   lanAccess: false,
   fixedPort: null,
   language: 'en-US',
+  mcpConfig: {mcpServers: {}},
 
   setOmxConfig: config => {
     const {selectedWorkspace} = get();
@@ -131,4 +134,5 @@ export const usePortalStore = create<PortalState>()((set, get) => ({
   setLanAccess: enabled => set({lanAccess: enabled}),
   setFixedPort: port => set({fixedPort: port}),
   setLanguage: lang => set({language: lang}),
+  setMcpConfig: config => set({mcpConfig: config}),
 }));
