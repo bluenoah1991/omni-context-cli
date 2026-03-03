@@ -1,12 +1,10 @@
 import { ModelConfig } from '../../types/config';
 import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
-function reasoningEffort(name: string): string | undefined {
-  const lower = name.toLowerCase();
-  if (lower.includes('chat')) return 'medium';
-  const match = lower.match(/(\d+\.\d+)/);
-  if (match && parseFloat(match[1]) >= 5.2) return 'xhigh';
-  return undefined;
+function isMaxEffortModel(name: string): boolean {
+  if (name.toLowerCase().includes('chat')) return false;
+  const match = name.match(/(\d+\.\d+)/);
+  return !!match && parseFloat(match[1]) >= 5.2;
 }
 
 export class CodexInterceptor implements RequestInterceptor {
@@ -20,8 +18,12 @@ export class CodexInterceptor implements RequestInterceptor {
     model: ModelConfig,
   ): InterceptorResult {
     const newBody = {...body};
-    const effort = body.reasoning ? reasoningEffort(model.name) : undefined;
-    if (effort) newBody.reasoning = {effort, summary: 'auto'};
+    if (body.reasoning && isMaxEffortModel(model.name)) {
+      newBody.reasoning = {effort: 'xhigh', summary: 'detailed'};
+      if (model.name.toLowerCase().includes('5.3-codex')) {
+        newBody.text = {verbosity: 'high'};
+      }
+    }
     return {body: newBody, headers};
   }
 }
