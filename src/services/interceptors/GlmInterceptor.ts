@@ -2,9 +2,9 @@ import { ModelConfig } from '../../types/config';
 import { loadAppConfig } from '../configManager';
 import { InterceptorResult, RequestInterceptor } from '../requestInterceptor';
 
-export class ZhipuInterceptor implements RequestInterceptor {
+export class GlmInterceptor implements RequestInterceptor {
   shouldIntercept(model: ModelConfig): boolean {
-    return model.provider === 'openai' && model.apiUrl.includes('open.bigmodel.cn');
+    return model.provider === 'openai' && model.name.startsWith('glm-');
   }
 
   interceptRequest(
