@@ -14,7 +14,6 @@ export type ApprovalMode = 'none' | 'write' | 'all';
 export type Tab =
   | 'workspaces'
   | 'models'
-  | 'permissions'
   | 'settings'
   | 'prompts'
   | 'office'

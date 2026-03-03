@@ -2,7 +2,6 @@ export const enUS = {
   nav: {
     workspaces: 'Workspaces',
     models: 'Models',
-    permissions: 'Permissions',
     office: 'Office Integration',
     browser: 'Browser Integration',
     obsidian: 'Obsidian Integration',

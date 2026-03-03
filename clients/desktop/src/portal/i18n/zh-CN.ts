@@ -4,7 +4,6 @@ export const zhCN: Locale = {
   nav: {
     workspaces: '工作区',
     models: '模型',
-    permissions: '权限',
     office: 'Office 集成',
     browser: '浏览器集成',
     obsidian: 'Obsidian 集成',

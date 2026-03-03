@@ -447,13 +447,6 @@ export default function App() {
             onClick={setActiveTab}
           />
           <NavItem
-            id='permissions'
-            icon={Shield}
-            label={t.nav.permissions}
-            activeTab={activeTab}
-            onClick={setActiveTab}
-          />
-          <NavItem
             id='office'
             icon={FileSpreadsheet}
             label={t.nav.office}
@@ -831,43 +824,6 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'permissions' && (
-            <div className='max-w-3xl mx-auto space-y-6'>
-              <header>
-                <h2 className='text-lg font-medium text-vscode-text-header mb-1'>
-                  {t.permissions.title}
-                </h2>
-                <p className='text-vscode-text-muted text-sm'>{t.permissions.description}</p>
-              </header>
-
-              <div className='bg-vscode-element border border-vscode-border rounded-lg p-4'>
-                <Select
-                  label={t.permissions.approvalMode}
-                  description={t.permissions.approvalDescription}
-                  value={approvalMode}
-                  onChange={handleApprovalModeChange}
-                  options={[{value: 'none', label: t.permissions.noApproval}, {
-                    value: 'write',
-                    label: t.permissions.writeApproval,
-                  }, {value: 'all', label: t.permissions.fullApproval}]}
-                />
-
-                <div className='mt-4 p-4 bg-vscode-bg/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed'>
-                  <p className='mb-2'>
-                    <strong className='text-vscode-text-header'>{t.sidebar.writeApproval}</strong>
-                    {' '}
-                    {t.permissions.writeRecommended}
-                  </p>
-                  <p>
-                    <strong className='text-vscode-text-header'>{t.sidebar.fullApproval}</strong>
-                    {' '}
-                    {t.permissions.fullDescription}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'mobile' && (
             <div className='max-w-3xl mx-auto space-y-6'>
               <header>
@@ -950,6 +906,19 @@ export default function App() {
               </header>
 
               <div className='bg-vscode-element border border-vscode-border rounded-lg p-4 space-y-6'>
+                <Select
+                  label={t.permissions.approvalMode}
+                  description={t.permissions.approvalDescription}
+                  value={approvalMode}
+                  onChange={handleApprovalModeChange}
+                  options={[{value: 'none', label: t.permissions.noApproval}, {
+                    value: 'write',
+                    label: t.permissions.writeApproval,
+                  }, {value: 'all', label: t.permissions.fullApproval}]}
+                />
+
+                <div className='border-t border-vscode-border' />
+
                 <div>
                   <div className='flex items-center justify-between'>
                     <div>
@@ -1057,6 +1026,15 @@ export default function App() {
               </div>
 
               <div className='p-4 bg-vscode-element/50 rounded-lg border border-vscode-border/50 text-xs text-vscode-text-muted leading-relaxed space-y-2'>
+                <p>
+                  <strong className='text-vscode-text-header'>{t.sidebar.writeApproval}</strong>
+                  {' '}
+                  {t.permissions.writeRecommended}
+                </p>
+                <p>
+                  <strong className='text-vscode-text-header'>{t.sidebar.fullApproval}</strong>{' '}
+                  {t.permissions.fullDescription}
+                </p>
                 <p>
                   <strong className='text-vscode-text-header'>{t.settings.lanAccess}</strong>{' '}
                   {t.settings.lanAccessHelp}
