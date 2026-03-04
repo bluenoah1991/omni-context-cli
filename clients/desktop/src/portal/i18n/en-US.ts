@@ -150,11 +150,10 @@ export const enUS = {
     step1Text:
       'Go to the releases page and download the latest **OmniContext Figma** plugin package (.zip).',
     step2Title: 'Unzip the package',
-    step2Text:
-      "Extract the downloaded .zip file to a folder on your computer. You'll need the **dist** folder inside.",
+    step2Text: 'Extract the downloaded .zip file to a folder on your computer.',
     step3Title: 'Load in Figma',
     step3Text:
-      'Open the **Figma desktop app**, go to the menu **Plugins > Development > Import plugin from manifest...** and select the **manifest.json** file inside the **dist** folder.',
+      'Open the **Figma desktop app**, go to the menu **Plugins > Development > Import plugin from manifest...** and select the **manifest.json** file in the extracted folder.',
     step4Title: 'Connect',
     step4Text:
       'Run the plugin from **Plugins > Development > OmniContext** and enter the server address. Use **Serve only** mode to start a server from the Workspaces tab.',
@@ -170,11 +169,10 @@ export const enUS = {
     step1Text:
       'Go to the releases page and download the latest **OmniContext Connect** extension package (.zip).',
     step2Title: 'Unzip the package',
-    step2Text:
-      "Extract the downloaded .zip file to a folder on your computer. You'll need the **dist** folder inside.",
+    step2Text: 'Extract the downloaded .zip file to a folder on your computer.',
     step3Title: 'Load in Chrome',
     step3Text:
-      'Open **chrome://extensions** in your browser, enable **Developer mode**, click **Load unpacked**, and select the **dist** folder.',
+      'Open **chrome://extensions** in your browser, enable **Developer mode**, click **Load unpacked**, and select the extracted folder.',
     step4Title: 'Connect',
     step4Text:
       "Open the extension's side panel in Chrome and enter the server address. Use **Serve only** mode to start a server from the Workspaces tab.",

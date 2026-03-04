@@ -146,10 +146,10 @@ export const zhCN: Locale = {
     step1Title: '下载插件',
     step1Text: '前往发布页面，下载最新的 **OmniContext Figma** 插件包（.zip）。',
     step2Title: '解压文件',
-    step2Text: '将下载的 .zip 文件解压到电脑上的文件夹。您需要其中的 **dist** 文件夹。',
+    step2Text: '将下载的 .zip 文件解压到电脑上的文件夹。',
     step3Title: '在 Figma 中加载',
     step3Text:
-      '打开 **Figma 桌面应用**，前往菜单 **Plugins > Development > Import plugin from manifest...**，选择 **dist** 文件夹中的 **manifest.json** 文件。',
+      '打开 **Figma 桌面应用**，前往菜单 **Plugins > Development > Import plugin from manifest...**，选择解压文件夹中的 **manifest.json** 文件。',
     step4Title: '连接',
     step4Text:
       '从 **Plugins > Development > OmniContext** 运行插件并输入服务器地址。使用"**仅启动服务**"模式从工作区页面启动服务器。',
@@ -163,10 +163,10 @@ export const zhCN: Locale = {
     step1Title: '下载扩展',
     step1Text: '前往发布页面，下载最新的 **OmniContext Connect** 扩展包（.zip）。',
     step2Title: '解压文件',
-    step2Text: '将下载的 .zip 文件解压到电脑上的文件夹。您需要其中的 **dist** 文件夹。',
+    step2Text: '将下载的 .zip 文件解压到电脑上的文件夹。',
     step3Title: '在 Chrome 中加载',
     step3Text:
-      '在浏览器中打开 **chrome://extensions**，启用**开发者模式**，点击"**加载已解压的扩展程序**"，选择 **dist** 文件夹。',
+      '在浏览器中打开 **chrome://extensions**，启用**开发者模式**，点击"**加载已解压的扩展程序**"，选择解压后的文件夹。',
     step4Title: '连接',
     step4Text:
       '在 Chrome 中打开扩展的侧面板并输入服务器地址。使用"**仅启动服务**"模式从工作区页面启动服务器。',
