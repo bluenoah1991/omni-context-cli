@@ -67,11 +67,15 @@ export function registerGrepTool(): void {
       name: 'Grep',
       builtin: true,
       description:
-        `Search for text patterns using regex. Great for finding function definitions, tracking variable usage, hunting down specific patterns, or doing code audits. Returns matches with file paths and line numbers. Respects .gitignore and searches hidden files. Output shows match counts and can be filtered by type, path, or glob pattern.`,
+        `Search file contents using regex. Great for finding function definitions, tracking variable usage, hunting down specific patterns, or doing code audits. Returns matches with file paths and line numbers. Respects .gitignore and searches hidden files. Output shows match counts and can be filtered by file type, directory path, or glob.`,
       formatCall: (args: Record<string, unknown>) => String(args.pattern || ''),
       parameters: {
         properties: {
-          pattern: {type: 'string', description: 'Regex pattern. Case-sensitive by default.'},
+          pattern: {
+            type: 'string',
+            description:
+              'Regex pattern to search for. This is the search term and must not be empty. Case-sensitive by default. For example: "function handleClick", "import.*lodash", or "TODO".',
+          },
           path: {
             type: 'string',
             description: 'Directory or file to search. Default: current directory.',
