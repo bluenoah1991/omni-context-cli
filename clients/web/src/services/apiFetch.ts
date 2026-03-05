@@ -36,6 +36,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   if (res.status === 401) {
     setAuthToken(null);
     state.setNeedsAuth(true);
+    throw new Error('Unauthorized');
   } else if (state.needsAuth === null) {
     state.setNeedsAuth(false);
   }
