@@ -133,7 +133,7 @@ Storage/State
 - Tool execution runs in parallel when possible
 - Agents are invoked as tools with custom prompts
 - MCP servers expose tools prefixed with `mcp_`
-- Request interceptors modify requests for specific providers (Anthropic, Codex, Gemini, Glm, MiniMax, Xai, Zenmux)
+- Request interceptors modify requests for specific providers (Anthropic, Codex, Gemini, Glm, Kimi, MiniMax, Xai, Zenmux)
 - Media files (images, PDFs, documents) can be attached to user messages across all providers
 - Tool approval system allows requiring user confirmation before tool execution
 - ACP agent mode exposes OMX as an Agent Client Protocol agent over stdio
@@ -145,6 +145,7 @@ Provider-specific interceptors modify API requests before sending:
 - `CodexInterceptor` - Responses API adjustments
 - `GeminiLegacyInterceptor` - Gemini legacy model compatibility
 - `GlmInterceptor` - Zhipu GLM model compatibility
+- `KimiInterceptor` - Moonshot Kimi API compatibility
 - `MiniMaxInterceptor` - MiniMax API compatibility
 - `XaiInterceptor` - xAI API compatibility
 - `ZenmuxInterceptor` - Zenmux proxy handling
@@ -595,7 +596,7 @@ npm run build
 | `src/services/projectExporter.ts` | Project data export/import |
 | `src/services/modelProvider.ts` | Model provider registry |
 | `src/services/modelProviders/` | Model source adapters (map to API types) |
-| `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, Gemini, Glm, MiniMax, Xai, Zenmux) |
+| `src/services/interceptors/` | Provider-specific interceptors (Anthropic, Codex, Gemini, Glm, Kimi, MiniMax, Xai, Zenmux) |
 | `src/services/webServer/` | HTTP API, auth, and static server components |
 | `src/services/webServer/auth.ts` | Bearer token authentication and rate limiting |
 | `src/services/webServer/handlers/fileHandlers.ts` | File browsing API handlers |
