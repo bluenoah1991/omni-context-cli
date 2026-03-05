@@ -71,7 +71,7 @@ function normalizeMessageContent(text: string, maxLength = 50): string {
   normalized = removeIDEContext(normalized);
   normalized = removeFileContext(normalized);
   normalized = normalized.replace(/\s+/g, ' ').trim();
-  if (normalized.length > maxLength) {
+  if (maxLength > 0 && normalized.length > maxLength) {
     normalized = normalized.substring(0, maxLength) + '...';
   }
   return normalized;
@@ -467,7 +467,11 @@ export function getRewindPoints(session: Session): RewindPoint[] {
           isFirstUserMessage = false;
           return;
         }
-        points.push({index, label: normalizeMessageContent(text)});
+        points.push({
+          index,
+          label: normalizeMessageContent(text),
+          content: normalizeMessageContent(text, 0),
+        });
       }
       return;
     }
@@ -502,7 +506,11 @@ export function getRewindPoints(session: Session): RewindPoint[] {
         isFirstUserMessage = false;
         return;
       }
-      points.push({index, label: normalizeMessageContent(text)});
+      points.push({
+        index,
+        label: normalizeMessageContent(text),
+        content: normalizeMessageContent(text, 0),
+      });
     }
   });
   return points.reverse();

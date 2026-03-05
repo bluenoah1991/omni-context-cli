@@ -85,7 +85,7 @@ export default function MessageList() {
       return;
     }
     await rewind(points[0].index);
-    await sendMessage(points[0].label);
+    await sendMessage(points[0].content);
   };
 
   const handleRewind = async () => {

@@ -22,6 +22,7 @@ export interface Session {
 export interface RewindPoint {
   index: number;
   label: string;
+  content: string;
 }
 
 export type SessionIndexEntry = {
