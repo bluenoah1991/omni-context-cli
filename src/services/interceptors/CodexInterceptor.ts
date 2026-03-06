@@ -20,10 +20,6 @@ export class CodexInterceptor implements RequestInterceptor {
     const newBody = {...body};
     if (body.reasoning && isMaxEffortModel(model.name)) {
       newBody.reasoning = {effort: 'xhigh', summary: 'detailed'};
-      const lower = model.name.toLowerCase();
-      if (lower.includes('5.3-codex') || lower.includes('5.4')) {
-        newBody.text = {verbosity: 'high'};
-      }
     }
     return {body: newBody, headers};
   }
