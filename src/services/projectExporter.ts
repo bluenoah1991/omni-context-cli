@@ -38,7 +38,7 @@ export function importProject(inputPath: string): number {
     if (Array.isArray(index)) {
       for (const entry of index) {
         if (typeof entry.path === 'string') {
-          entry.path = path.join(projectDir, path.basename(entry.path));
+          entry.path = path.join(projectDir, path.posix.basename(entry.path.replace(/\\/g, '/')));
         }
       }
       fs.writeFileSync(indexPath, JSON.stringify(index));
