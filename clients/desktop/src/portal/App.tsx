@@ -893,18 +893,13 @@ export default function App() {
                   </h3>
                   <button
                     onClick={handleBrowse}
-                    className='w-full p-4 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border hover:border-vscode-accent rounded-lg text-left transition-all group flex items-center gap-4'
+                    className='w-full p-4 bg-vscode-element hover:bg-vscode-element/80 border border-vscode-border hover:border-vscode-accent rounded-lg text-left transition-all group'
                   >
-                    <div className='w-10 h-10 shrink-0 rounded-lg border border-vscode-accent/20 bg-vscode-accent/10 text-vscode-accent group-hover:border-vscode-accent group-hover:bg-vscode-accent/15 transition-colors flex items-center justify-center'>
-                      <FolderOpen size={16} />
+                    <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
+                      {t.workspaces.openFolder}
                     </div>
-                    <div>
-                      <div className='text-sm font-medium text-vscode-text-header group-hover:text-vscode-accent transition-colors'>
-                        {t.workspaces.openFolder}
-                      </div>
-                      <div className='text-vscode-text-muted text-sm mt-0.5'>
-                        {t.workspaces.browseFileSystem}
-                      </div>
+                    <div className='text-vscode-text-muted text-sm mt-0.5'>
+                      {t.workspaces.browseFileSystem}
                     </div>
                   </button>
                 </div>
@@ -922,18 +917,9 @@ export default function App() {
                           className={`w-full p-4 rounded-lg border transition-all flex items-center gap-4 group cursor-pointer ${
                             selectedWorkspace === ws.path
                               ? 'bg-vscode-accent/10 border-vscode-accent'
-                              : 'bg-vscode-element/50 border-vscode-border/50 hover:bg-vscode-element hover:border-vscode-border'
+                              : 'bg-vscode-element border-vscode-border hover:bg-vscode-element/80'
                           }`}
                         >
-                          <div
-                            className={`p-2 rounded border flex items-center justify-center transition-colors ${
-                              selectedWorkspace === ws.path
-                                ? 'border-vscode-accent/30 bg-vscode-accent text-white'
-                                : 'border-vscode-border/60 bg-vscode-bg/40 text-vscode-text-muted'
-                            }`}
-                          >
-                            <FolderOpen size={16} />
-                          </div>
                           <div className='flex-1 min-w-0 text-left'>
                             <div
                               className={`text-sm font-medium truncate ${
