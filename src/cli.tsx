@@ -46,6 +46,7 @@ import { startServer } from './services/webServer/index.js';
 import { useChatStore } from './store/chatStore.js';
 import type { WorkflowPreset } from './types/config.js';
 import { ChatView } from './ui/components/ChatView.js';
+import { applyTheme, ThemePreset, themePresets } from './ui/theme/colors.js';
 
 const program = new Command().name('omx').description('Omni Context CLI').version(
   packageJson.version,
@@ -243,6 +244,11 @@ function validateProxyUrl(url: string | undefined): string | null {
 }
 
 const appConfig = loadAppConfig();
+
+if (appConfig.colorTheme && appConfig.colorTheme in themePresets) {
+  applyTheme(appConfig.colorTheme as ThemePreset);
+}
+
 const proxyUrl = validateProxyUrl(appConfig.proxy);
 
 if (proxyUrl) {

@@ -34,6 +34,7 @@ export interface AppConfig {
   contextEditing: boolean;
   contextEditingRounds: number;
   responseLanguage?: 'auto' | 'en' | 'zh';
+  colorTheme?: string;
   webTheme?: 'dark' | 'light' | 'auto';
   language?: string;
   clientId?: string;

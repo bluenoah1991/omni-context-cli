@@ -9,6 +9,7 @@ import {
   removeModel,
   setAgentModel,
   setCacheTtl,
+  setColorTheme,
   setContextEditing,
   setCurrentModel,
   setDefaultModel,
@@ -30,7 +31,7 @@ import {
 } from '../../services/sessionManager';
 import { useChatStore } from '../../store/chatStore';
 import { Provider } from '../../types/config';
-import { colors } from '../theme/colors';
+import { applyTheme, colors, ThemePreset, themePresets } from '../theme/colors';
 import { SelectItem, SelectList } from './SelectList';
 import { FormStep, StepForm } from './StepForm';
 
@@ -53,6 +54,7 @@ export type View =
   | 'pref-context-editing'
   | 'pref-server-compaction'
   | 'pref-response-language'
+  | 'color-theme'
   | 'browse-sessions'
   | 'rewind-session';
 
@@ -82,6 +84,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
   const [rewindIndex, setRewindIndex] = useState(0);
   const [modelsIndex, setModelsIndex] = useState(0);
   const [settingsIndex, setSettingsIndex] = useState(0);
+  const [colorThemeIndex, setColorThemeIndex] = useState<number>();
 
   const config = loadAppConfig();
 
@@ -92,6 +95,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       {id: 'rewind', label: '↩ Rewind to a previous message'},
       {id: 'workflow-preset', label: '♪ Switch workflow preset'},
       {id: 'response-language', label: '✦ Switch response language'},
+      {id: 'color-theme', label: '◎ Switch color theme'},
       {id: 'models', label: '◈ Manage your model list →'},
       {id: 'settings', label: '⚙ Change your preferences →'},
       {id: 'exit', label: '× Quit Omx'},
@@ -103,6 +107,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
       'rewind-session',
       'pref-workflow-preset',
       'pref-response-language',
+      'color-theme',
       'model-ops',
       'prefs',
     ];
@@ -122,7 +127,7 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
           selectedIndex={mainIndex}
           onSelect={setMainIndex}
           onConfirm={i => {
-            if (i === 7) process.exit(0);
+            if (i === 8) process.exit(0);
             else setView(viewMap[i]);
           }}
           onCancel={onClose}
@@ -753,6 +758,52 @@ export function Menu({onClose, initialView}: MenuProps): React.ReactElement {
             if (selected !== current) {
               setResponseLanguage(selected);
             }
+            onClose();
+          }}
+          onCancel={() => setView('main')}
+        />
+      </Box>
+    );
+  }
+
+  if (view === 'color-theme') {
+    const presetKeys = Object.keys(themePresets) as ThemePreset[];
+    const themeLabels: Record<ThemePreset, string> = {
+      'tokyo-night': 'Tokyo Night',
+      'rose-pine': 'Rose Pine',
+      catppuccin: 'Catppuccin Mocha',
+      nord: 'Nord',
+      everforest: 'Everforest',
+      kanagawa: 'Kanagawa Wave',
+      'hacker-green': 'Hacker Green',
+    };
+    const items: SelectItem[] = presetKeys.map(k => ({
+      id: k,
+      label: themeLabels[k],
+      hint: k === (config.colorTheme ?? 'tokyo-night') ? ' [active]' : undefined,
+    }));
+    const current = config.colorTheme ?? 'tokyo-night';
+    const currentIdx = presetKeys.indexOf(current as ThemePreset);
+    const initialIndex = currentIdx >= 0 ? currentIdx : 0;
+
+    return (
+      <Box
+        flexDirection='column'
+        borderStyle='round'
+        borderColor={colors.primary}
+        paddingX={2}
+        paddingY={1}
+      >
+        <SelectList
+          key='color-theme'
+          title='Pick a color theme'
+          items={items}
+          selectedIndex={colorThemeIndex ?? initialIndex}
+          onSelect={setColorThemeIndex}
+          onConfirm={i => {
+            const selected = presetKeys[i];
+            applyTheme(selected);
+            setColorTheme(selected);
             onClose();
           }}
           onCancel={() => setView('main')}

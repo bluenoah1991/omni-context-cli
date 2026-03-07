@@ -244,6 +244,10 @@ export function setResponseLanguage(value: 'auto' | 'en' | 'zh'): void {
   saveAppConfig('responseLanguage', value);
 }
 
+export function setColorTheme(value: string): void {
+  saveAppConfig('colorTheme', value);
+}
+
 export function initializeCurrentModel(): void {
   const appConfig = loadAppConfig();
 
