@@ -1,7 +1,6 @@
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { memo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkBreaks from 'remark-breaks';
 
 interface CollapsibleBlockProps {
   icon: React.ReactNode;
@@ -94,7 +93,7 @@ export const CollapsibleBlock = memo(
                 <div
                   className={`thinking-markdown wrap-break-word max-h-60 overflow-y-auto custom-scrollbar ${styles.content}`}
                 >
-                  <ReactMarkdown remarkPlugins={[remarkBreaks]}>{content!}</ReactMarkdown>
+                  <ReactMarkdown>{content!}</ReactMarkdown>
                 </div>
               )
               : (
